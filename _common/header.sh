@@ -110,6 +110,12 @@ exec_cmd() {
   echo ""
   local cmd_first_line=$(printf "$cmd" | head -n 1)
   echo "__SH__CMD__END__|{\"type\":\"cmd\",\"sequenceNumber\":\"$cmd_start_timestamp\",\"id\":\"$cmd_uuid\",\"exitcode\":\"$cmd_status\"}|$cmd_first_line"
+
+  trap before_exit EXIT
+  if [ "$cmd_status" != 0 ]; then
+    is_success=false
+    return $cmd_status;
+  fi
   return $cmd_status
 }
 
