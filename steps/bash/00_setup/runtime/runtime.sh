@@ -60,8 +60,10 @@ if [ "%%context.type%%" != "host" ]; then
       fi
     fi
   fi
-fi
 
-if [ "$(type -t %%context.type%%)" == "function" ]; then
-  %%context.type%%
+  runtime_type="%%context.type%%"
+  if [ "$(type -t $runtime_type)" == "function" ]; then
+    :
+    %%context.type%%
+  fi
 fi
