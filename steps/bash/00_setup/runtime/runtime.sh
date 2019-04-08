@@ -23,7 +23,7 @@ boot_container() {
     local exit_code=$(docker wait $(cat $STEP_JSON_PATH | jq -r '.step.name'))
 
     container_exit() {
-      exec_cmd "Container exited with exit_code: $exit_code"
+      exec_cmd "echo \"Container exited with exit_code: $exit_code\""
     }
 
     if [ $exit_code -ne 0 ]; then
@@ -49,15 +49,15 @@ if [ "%%context.type%%" != "host" ]; then
     if [ -z "$custom_image_runtime" ] || [ -z "$auto_image_runtime" ]; then
       auto_default=true
     fi
-    if $auto_default; then
-      export DOCKER_IMAGE=$DEFAULT_DOCKER_IMAGE_NAME
-      if [ -z $RUNNING_IN_CONTAINER ]; then
-        export RUNNING_IN_CONTAINER=false;
-      fi
-      if ! $RUNNING_IN_CONTAINER; then
-        RUNNING_IN_CONTAINER=true
-        boot_container
-      fi
+  fi
+  if $auto_default; then
+    export DOCKER_IMAGE=$DEFAULT_DOCKER_IMAGE_NAME
+    if [ -z $RUNNING_IN_CONTAINER ]; then
+      export RUNNING_IN_CONTAINER=false;
+    fi
+    if ! $RUNNING_IN_CONTAINER; then
+      RUNNING_IN_CONTAINER=true
+      boot_container
     fi
   fi
 

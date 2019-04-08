@@ -23,7 +23,7 @@ boot_container() {
     local exit_code=$(docker wait $(cat $STEP_JSON_PATH | jq -r '.step.name'))
 
     container_exit() {
-      exec_cmd "Container exited with exit_code: $exit_code"
+      exec_cmd "echo \"Container exited with exit_code: $exit_code\""
     }
 
     if [ $exit_code -ne 0 ]; then
