@@ -1,8 +1,8 @@
-if type jq &> /dev/null; then
+if ! type jq &> /dev/null; then
   ### installing jq, if not present
   ### this handles only apt installs for now
-  apt-get update
-  apt-get install -y jq
+  apt-get update &> /dev/null
+  apt-get install -y jq &> /dev/null
 fi
 
 if [ "$(type -t setup)" == "function" ]; then
@@ -33,7 +33,7 @@ else
       local exit_code=$(docker wait $(cat $STEP_JSON_PATH | jq -r '.step.name'))
 
       container_exit() {
-        exec_cmd "Container exited with exit_code: $exit_code"
+        exec_cmd "echo \"Container exited with exit_code: $exit_code\""
       }
 
       if [ $exit_code -ne 0 ]; then

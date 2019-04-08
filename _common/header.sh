@@ -8,14 +8,12 @@
 before_exit() {
   return_code=$?
   exit_code=1;
-  if [ -z "$is_success" ]; then
-    if [ $return_code -eq 0 ]; then
-      is_success=true
-      exit_code=0
-    else
-      is_success=false
-      exit_code=$return_code
-    fi
+  if [ $return_code -eq 0 ]; then
+    is_success=true
+    exit_code=0
+  else
+    is_success=false
+    exit_code=$return_code
   fi
 
   # Flush any remaining console
