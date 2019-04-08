@@ -12,6 +12,9 @@ before_exit() {
     if [ $return_code -eq 0 ]; then
       is_success=true
       exit_code=0
+    else
+      is_success=false
+      exit_code=$return_code
     fi
   fi
 
@@ -163,3 +166,5 @@ exec_grp() {
   fi
   return $group_status
 }
+
+trap before_exit EXIT
