@@ -25,6 +25,10 @@ before_exit() {
     echo "__SH__CMD__END__|{\"type\":\"cmd\",\"sequenceNumber\":\"$current_timestamp\",\"id\":\"$current_cmd_uuid\",\"exitcode\":\"$exit_code\"}|$current_cmd"
   fi
 
+  if [ -z $SKIP_BEFORE_EXIT_METHODS ]; then
+    SKIP_BEFORE_EXIT_METHODS=false
+  fi
+
   if [ "$is_success" == true ]; then
     # "onSuccess" is only defined for the last task, so execute "onComplete" only
     # if this is the last task.
@@ -32,12 +36,12 @@ before_exit() {
     # exit 0/exit 1 in these sections not failing the build
     subshell_exit_code=0
     (
-      if [ "$(type -t onSuccess)" == "function" ]; then
-        exec_grp "onSuccess" || true
+      if [ "$(type -t onSuccess)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+        exec_cmd "onSuccess" || true
+      fi
 
-        if [ "$(type -t onComplete)" == "function" ]; then
-          exec_grp "onComplete" || true
-        fi
+      if [ "$(type -t onComplete)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+        exec_cmd "onComplete" || true
       fi
     # subshell_exit_code will be set to 1 only when there is a exit 1 command in
     # the onSuccess & onFailure sections. exit 1 in these sections, is
@@ -58,12 +62,12 @@ before_exit() {
     # running onComplete and onFailure inside a subshell to handle the scenario of
     # exit 0/exit 1 in these sections not failing the build
     (
-      if [ "$(type -t onFailure)" == "function" ]; then
-        exec_grp "onFailure" || true
+      if [ "$(type -t onFailure)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+        exec_cmd "onFailure" || true
       fi
 
-      if [ "$(type -t onComplete)" == "function" ]; then
-        exec_grp "onComplete" || true
+      if [ "$(type -t onComplete)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+        exec_cmd "onComplete" || true
       fi
     # adding || true so that the script doesn't exit when onFailure/onComplete
     # section has exit 1. if the script exits the group will not be
