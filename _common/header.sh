@@ -26,21 +26,21 @@ before_exit() {
   fi
 
   if [ "$is_success" == true ]; then
-    # "on_success" is only defined for the last task, so execute "always" only
+    # "onSuccess" is only defined for the last task, so execute "onComplete" only
     # if this is the last task.
-    # running always and on_success inside a subshell to handle the scenario of
+    # running onComplete and onSuccess inside a subshell to handle the scenario of
     # exit 0/exit 1 in these sections not failing the build
     subshell_exit_code=0
     (
-      if [ "$(type -t on_success)" == "function" ]; then
-        exec_cmd "on_success" || true
+      if [ "$(type -t onSuccess)" == "function" ]; then
+        exec_grp "onSuccess" || true
 
-        if [ "$(type -t always)" == "function" ]; then
-          exec_cmd "always" || true
+        if [ "$(type -t onComplete)" == "function" ]; then
+          exec_grp "onComplete" || true
         fi
       fi
     # subshell_exit_code will be set to 1 only when there is a exit 1 command in
-    # the on_success & on_failure sections. exit 1 in these sections, is
+    # the onSuccess & onFailure sections. exit 1 in these sections, is
     # considered as failure
     ) || subshell_exit_code=1
 
@@ -55,17 +55,17 @@ before_exit() {
       echo "__SH__SCRIPT_END_FAILURE__";
     fi
   else
-    # running always and on_failure inside a subshell to handle the scenario of
+    # running onComplete and onFailure inside a subshell to handle the scenario of
     # exit 0/exit 1 in these sections not failing the build
     (
-      if [ "$(type -t on_failure)" == "function" ]; then
-        exec_cmd "on_failure" || true
+      if [ "$(type -t onFailure)" == "function" ]; then
+        exec_grp "onFailure" || true
       fi
 
-      if [ "$(type -t always)" == "function" ]; then
-        exec_cmd "always" || true
+      if [ "$(type -t onComplete)" == "function" ]; then
+        exec_grp "onComplete" || true
       fi
-    # adding || true so that the script doesn't exit when on_failure/always
+    # adding || true so that the script doesn't exit when onFailure/onComplete
     # section has exit 1. if the script exits the group will not be
     # closed correctly.
     ) || true

@@ -68,4 +68,8 @@ else
   fi
 fi
 
+if [ "$(type -t onStart)" == "function" ]; then
+  exec_grp "onStart" "On Start" "true"
+fi
+
 exec_grp "onExecute" "Executing step" "true"
