@@ -1,1 +1,1 @@
-exec_cmd $'%%context%%'
+eval $'%%context%%'

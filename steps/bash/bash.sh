@@ -5,6 +5,8 @@ if ! type jq &> /dev/null; then
   apt-get install -y jq &> /dev/null
 fi
 
+export SKIP_BEFORE_EXIT_METHODS=false
+
 if [ "$(type -t setup)" == "function" ]; then
   setup
 else
@@ -62,6 +64,7 @@ else
       export RUNNING_IN_CONTAINER=false;
     fi
     if ! $RUNNING_IN_CONTAINER; then
+      SKIP_BEFORE_EXIT_METHODS=true
       RUNNING_IN_CONTAINER=true
       boot_container
     fi

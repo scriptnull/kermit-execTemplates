@@ -56,6 +56,7 @@ if [ "%%context.type%%" != "host" ]; then
       export RUNNING_IN_CONTAINER=false;
     fi
     if ! $RUNNING_IN_CONTAINER; then
+      SKIP_BEFORE_EXIT_METHODS=true
       RUNNING_IN_CONTAINER=true
       boot_container
     fi
