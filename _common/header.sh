@@ -5,6 +5,83 @@
 # contains the most common methods use across the script
 #
 
+bump_semver() {
+  local version_to_bump=$1
+  local action=$2
+  local versionParts=$(echo "$version_to_bump" | cut -d "-" -f 1 -s)
+  local prerelease=$(echo "$version_to_bump" | cut -d "-" -f 2 -s)
+  if [[ $versionParts == "" && $prerelease == "" ]]; then
+    # when no prerelease is present
+    versionParts=$version_to_bump
+  fi
+  local major=$(echo "$versionParts" | cut -d "." -f 1 | sed "s/v//")
+  local minor=$(echo "$versionParts" | cut -d "." -f 2)
+  local patch=$(echo "$versionParts" | cut -d "." -f 3)
+  if ! [[ $action == "major" || $action == "minor" || $action == "patch" ||
+    $action == "rc" || $action == "alpha" || $action == "beta" || $action == "final" ]]; then
+    echo "error: Invalid action given in the argument." >&2; exit 99
+  fi
+  local numRegex='^[0-9]+$'
+  if ! [[ $major =~ $numRegex && $minor =~ $numRegex && $patch =~ $numRegex ]] ; then
+    echo "error: Invalid semantics given in the argument." >&2; exit 99
+  fi
+  if [[ $(echo "$versionParts" | cut -d "." -f 1) == $major ]]; then
+    appendV=false
+  else
+    appendV=true
+  fi
+  if [[ $action == "final" ]];then
+    local new_version="$major.$minor.$patch"
+  else
+    if [[ $action == "major" ]]; then
+      major=$((major + 1))
+      minor=0
+      patch=0
+    elif [[ $action == "minor" ]]; then
+      minor=$((minor + 1))
+      patch=0
+    elif [[ $action == "patch" ]]; then
+      patch=$((patch + 1))
+    elif [[ $action == "rc" || $action == "alpha" || $action == "beta" ]]; then
+      local prereleaseCount="";
+      local prereleaseText="";
+      if [ ! -z $(echo "$prerelease" | grep -oP "$action") ]; then
+        local count=$(echo "$prerelease" | grep -oP "$action.[0-9]*")
+        if [ ! -z $count ]; then
+          prereleaseCount=$(echo "$count" | cut -d "." -f 2 -s)
+          prereleaseCount=$(($prereleaseCount + 1))
+        else
+          prereleaseCount=1
+        fi
+        prereleaseText="$action.$prereleaseCount"
+      else
+        prereleaseText=$action
+      fi
+    fi
+    local new_version="$major.$minor.$patch"
+    if [[ $prereleaseText != "" ]]; then
+      new_version="$new_version-$prereleaseText"
+    fi
+  fi
+  if [[ $appendV == true ]]; then
+    new_version="v$new_version"
+  fi
+  echo $new_version
+}
+
+read_json() {
+  if [ "$1" == "" ]; then
+    echo "Usage: shipctl get_json_value JSON_PATH FIELD"
+    exit 99
+  fi
+  if [ -f "$1" ]; then
+    cat "$1" | jq -r '.'"$2"
+  else
+    echo "$1: No such file present in this directory"
+    exit 99
+  fi
+}
+
 before_exit() {
   return_code=$?
   exit_code=1;
