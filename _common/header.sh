@@ -82,6 +82,124 @@ read_json() {
   fi
 }
 
+decrypt_file() {
+  local source_file=""
+  local key_file=""
+  local dest_file=""
+  local temp_dest='/tmp/shippable/decrypt'
+
+  if [[ $# -gt 0 ]]; then
+    while [[ $# -gt 0 ]]; do
+      ARGUMENT="$1"
+
+      case $ARGUMENT in
+        --key)
+          key_file=$2
+          shift
+          shift
+          ;;
+        --output)
+          dest_file=$2
+          shift
+          shift
+          ;;
+        *)
+          source_file=$1
+          shift
+          ;;
+      esac
+    done
+  fi
+
+  echo "decrypt_file: Decrypting $source_file using key $key_file"
+
+  if [ ! -f "$key_file" ]; then
+    echo "decrypt_file: ERROR - Key file $key_file not found"
+    exit 100
+  fi
+
+  if [ ! -f "$source_file" ]; then
+    echo "decrypt_file: ERROR - Source file $source_file not found"
+    exit 100
+  fi
+
+  if [ -d "$temp_dest" ]; then
+    rm -r ${temp_dest:?}
+  fi
+  mkdir -p $temp_dest/fragments
+
+  base64 --decode < "$source_file" > $temp_dest/encrypted.raw
+  split -b 256 "$temp_dest/encrypted.raw" $temp_dest/fragments/
+  local fragments
+  fragments=$(ls -b $temp_dest/fragments)
+  for fragment in $fragments; do
+    openssl rsautl -decrypt -inkey "$key_file" -oaep < "$temp_dest/fragments/$fragment" >> "$dest_file"
+  done;
+
+  rm -r ${temp_dest:?}/*
+  echo "decrypt_file: Decrypted $source_file to $dest_file"
+}
+
+encrypt_file() {
+  local source_file=""
+  local key_file=""
+  local dest_file=""
+  local temp_dest='/tmp/shippable/encrypt'
+
+  if [[ $# -gt 0 ]]; then
+    while [[ $# -gt 0 ]]; do
+      ARGUMENT="$1"
+
+      case $ARGUMENT in
+        --key)
+          key_file=$2
+          shift
+          shift
+          ;;
+        --output)
+          dest_file=$2
+          shift
+          shift
+          ;;
+        *)
+          source_file=$1
+          shift
+          ;;
+      esac
+    done
+  fi
+
+  echo "encrypt_file: Encrypting $source_file using key $key_file"
+
+  if [ ! -f "$key_file" ]; then
+    echo "encrypt_file: ERROR - Key file $key_file not found"
+    exit 100
+  fi
+
+  if [ ! -f "$source_file" ]; then
+    echo "encrypt_file: ERROR - Source file $source_file not found"
+    exit 100
+  fi
+
+  if [ -d "$temp_dest" ]; then
+    rm -r ${temp_dest:?}
+  fi
+  mkdir -p $temp_dest/fragments
+
+  split -b 256 "$source_file" $temp_dest/fragments/
+  local fragments
+  fragments=$(ls -b $temp_dest/fragments)
+
+  for fragment in $fragments; do
+    openssl rsautl -encrypt -inkey $key_file -pubin -oaep < "$temp_dest/fragments/$fragment" >> $temp_dest/encrypted
+  done;
+
+  base64 < "$temp_dest/encrypted" > $dest_file
+
+  rm -r ${temp_dest:?}/*
+  echo "encrypt_file: Encrypted $source_file to $dest_file"
+}
+
 before_exit() {
   return_code=$?
   exit_code=1;
