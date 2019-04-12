@@ -71,13 +71,13 @@ bump_semver() {
 
 read_json() {
   if [ "$1" == "" ]; then
-    echo "Usage: shipctl get_json_value JSON_PATH FIELD"
+    echo "Usage: shipctl get_json_value JSON_PATH FIELD" >&2
     exit 99
   fi
   if [ -f "$1" ]; then
     cat "$1" | jq -r '.'"$2"
   else
-    echo "$1: No such file present in this directory"
+    echo "$1: No such file present in this directory" >&2
     exit 99
   fi
 }
@@ -114,12 +114,12 @@ decrypt_file() {
   echo "decrypt_file: Decrypting $source_file using key $key_file"
 
   if [ ! -f "$key_file" ]; then
-    echo "decrypt_file: ERROR - Key file $key_file not found"
+    echo "decrypt_file: ERROR - Key file $key_file not found" >&2
     exit 100
   fi
 
   if [ ! -f "$source_file" ]; then
-    echo "decrypt_file: ERROR - Source file $source_file not found"
+    echo "decrypt_file: ERROR - Source file $source_file not found" >&2
     exit 100
   fi
 
@@ -172,12 +172,12 @@ encrypt_file() {
   echo "encrypt_file: Encrypting $source_file using key $key_file"
 
   if [ ! -f "$key_file" ]; then
-    echo "encrypt_file: ERROR - Key file $key_file not found"
+    echo "encrypt_file: ERROR - Key file $key_file not found" >&2
     exit 100
   fi
 
   if [ ! -f "$source_file" ]; then
-    echo "encrypt_file: ERROR - Source file $source_file not found"
+    echo "encrypt_file: ERROR - Source file $source_file not found" >&2
     exit 100
   fi
 
@@ -198,6 +198,107 @@ encrypt_file() {
 
   rm -r ${temp_dest:?}/*
   echo "encrypt_file: Encrypted $source_file to $dest_file"
+}
+
+decrypt_string() {
+  local source_string=""
+  local key_file=""
+  local dest_file=""
+  local temp_dest='/tmp/shippable/decrypt'
+
+  if [[ $# -gt 0 ]]; then
+    while [[ $# -gt 0 ]]; do
+      ARGUMENT="$1"
+
+      case $ARGUMENT in
+        --key)
+          key_file=$2
+          shift
+          shift
+          ;;
+        *)
+          source_string="$1"
+          shift
+          ;;
+      esac
+    done
+  fi
+
+  if [ ! -f "$key_file" ]; then
+    echo "decrypt_string: ERROR - Key file $key_file not found" >&2
+    exit 100
+  fi
+
+  if [ -d "$temp_dest" ]; then
+    rm -r ${temp_dest:?}
+  fi
+  mkdir -p $temp_dest/fragments
+
+  echo "$source_string" >> $temp_dest/input
+
+  base64 --decode < "$temp_dest/input" > $temp_dest/encrypted.raw
+
+  split -b 256 "$temp_dest/encrypted.raw" $temp_dest/fragments/
+  local fragments
+  fragments=$(ls -b $temp_dest/fragments)
+  for fragment in $fragments; do
+    openssl rsautl -decrypt -inkey "$key_file" -oaep < "$temp_dest/fragments/$fragment" >> "$temp_dest/output"
+  done;
+
+  cat $temp_dest/output
+
+  rm -r ${temp_dest:?}/*
+}
+
+encrypt_string() {
+  local source_string=""
+  local key_file=""
+  local dest_file=""
+  local temp_dest='/tmp/shippable/encrypt'
+
+  if [[ $# -gt 0 ]]; then
+    while [[ $# -gt 0 ]]; do
+      ARGUMENT="$1"
+
+      case $ARGUMENT in
+        --key)
+          key_file=$2
+          shift
+          shift
+          ;;
+        *)
+          source_string=$1
+          shift
+          ;;
+      esac
+    done
+  fi
+
+  if [ ! -f "$key_file" ]; then
+    echo "encrypt_string: ERROR - Key file $key_file not found" >&2
+    exit 100
+  fi
+
+  if [ -d "$temp_dest" ]; then
+    rm -r ${temp_dest:?}
+  fi
+  mkdir -p $temp_dest/fragments
+
+  echo $source_string >> $temp_dest/input
+
+  split -b 256 "$temp_dest/input" $temp_dest/fragments/
+  local fragments
+  fragments=$(ls -b $temp_dest/fragments)
+
+  for fragment in $fragments; do
+    openssl rsautl -encrypt -inkey $key_file -pubin -oaep < "$temp_dest/fragments/$fragment" >> $temp_dest/encrypted
+  done;
+
+  base64 < "$temp_dest/encrypted" > $temp_dest/output
+
+  cat $temp_dest/output
+
+  rm -r ${temp_dest:?}/*
 }
 
 replace_tags() {
