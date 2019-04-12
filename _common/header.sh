@@ -200,6 +200,81 @@ encrypt_file() {
   echo "encrypt_file: Encrypted $source_file to $dest_file"
 }
 
+replace_tags() {
+  # prereqs:
+  #  - envsubst (via gettext)
+  #  - step.json path set in variable STEP_JSON_PATH
+  #  - jq
+  #  - sed
+  #  - grep
+  local TAGS_ONLY=false
+  local ENVS_ONLY=false
+  local STDIN=false
+  local file_array=()
+  for arg in "$@"; do
+    case $arg in
+      --tags-only)
+        TAGS_ONLY=true
+        shift
+        ;;
+      --envs-only)
+        ENVS_ONLY=true
+        shift
+        ;;
+      --stdin)
+        STDIN=true
+        shift
+        ;;
+      *)
+        file_array+=($arg)
+        ;;
+
+    esac
+  done
+  if [ "$STDIN" == "false" ] && [ "${#file_array[@]}" -eq 0 ]; then
+    echo "Error: Missing --stdin option or file list." >&2
+    exit 82
+  fi
+  if [ "$STDIN" == "true" ]; then
+    local stdin_contents=$(IFS="" cat /dev/stdin)
+    if [ "$TAGS_ONLY" == "false" ]; then
+      envsubst <<< "$stdin_contents"
+    fi
+  else
+    mkdir -p /tmp/replace_tags
+    for file in "${file_array[@]}"; do
+      _shippable_replace_file "$file" "$TAGS_ONLY" "$ENVS_ONLY"
+      local replace_rc=$?
+      if [ "$replace_rc" -ne 0 ]; then
+        exit $replace_rc
+      fi
+    done
+  fi
+}
+
+_shippable_replace_file() {
+  local target_file="$1"
+  local TAGS_ONLY="$2"
+  local ENVS_ONLY="$3"
+  if [ -d "$target_file" ]; then
+    echo "Error: replace_tags is not supported for directories" >&2
+    return 82
+  fi
+  if [ ! -f "$target_file" ]; then
+    echo "Error: $target_file is not a valid file path." >&2
+    return 82
+  fi
+  if [ "$TAGS_ONLY" == "false" ]; then
+    local path=$(dirname "$1")
+    if [ "$path" != '.' ]; then
+      mkdir -p "/tmp/replace_tags/$path"
+    fi
+    local temp_file="/tmp/replace_tags/$target_file"
+    envsubst < "$target_file" > "$temp_file"
+    mv "$temp_file" "$path"
+  fi
+}
+
 before_exit() {
   return_code=$?
   exit_code=1;
