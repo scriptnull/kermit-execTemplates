@@ -237,7 +237,6 @@ replace_tags() {
   fi
   if [ "$STDIN" == "true" ]; then
     local stdin_contents=$(IFS="" cat /dev/stdin)
-    echo "replacing stdin"
     if [ "$TAGS_ONLY" == "false" ]; then
       envsubst <<< "$stdin_contents"
     fi
@@ -254,7 +253,6 @@ replace_tags() {
 }
 
 _shippable_replace_file() {
-  mkdir -p /tmp/shippable_replace
   local target_file="$1"
   local TAGS_ONLY="$2"
   local ENVS_ONLY="$3"
@@ -263,19 +261,17 @@ _shippable_replace_file() {
     return 82
   fi
   if [ ! -f "$target_file" ]; then
-    echo "Error: $target_file is not a valid file path."
+    echo "Error: $target_file is not a valid file path." >&2
     return 82
   fi
   if [ "$TAGS_ONLY" == "false" ]; then
-    local path
-    path=$(dirname "$1")
+    local path=$(dirname "$1")
     if [ "$path" != '.' ]; then
       mkdir -p "/tmp/replace_tags/$path"
     fi
-    tempFile="/tmp/replace_tags/$target_file"
-    cp "$target_file" "$tempFile"
-    envsubst < "$target_file" > "$tempFile"
-    mv "/tmp/replace_tags/$target_file" "$path"
+    local temp_file="/tmp/replace_tags/$target_file"
+    envsubst < "$target_file" > "$temp_file"
+    mv "$temp_file" "$path"
   fi
 }
 
