@@ -463,8 +463,8 @@ exec_cmd() {
   export current_cmd_uuid=$cmd_uuid
 
   trap on_error ERR
-
-  eval "$cmd"
+  replaced_cmd=$(replace_tags --tags-only --stdin <<< "$cmd")
+  eval "$replaced_cmd"
   cmd_status=$?
 
   unset current_cmd
