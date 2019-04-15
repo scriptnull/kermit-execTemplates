@@ -274,7 +274,7 @@ _replace_stdin() {
         continue
       fi
       local sed_result=$((echo $json_result|sed -r 's/([\$\.\*\/\[\\^])/\\\1/g'|sed 's/[]]/\[]]/g')>&1)
-      sed_token=$((echo $token|sed -r 's/([\$\.\*\/\[\\^])/\\\1/g'|sed 's/[]]/\[]]/g')>&1)
+      local sed_token=$((echo $token|sed -r 's/([\$\.\*\/\[\\^])/\\\1/g'|sed 's/[]]/\[]]/g')>&1)
       contents=$((echo "$contents"|sed "s/$sed_token/$sed_result/g")>&1)
     done
   fi
@@ -320,7 +320,7 @@ _replace_file() {
         continue
       fi
       local sed_result=$((echo $json_result|sed -r 's/([\$\.\*\/\[\\^])/\\\1/g'|sed 's/[]]/\[]]/g')>&1)
-      sed_token=$((echo $token|sed -r 's/([\$\.\*\/\[\\^])/\\\1/g'|sed 's/[]]/\[]]/g')>&1)
+      local sed_token=$((echo $token|sed -r 's/([\$\.\*\/\[\\^])/\\\1/g'|sed 's/[]]/\[]]/g')>&1)
       sed -i "s/$sed_token/$sed_result/g" $temp_file
     done
   fi
