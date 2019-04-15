@@ -338,14 +338,16 @@ replace_tags() {
   fi
   if [ "$STDIN" == "true" ]; then
     local stdin_contents=$(IFS="" cat /dev/stdin)
-    if [ "$TAGS_ONLY" == "false" ]; then
-      envsubst <<< "$stdin_contents"
+    _replace_stdin "$stdin_contents" "$TAGS_ONLY" "$ENVS_ONLY"
+    local stdin_rc="$?"
+    if [ "$stdin_rc" -ne 0 ]; then
+      exit $stdin_rc
     fi
   else
     mkdir -p /tmp/replace_tags
     for file in "${file_array[@]}"; do
-      _shippable_replace_file "$file" "$TAGS_ONLY" "$ENVS_ONLY"
-      local replace_rc=$?
+      _replace_file "$file" "$TAGS_ONLY" "$ENVS_ONLY"
+      local replace_rc="$?"
       if [ "$replace_rc" -ne 0 ]; then
         exit $replace_rc
       fi
@@ -353,7 +355,37 @@ replace_tags() {
   fi
 }
 
-_shippable_replace_file() {
+_replace_stdin() {
+  local contents="$1"
+  local TAGS_ONLY="$2"
+  local ENVS_ONLY="$3"
+
+  if [ "$ENVS_ONLY" == "false" ]; then
+    local isValid=$(jq type "$STEP_JSON_PATH" || true)
+    if [ -z "$isValid" ]; then
+      echo "Error: step.json is not valid JSON" >&2
+      return 82
+    fi
+    local token_list=($(grep "%%[A-Za-z0-9_\-\.]*%%" -o <<< $contents))
+    for token in "${token_list[@]}"; do
+      local json_path="${token//%%/}"
+      local json_result=$(_search_stepjson "$json_path")
+      if [ -z "$json_result" ]; then
+        echo "Error: match not found in step.json for pattern: $token. Skipping." >&2
+        continue
+      fi
+      local sed_result=$((echo $json_result|sed -r 's/([\$\.\*\/\[\\^])/\\\1/g'|sed 's/[]]/\[]]/g')>&1)
+      local sed_token=$((echo $token|sed -r 's/([\$\.\*\/\[\\^])/\\\1/g'|sed 's/[]]/\[]]/g')>&1)
+      contents=$((echo "$contents"|sed "s/$sed_token/$sed_result/g")>&1)
+    done
+  fi
+  if [ "$TAGS_ONLY" == "false" ]; then
+    contents=$(envsubst <<< "$contents")
+  fi
+  echo "$contents"
+}
+
+_replace_file() {
   local target_file="$1"
   local TAGS_ONLY="$2"
   local ENVS_ONLY="$3"
@@ -365,14 +397,77 @@ _shippable_replace_file() {
     echo "Error: $target_file is not a valid file path." >&2
     return 82
   fi
+  local path=$(dirname "$1")
+  if [ "$path" != '.' ]; then
+    mkdir -p "/tmp/replace_tags/$path"
+  fi
+  local temp_file="/tmp/replace_tags/$target_file"
+  cp $target_file $temp_file
   if [ "$TAGS_ONLY" == "false" ]; then
-    local path=$(dirname "$1")
-    if [ "$path" != '.' ]; then
-      mkdir -p "/tmp/replace_tags/$path"
-    fi
-    local temp_file="/tmp/replace_tags/$target_file"
     envsubst < "$target_file" > "$temp_file"
-    mv "$temp_file" "$path"
+  fi
+  if [ "$ENVS_ONLY" == "false" ]; then
+    local isValid=$(jq type "$STEP_JSON_PATH" || true)
+    if [ -z "$isValid" ]; then
+      echo "Error: step.json is not valid JSON" >&2
+      return 82
+    fi
+    local token_list=($(grep "%%[A-Za-z0-9_\-\.]*%%" -o $temp_file))
+    for token in "${token_list[@]}"; do
+      local json_path="${token//%%/}"
+      local json_result=$(_search_stepjson "$json_path")
+      if [ -z "$json_result" ]; then
+        echo "Error: match not found in step.json for pattern: $token. Skipping." >&2
+        continue
+      fi
+      local sed_result=$((echo $json_result|sed -r 's/([\$\.\*\/\[\\^])/\\\1/g'|sed 's/[]]/\[]]/g')>&1)
+      local sed_token=$((echo $token|sed -r 's/([\$\.\*\/\[\\^])/\\\1/g'|sed 's/[]]/\[]]/g')>&1)
+      sed -i "s/$sed_token/$sed_result/g" $temp_file
+    done
+  fi
+  mv "$temp_file" "$path"
+}
+
+_search_stepjson() {
+  local raw_path="$1"
+  tmp_ifs=$IFS
+  IFS='.' tokenized_json=(${raw_path})
+  IFS=$tmp_ifs
+
+  local type=${tokenized_json[0]}
+  local name=${tokenized_json[1]}
+  local key=${tokenized_json[2]}
+  local count=${#tokenized_json[@]}
+  if [ -z "$type" ] || [ -z "$name" ]; then
+    return
+  fi
+  # general parsing logic:
+  #  if there are 3 tokens, attempt to directly get the path
+  #  if result is null, and it's a resource, check all property bags
+  #  otherwise directly get the raw_path.
+
+  local result=$(jq -r ".${raw_path}" "$STEP_JSON_PATH")
+  if [ "$count" -eq "3" ] && [ "$type" == "resources" ]; then
+    # check main path, then check each property bag.
+    # 1. resourceVersionContentPropertyBag
+    # 2. resourceConfigPropertyBag
+    # 3. systemPropertyBag
+
+    if [ "$result" == "null" ]; then
+      result=$(jq -r ".${type}.${name}.resourceVersionContentPropertyBag.${key}" "$STEP_JSON_PATH")
+      if [ "$result" == "null" ]; then
+        result=$(jq -r ".${type}.${name}.resourceConfigPropertyBag.${key}" "$STEP_JSON_PATH")
+        if [ "$result" == "null" ]; then
+          result=$(jq -r ".${type}.${name}.systemPropertyBag.${key}" "$STEP_JSON_PATH")
+          if [ "$result" == "null" ]; then
+            result=""
+          fi
+        fi
+      fi
+    fi
+  fi
+  if [ "$result" != "null" ]; then
+    echo -n "$result"
   fi
 }
 
