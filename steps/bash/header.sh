@@ -301,9 +301,9 @@ encrypt_string() {
   rm -r ${temp_dest:?}/*
 }
 
-git_changes() {
+compare_git() {
   if [[ $# -le 0 ]]; then
-    echo "Usage: git_changes [--path | --resource]" >&2
+    echo "Usage: compare_git [--path | --resource]" >&2
     exit 99
   fi
 
@@ -346,7 +346,7 @@ git_changes() {
 
   # obtain the path of git repository
   if [[ "$opt_path" == "" ]] && [[ "$opt_resource" == "" ]]; then
-    echo "Usage: get_git_changes [--path|--resource]" >&2
+    echo "Usage: compare_git [--path|--resource]" >&2
     exit 99
   fi
 
@@ -406,6 +406,162 @@ git_changes() {
   popd > /dev/null
 
   echo "$result" | uniq
+}
+
+replicate_resource() {
+  if [ "$1" == "" ] || [ "$2" == "" ]; then
+    echo "Usage: replicate_resource FROM_resource_name TO_resource_name" >&2
+    exit 99
+  fi
+  local resFrom=$1
+  local resTo=$2
+
+  local typeFrom=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceTypeCode")
+  local typeTo=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resTo.resourceTypeCode")
+
+  # declare options
+  local opt_webhook_data_only=""
+  local opt_match_settings=""
+
+  for arg in "$@"
+  do
+    case $arg in
+      --webhook-data-only )
+        opt_webhook_data_only="true"
+        shift
+        ;;
+      --match-settings )
+        opt_match_settings="true"
+        shift
+        ;;
+      --* )
+        echo "Warning: Unrecognized flag \"$arg\""
+        shift
+        ;;
+    esac
+  done
+
+  if [ "$typeFrom" != "$typeTo" ]; then
+    echo "Error: resources must be the same type." >&2
+    exit 99
+  fi
+  if [[ "$typeFrom" != "1000" ]] && [ -n "$opt_match_settings" ]; then
+    echo "Error: --match-settings flag not supported for the specified resources." >&2
+    exit 99
+  fi
+  if [ -z "$(which jq)" ]; then
+    echo "Error: jq is required for metadata copy" >&2
+    exit 99
+  fi
+
+  if [ -n "$opt_match_settings" ]; then
+    opt_webhook_data_only="true"
+    local fromShaData=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData")
+    local shouldReplicate="true"
+    if [ -z "$fromShaData" ]; then
+      echo "Error: FROM resource does not contain shaData." >&2
+      exit 99
+    fi
+    # check for tag-based types.
+    local isGitTag=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.isGitTag")
+    local isRelease=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.isRelease")
+
+    if [ "$isGitTag" == "true" ]; then
+      local gitTagName=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.gitTagName")
+      # check if TO has a tags only/except section. Will be empty string otherwise.
+      local toTagsOnly=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resTo.resourceConfigPropertyBag.tags.only")
+      local toTagsExcept=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resTo.resourceConfigPropertyBag.tags.except")
+
+      if [ -n "$toTagsOnly" ]; then
+        local matchedTag=""
+
+        if [[ $gitTagName =~ $toTagsOnly ]]; then
+          matchedTag="true"
+        fi
+
+        if [ "$matchedTag" != "true" ]; then
+          shouldReplicate=""
+        fi
+      fi
+      if [ -n "$toTagsExcept" ]; then
+        local matchedTag=""
+
+        if [[ $gitTagName =~ $toTagsExcept ]]; then
+          matchedTag="true"
+        fi
+
+        if [ "$matchedTag" == "true" ]; then
+          shouldReplicate=""
+        fi
+      fi
+    elif [ "$isRelease" != "true" ]; then
+      # if it's not a tag, and it's not a release, treat it as a branch.
+      local branchName=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.branchName")
+      if [ -z "$branchName" ]; then
+        echo "Error: no branch name in FROM resource shaData. Cannot replicate."
+        return 0
+      fi
+      local toBranchesOnly=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resTo.resourceConfigPropertyBag.branches.only")
+      local toBranchesExcept=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resTo.resourceConfigPropertyBag.branches.except")
+
+      # check the only/except sections
+      if [ -n "$toBranchesOnly" ]; then
+        local matchedBranch=""
+
+        if [[ $branchName =~ $toBranchesOnly ]]; then
+          matchedBranch="true"
+        fi
+
+        if [ "$matchedBranch" != "true" ]; then
+          shouldReplicate=""
+        fi
+      fi
+      if [ -n "$toBranchesExcept" ]; then
+        local matchedBranch=""
+
+        if [[ $branchName =~ $toBranchesExcept ]]; then
+          matchedBranch="true"
+        fi
+
+        if [ "$matchedBranch" == "true" ]; then
+          shouldReplicate=""
+        fi
+      fi
+    fi
+
+    if [ -z "$shouldReplicate" ]; then
+      echo "FROM shaData does not match TO settings. skipping replicate"
+      return 0
+    fi
+  fi
+
+  # copy values
+  local mdFilePathTo="$STEP_OUTPUT_DIR/resources/$resTo/replicate.json"
+
+  if [ ! -f "$mdFilePathTo" ]; then
+    jq ".resources.$resFrom" $STEP_JSON_PATH > $mdFilePathTo
+  fi
+
+  if [ -z "$opt_webhook_data_only" ]; then
+    local fromVersion=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag")
+    local tmpFilePath="$STEP_OUTPUT_DIR/resources/$resTo/copyTmp.json"
+    cp $mdFilePathTo  $tmpFilePath
+    jq ".resourceVersionContentPropertyBag = $fromVersion" $tmpFilePath > $mdFilePathTo
+    rm $tmpFilePath
+  else
+    # update only the shaData
+    local fromShaData=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData")
+    local tmpFilePath="$STEP_OUTPUT_DIR/resources/$resTo/copyTmp.json"
+
+    if [ "$fromShaData" != "null" ]; then
+      cp $mdFilePathTo  $tmpFilePath
+      jq ".resourceVersionContentPropertyBag.shaData = $fromShaData" $tmpFilePath > $mdFilePathTo
+    fi
+
+    if [ -f "$tmpFilePath" ]; then
+      rm $tmpFilePath
+    fi
+  fi
 }
 
 before_exit() {
