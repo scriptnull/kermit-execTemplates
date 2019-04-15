@@ -71,7 +71,7 @@ bump_semver() {
 
 read_json() {
   if [ "$1" == "" ]; then
-    echo "Usage: shipctl get_json_value JSON_PATH FIELD" >&2
+    echo "Usage: read_json JSON_PATH FIELD" >&2
     exit 99
   fi
   if [ -f "$1" ]; then
@@ -469,6 +469,113 @@ _search_stepjson() {
   if [ "$result" != "null" ]; then
     echo -n "$result"
   fi
+}
+
+git_changes() {
+  if [[ $# -le 0 ]]; then
+    echo "Usage: git_changes [--path | --resource]" >&2
+    exit 99
+  fi
+
+  # declare options
+  local opt_path=""
+  local opt_resource=""
+  local opt_depth=0
+  local opt_directories_only=false
+  local opt_commit_range=""
+
+  for arg in "$@"
+  do
+    case $arg in
+      --path)
+      opt_path="$2"
+      shift
+      shift
+      ;;
+      --resource)
+      opt_resource="$2"
+      shift
+      shift
+      ;;
+      --depth)
+      opt_depth="$2"
+      shift
+      shift
+      ;;
+      --directories-only)
+      opt_directories_only=true
+      shift
+      ;;
+      --commit-range)
+      opt_commit_range="$2"
+      shift
+      shift
+      ;;
+    esac
+  done
+
+  # obtain the path of git repository
+  if [[ "$opt_path" == "" ]] && [[ "$opt_resource" == "" ]]; then
+    echo "Usage: get_git_changes [--path|--resource]" >&2
+    exit 99
+  fi
+
+  # set file path of git repository
+  local git_repo_path="$opt_path"
+  if [[ "$git_repo_path" == "" ]]; then
+    local dependency_type=$(cat "$STEP_JSON_PATH" | jq -r '.'"$2")
+    git_repo_path="$STEP_DEPENDENCY_STATE_DIR/resources/$opt_resource/gitRepo"
+  fi
+
+  if [[ ! -d "$git_repo_path/.git" ]]; then
+    echo "git repository not found at path: $git_repo_path" >&2
+    exit 99
+  fi
+
+  # set default commit range
+  # for CI
+  local commit_range
+
+  # for runSh with IN: gitRepo
+  if [[ "$opt_resource" != "" ]]; then
+    # for runSh with IN: gitRepo commits
+    local current_commit_sha=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.commitSha")
+    local before_commit_sha=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.beforeCommitSha")
+    commit_range="$before_commit_sha..$current_commit_sha"
+
+    # for runSh with IN: gitRepo pull requests
+    local is_pull_request=local current_commit_sha=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.isPullRequest")
+    if [[ "$is_pull_request" == "true" ]]; then
+      local current_commit_sha=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.commitSha")
+      local base_branch=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.pullRequestBaseBranch")
+      commit_range="origin/$base_branch...$current_commit_sha"
+    fi
+  fi
+
+  if [[ "$opt_commit_range" != "" ]]; then
+    commit_range="$opt_commit_range"
+  fi
+  if [[ "$commit_range" == "" ]]; then
+    echo "Unknown commit range. use --commit-range." >&2
+    exit 99
+  fi
+
+  local result=""
+  pushd $git_repo_path > /dev/null
+    result=$(git diff --name-only $commit_range)
+
+    if [[ "$opt_directories_only" == true ]]; then
+      result=$(git diff --dirstat $commit_range | awk '{print $2}')
+    fi
+
+    if [[ $opt_depth -gt 0 ]]; then
+      if [[ result != "" ]]; then
+        result=$(echo "$result" | awk -F/ -v depth=$opt_depth '{print $depth}')
+      fi
+    fi
+  popd > /dev/null
+
+  echo "$result" | uniq
 }
 
 before_exit() {
