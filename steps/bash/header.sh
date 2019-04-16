@@ -564,6 +564,36 @@ replicate_resource() {
   fi
 }
 
+start_group() {
+  # First argument is the name of the group
+  # Second argument is whether the group should be visible or not
+  export group_name=$1
+  export is_shown=true
+  export group_close=true
+  if [ ! -z "$2" ]; then
+    is_shown=$2
+  fi
+
+  # TODO: use shipctl to compute this
+  export group_uuid=$(cat /proc/sys/kernel/random/uuid)
+  group_start_timestamp=`date +"%s"`
+  echo ""
+  echo "__SH__GROUP__START__|{\"type\":\"grp\",\"sequenceNumber\":\"$group_start_timestamp\",\"id\":\"$group_uuid\",\"is_shown\":\"$is_shown\"}|$group_name"
+  export group_status=0
+
+  export current_grp=$group_name
+  export current_grp_uuid=$group_uuid
+
+}
+
+stop_group() {
+  unset current_grp
+  unset current_grp_uuid
+
+  group_end_timestamp=`date +"%s"`
+  echo "__SH__GROUP__END__|{\"type\":\"grp\",\"sequenceNumber\":\"$group_end_timestamp\",\"id\":\"$group_uuid\",\"is_shown\":\"$is_shown\",\"exitcode\":\"$group_status\"}|$group_name"
+}
+
 before_exit() {
   return_code=$?
   exit_code=1;

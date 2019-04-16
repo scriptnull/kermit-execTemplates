@@ -1,3 +1,1 @@
-}
-
-exec_grp "export_envs" "Exporting envs" "false"
+stop_group

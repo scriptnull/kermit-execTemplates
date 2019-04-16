@@ -1,3 +1,1 @@
-}
-
-exec_grp "onExecute" "Executing step" true
+stop_group
