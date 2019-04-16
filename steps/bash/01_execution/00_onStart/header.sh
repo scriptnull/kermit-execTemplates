@@ -1,1 +1,1 @@
-onStart() {
+start_group "onStart" "true"

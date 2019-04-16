@@ -1,3 +1,1 @@
-}
-
-exec_grp "onStart" "onStart" "true"
+stop_group
