@@ -759,3 +759,5 @@ exec_grp() {
 }
 
 trap before_exit EXIT
+
+export SKIP_BEFORE_EXIT_METHODS=false

@@ -9,7 +9,7 @@ boot_container() {
       -v $STEP_DEPENDENCY_STATE_DIR:$STEP_DEPENDENCY_STATE_DIR \
       -v $STEP_OUTPUT_DIR:$STEP_OUTPUT_DIR:rw \
       -w $(pwd) -d --init --rm --privileged --name $(cat $STEP_JSON_PATH | jq .step.name)"
-    local docker_run_cmd="docker run $default_docker_options \
+    local docker_run_cmd="docker run $DOCKER_CONTAINER_OPTIONS $default_docker_options \
       -e RUNNING_IN_CONTAINER=$RUNNING_IN_CONTAINER \
       $DOCKER_IMAGE \
       bash -c \"$REQEXEC_BIN_PATH $STEPLET_SCRIPT_PATH $PIPLELINES_RUN_STATUS_DIR/step.env\""
@@ -40,7 +40,8 @@ if [ -z $RUNNING_IN_CONTAINER ]; then
   export RUNNING_IN_CONTAINER=false;
 fi
 if ! $RUNNING_IN_CONTAINER; then
-  export DOCKER_IMAGE="%%context.image%%"
+  export DOCKER_IMAGE="%%context.imageName%%"
+  export DOCKER_CONTAINER_OPTIONS="%%context.containerOptions%%"
   SKIP_BEFORE_EXIT_METHODS=true
   RUNNING_IN_CONTAINER=true
   boot_container
