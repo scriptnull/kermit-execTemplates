@@ -564,6 +564,555 @@ replicate_resource() {
   fi
 }
 
+send_notification() {
+  if [[ $# -le 0 ]]; then
+    echo "Usage: send_notification INTEGRATION [OPTIONS]" >&2
+    exit 99
+  fi
+
+  # parse and validate the resource details
+  local i_name="$1"
+  shift
+
+  local integration_name=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.name")
+  if [ -z "$integration_name" ]; then
+    echo "Error: integration data not found for $i_name" >&2
+    exit 99
+  fi
+
+  local i_mastername=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.masterName")
+
+  # declare options and defaults, and parse arguments
+
+  export opt_color="$NOTIFY_COLOR"
+  if [ -z "$opt_color" ]; then
+    opt_color="#65cea7"
+  fi
+
+  export opt_icon_url="$NOTIFY_ICON_URL"
+  if [ -z "$opt_icon_url" ]; then
+    opt_icon_url=""
+  fi
+
+  export opt_payload="$NOTIFY_PAYLOAD"
+  if [ -z "$opt_payload" ]; then
+    opt_payload=""
+  fi
+
+  export opt_pretext="$NOTIFY_PRETEXT"
+  if [ -z "$opt_pretext" ]; then
+    opt_pretext="`date`\n"
+  fi
+
+  export opt_recipient="$NOTIFY_RECIPIENT"
+  if [ -z "$opt_recipient" ]; then
+    opt_recipient=""
+  fi
+
+  export opt_username="$NOTIFY_USERNAME"
+  if [ -z "$opt_username" ]; then
+    opt_username="Shippable"
+  fi
+
+  export opt_password="$NOTIFY_PASSWORD"
+  if [ -z "$opt_password" ]; then
+    opt_password="none"
+  fi
+
+  export opt_type="$NOTIFY_TYPE"
+  if [ -z "$opt_type" ]; then
+    opt_type=""
+  fi
+
+  export opt_revision="$NOTIFY_REVISION"
+  if [ -z "$opt_revision" ]; then
+    opt_revision=""
+  fi
+
+  export opt_description="$NOTIFY_DESCRIPTION"
+  if [ -z "$opt_description" ]; then
+    opt_description=""
+  fi
+
+  export opt_changelog="$NOTIFY_CHANGELOG"
+  if [ -z "$opt_changelog" ]; then
+    opt_changelog=""
+  fi
+
+  export opt_project_id="$NOTIFY_PROJECT_ID"
+  if [ -z "$opt_project_id" ]; then
+    opt_project_id=""
+  fi
+
+  export opt_environment="$NOTIFY_ENVIRONMENT"
+  if [ -z "$opt_environment" ]; then
+    opt_environment=""
+  fi
+
+  export opt_email="$NOTIFY_EMAIL"
+  if [ -z "$opt_email" ]; then
+    opt_email=""
+  fi
+
+  export opt_repository="$NOTIFY_REPOSITORY"
+  if [ -z "$opt_repository" ]; then
+    opt_repository=""
+  fi
+
+  export opt_version="$NOTIFY_VERSION"
+  if [ -z "$opt_version" ]; then
+    opt_version=""
+  fi
+
+  export opt_summary="$NOTIFY_SUMMARY"
+  if [ -z "$opt_summary" ]; then
+    opt_summary=""
+  fi
+
+  export opt_attach_file="$NOTIFY_ATTACH_FILE"
+  if [ -z "$opt_attach_file" ]; then
+    opt_attach_file=""
+  fi
+
+  export opt_text="$NOTIFY_TEXT"
+  if [ -z "$opt_text" ]; then
+    # set up default text
+    local step_name=$(cat "$STEP_JSON_PATH" | jq -r ."step.name")
+    local step_id=$(cat "$STEP_JSON_PATH" | jq -r ."step.id")
+    opt_text="${step_name} #${step_id}"
+  fi
+
+  for arg in "$@"
+  do
+    case $arg in
+      --color)
+        opt_color="$2"
+        shift
+        shift
+        ;;
+      --icon_url)
+        opt_icon_url="$2"
+        shift
+        shift
+        ;;
+      --payload)
+        opt_payload="$2"
+        shift
+        shift
+        ;;
+      --pretext)
+        opt_pretext="$2"
+        shift
+        shift
+        ;;
+      --recipient)
+        opt_recipient="$2"
+        shift
+        shift
+        ;;
+      --text)
+        opt_text="$2"
+        shift
+        shift
+        ;;
+      --username)
+        opt_username="$2"
+        shift
+        shift
+        ;;
+      --password)
+        opt_password="$2"
+        shift
+        shift
+        ;;
+      --type)
+        opt_type="$2"
+        shift
+        shift
+        ;;
+      --revision)
+        opt_revision="$2"
+        shift
+        shift
+        ;;
+      --description)
+        opt_description="$2"
+        shift
+        shift
+        ;;
+      --changelog)
+        opt_changelog="$2"
+        shift
+        shift
+        ;;
+      --appId)
+        opt_appId="$2"
+        shift
+        shift
+        ;;
+      --appName)
+        opt_appName="$2"
+        shift
+        shift
+        ;;
+      --project-id)
+        opt_project_id="$2"
+        shift
+        shift
+        ;;
+      --environment)
+        opt_environment="$2"
+        shift
+        shift
+        ;;
+      --email)
+        opt_email="$2"
+        shift
+        shift
+        ;;
+      --repository)
+        opt_repository="$2"
+        shift
+        shift
+        ;;
+      --version)
+        opt_version="$2"
+        shift
+        shift
+        ;;
+      --summary)
+        opt_summary="$2"
+        shift
+        shift
+        ;;
+      --attach-file)
+        opt_attach_file="$2"
+        shift
+        shift
+        ;;
+    esac
+  done
+
+  if [ "$i_mastername" == "newRelicKey" ]; then
+    _notify_newrelic
+  elif [ "$i_mastername" == "airBrakeKey" ]; then
+    _notify_airbrake
+  elif [ "$i_mastername" == "jira" ]; then
+    _notify_jira
+  else
+    local curl_auth=""
+
+    # set up the default payloads once options have been parsed
+    local default_slack_payload="{\"username\":\"\${opt_username}\",\"attachments\":[{\"pretext\":\"\${opt_pretext}\",\"text\":\"\${opt_text}\",\"color\":\"\${opt_color}\"}],\"channel\":\"\${opt_recipient}\",\"icon_url\":\"\${opt_icon_url}\"}"
+    local default_webhook_payload="{\"username\":\"\${opt_username}\",\"pretext\":\"\${opt_pretext}\",\"text\":\"\${opt_text}\",\"color\":\"\${opt_color}\",\"recipient\":\"\${opt_recipient}\",\"icon_url\":\"\${opt_icon_url}\"}"
+    local default_payload=""
+
+    local i_endpoint=""
+
+    # set up type-unique options
+    case "$i_mastername" in
+      "slackKey" )
+        i_endpoint=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.webhookUrl")
+        default_payload="$default_slack_payload"
+        ;;
+      "outgoingWebhook" )
+        i_endpoint=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.webhookURL")
+        local i_authorization=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.authorization")
+        if [ -n "$i_authorization" ]; then
+          curl_auth="-H authorization:'$i_authorization'"
+        fi
+        default_payload="$default_webhook_payload"
+        ;;
+      *)
+        echo "Error: unsupported notification type: $i_mastername" >&2
+        exit 99
+        ;;
+    esac
+
+    if [ -z "$i_endpoint" ]; then
+      echo "Error: no URL found in resource $i_name" >&2
+      exit 99
+    fi
+
+    if [ -n "$opt_payload" ]; then
+      if [ ! -f $opt_payload ]; then
+        echo "Error: file not found at path: $opt_payload" >&2
+        exit 99
+      fi
+      local isValid=$(jq type $opt_payload || true)
+      if [ -z "$isValid" ]; then
+        echo "Error: payload is not valid JSON" >&2
+        exit 99
+      fi
+      _post_curl "$opt_payload" "$curl_auth" "$i_endpoint"
+    else
+      echo $default_payload > /tmp/payload.json
+      opt_payload=/tmp/payload.json
+      replace_envs $opt_payload
+
+      local isValid=$(jq type $opt_payload || true)
+      if [ -z "$isValid" ]; then
+        echo "Error: payload is not valid JSON" >&2
+        exit 99
+      fi
+      if [ -n "$opt_recipient" ]; then
+        echo "sending notification to \"$opt_recipient\""
+      fi
+      _post_curl "$opt_payload" "$curl_auth" "$i_endpoint"
+    fi
+  fi
+}
+
+_notify_newrelic() {
+  local curl_auth=""
+  local appId=""
+  local r_endpoint=""
+  local default_post_deployment_payload="{\"\${opt_type}\":{\"revision\":\"\${opt_revision}\",\"description\":\"\${opt_description}\",\"user\":\"\${opt_username}\",\"changelog\":\"\${opt_changelog}\"}}"
+  local default_get_appid_payload="--data-urlencode 'filter[name]=$opt_appName' -d 'exclude_links=true'"
+  local default_get_payload=""
+  local default_post_payload=""
+  local i_authorization=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.token")
+
+  if [ -n "$i_authorization" ]; then
+    curl_auth="-H X-Api-Key:'$i_authorization'"
+  fi
+
+  local i_url=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.url")
+
+  if [ -z "$i_url" ]; then
+    echo "Error: no url found in resource $i_name" >&2
+    exit 99
+  fi
+
+  if [ -z "$opt_appId" ] && [ -z "$opt_appName" ]; then
+    echo "Error: --appId or --appName should be present in send_notification" >&2
+    exit 99
+  fi
+  # get the appId from the appName by making a get request to newrelic, if appId is not present
+  appId="$opt_appId"
+  if [ -z "$appId" ]; then
+    r_endpoint="$i_url/applications.json"
+    default_get_payload="$default_get_appid_payload"
+    local applications=$(_get_curl "$default_get_payload" "$curl_auth" "$r_endpoint")
+    appId=$(echo $applications | jq ".applications[0].id // empty")
+  fi
+
+  # record the deployment
+  if [ -z "$appId" ]; then
+    echo "Error: Unable to find an application on NewRelic" >&2
+    exit 99
+  fi
+  r_endpoint="$i_url/applications/$appId/deployments.json"
+  default_post_payload="$default_post_deployment_payload"
+
+  if [ -n "$opt_payload" ]; then
+    if [ ! -f $opt_payload ]; then
+      echo "Error: file not found at path: $opt_payload" >&2
+      exit 99
+    fi
+    local isValid=$(jq type $opt_payload || true)
+    if [ -z "$isValid" ]; then
+      echo "Error: payload is not valid JSON" >&2
+      exit 99
+    fi
+    echo "Recording deployments on NewRelic for appID: $appId"
+
+    local deployment=$(_post_curl "$opt_payload" "$curl_auth" "$r_endpoint")
+    local deploymentId=$(echo $deployment | jq ".deployment.id")
+    if [ -z "$deploymentId" ]; then
+      echo "Error: $deployment" >&2
+      exit 99
+    else
+      echo "Deployment Id: $deploymentId"
+    fi
+  else
+    if [ -z "$opt_type" ]; then
+      echo "Error: --type is missing in send_notification" >&2
+      exit 99
+    fi
+    if [ -z "$opt_revision" ]; then
+      echo "Error: --revision is missing in send_notification" >&2
+      exit 99
+    fi
+    echo $default_post_payload > /tmp/payload.json
+    opt_payload=/tmp/payload.json
+    replace_envs $opt_payload
+    local isValid=$(jq type $opt_payload || true)
+    if [ -z "$isValid" ]; then
+      echo "Error: payload is not valid JSON" >&2
+      exit 99
+    fi
+    echo "Recording deployments on NewRelic for appID: $appId"
+
+    local deployment=$(_post_curl "$opt_payload" "$curl_auth" "$r_endpoint")
+    local deploymentId=$(echo $deployment | jq ".deployment.id")
+    if [ -z "$deploymentId" ]; then
+      echo "Error: $deployment" >&2
+      exit 99
+    else
+      echo "Deployment Id: $deploymentId"
+    fi
+  fi
+}
+
+_notify_airbrake() {
+  local curl_auth=""
+  local obj_type=""
+  local project_id="${opt_project_id}"
+  local i_endpoint=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.url")
+  local i_token=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.token")
+
+  local default_airbrake_payload="{\"environment\":\"\${opt_environment}\",\"username\":\"\${opt_username}\",\"email\":\"\${opt_email}\",\"repository\":\"\${opt_repository}\",\"revision\":\"\${opt_revision}\",\"version\":\"\${opt_version}\"}"
+
+  if [ -z "$opt_type" ]; then
+    echo "Error: --type is missing in send_notification" >&2
+    exit 99
+  fi
+  if [ "$opt_type" == "deploy" ]; then
+    obj_type="deploys"
+  else
+    echo "Error: unsupported type value $opt_type" >&2
+    exit 99
+  fi
+
+  if [ -z "$project_id" ]; then
+    echo "Error: missing project ID, --project-id is required for Airbrake" >&2
+    exit 99
+  fi
+
+  i_endpoint="${i_endpoint%/}"
+  i_endpoint="${i_endpoint}/projects/${project_id}/${obj_type}?key=${i_token}"
+
+  if [ -n "$opt_payload" ]; then
+    if [ ! -f $opt_payload ]; then
+      echo "Error: file not found at path: $opt_payload" >&2
+      exit 99
+    fi
+  else
+    echo $default_airbrake_payload > /tmp/payload.json
+    opt_payload=/tmp/payload.json
+    replace_envs $opt_payload
+  fi
+
+  local isValid=$(jq type $opt_payload || true)
+  if [ -z "$isValid" ]; then
+    echo "Error: payload is not valid JSON" >&2
+    exit 99
+  fi
+
+  echo "Requesting Airbrake project: $project_id"
+
+  _post_curl "$opt_payload" "$curl_auth" "$i_endpoint"
+}
+
+_notify_jira() {
+  local i_username=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.username")
+  local i_endpoint=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.url")
+  local i_token=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.token")
+  local default_jira_payload="{\"fields\":{\"project\":{\"key\":\"\${opt_project_id}\"},\"summary\":\"\${opt_summary}\",\"description\":\"\${opt_description}\",\"issuetype\":{\"name\":\"\${opt_type}\"}}}"
+
+  if [ -z "$(which base64)" ]; then
+    echo "Error: base64 utility is not present, but is required for Jira authorization" >&2
+    exit 99
+  fi
+  if [ -z "$i_endpoint" ]; then
+    echo "Error: missing endpoint. Please check your integration." >&2
+    exit 99
+  fi
+  if [ -z "$i_token" ]; then
+    echo "Error: missing token. Please check your integration." >&2
+    exit 99
+  fi
+  if [ -z "$i_username" ]; then
+    echo "Error: missing username. Please check your integration." >&2
+    exit 99
+  fi
+  if [ -z "$opt_project_id" ]; then
+    echo "Error: missing project identifier. Please use --project-id." >&2
+    exit 99
+  fi
+  if [ -z "$opt_type" ]; then
+    echo "Error: missing issue type. Please use --type." >&2
+    exit 99
+  fi
+  if [ -z "$opt_summary" ]; then
+    echo "Error: missing summary. Please use --summary." >&2
+    exit 99
+  fi
+
+  local encoded_auth=$(echo -n "$i_username:$i_token" | base64)
+
+  echo $default_jira_payload > /tmp/payload.json
+  opt_payload=/tmp/payload.json
+  replace_envs $opt_payload
+
+  local isValid=$(jq type $opt_payload || true)
+  if [ -z "$isValid" ]; then
+    echo "Error: payload is not valid JSON" >&2
+    exit 99
+  fi
+
+  result=$(curl -XPOST -sS \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Basic $encoded_auth" \
+    "$i_endpoint/issue" \
+    -d @$opt_payload)
+  echo $result
+
+  if [ -n "$opt_attach_file" ]; then
+    if [ -f "$opt_attach_file" ]; then
+
+      issueKey=$(jq -r '.key' <<< $result)
+      curl -sS -XPOST \
+        -H "X-Atlassian-Token: nocheck" \
+        -H "Authorization: Basic $encoded_auth" \
+        -F "file=@$opt_attach_file" \
+        "$i_endpoint/issue/$issueKey/attachments"
+    else
+      echo "Error: --attach-file option refers to a file that doesn't exist" >&2
+      exit 99
+    fi
+  fi
+}
+
+_post_curl() {
+  local payload=$1
+  local auth=$2
+  local endpoint=$3
+
+  local curl_cmd="curl -XPOST -sS -H content-type:'application/json' $auth $endpoint -d @$payload"
+  eval $curl_cmd
+  echo ""
+}
+
+_get_curl() {
+  local payload=$1
+  local auth=$2
+  local endpoint=$3
+
+  local curl_cmd="curl -s $auth $endpoint $payload"
+  eval $curl_cmd
+  echo ""
+}
+
+replace_envs() {
+  local temp_dest=/tmp/shippable/replace_envs
+  mkdir -p $temp_dest
+  for file in "$@"; do
+    local path
+    path=$(dirname "$file")
+    if [ -d "$file" ]; then
+      echo "replace_envs is not supported for directories"
+      return 82
+    fi
+    if [ "$path" != '.' ]; then
+      mkdir -p "$temp_dest/$path"
+    fi
+    envsubst < "$file" > "$temp_dest/$file"
+    mv "$temp_dest/$file" "$file"
+  done
+}
+
 start_group() {
   # First argument is the name of the group
   # Second argument is whether the group should be visible or not
