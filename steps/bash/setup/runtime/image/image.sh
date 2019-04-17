@@ -40,7 +40,7 @@ if [ -z $RUNNING_IN_CONTAINER ]; then
   export RUNNING_IN_CONTAINER=false;
 fi
 if ! $RUNNING_IN_CONTAINER; then
-  export DOCKER_IMAGE="%%context.imageName%%"
+  export DOCKER_IMAGE="%%context.imageName%%:%%context.imageTag%%"
   export DOCKER_CONTAINER_OPTIONS="%%context.containerOptions%%"
   SKIP_BEFORE_EXIT_METHODS=true
   RUNNING_IN_CONTAINER=true
