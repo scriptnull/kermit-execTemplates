@@ -1149,6 +1149,109 @@ write_output() {
   done
 }
 
+switch_env() {
+  if [[ $# -le 1 ]]; then
+    echo "Usage: switch_env LANGUAGE VERSION" >&2
+    exit 99
+  fi
+
+  local language="$1"
+  local version="$2"
+
+  if [ "$language" == "java" ]; then
+    _set_jdk $version
+  else
+    echo "Error: unsupported language: $language" >&2
+    exit 99
+  fi
+}
+
+_export_java_path() {
+  directory=$1;
+  if [ -d "$directory" ]; then
+    export JAVA_HOME="$directory";
+    export PATH="$PATH:$directory/bin";
+  else
+    echo "$2 is not supported on this image" >&2
+    exit 99
+  fi
+}
+
+_set_java_path() {
+  java_path=$1
+  if [ -f $java_path ]; then
+    sudo update-alternatives --set java $java_path
+  else
+    echo "$2 is not supported on this image" >&2
+    exit 99
+  fi
+}
+
+_set_javac_path() {
+  javac_path=$1
+  if [ -f $javac_path ]; then
+    sudo update-alternatives --set javac $javac_path
+  else
+    echo "$2 is not supported on this image" >&2
+    exit 99
+  fi
+}
+
+_set_jdk() {
+  local jdk_version=$1
+  if [ "$jdk_version" == "" ]; then
+    echo "Usage: _set_jdk openjdk9" >&2
+    exit 1
+  fi
+
+  if [ "$jdk_version" == "openjdk7" ]; then
+    _export_java_path "/usr/lib/jvm/java-7-openjdk-amd64" "$jdk_version";
+    _set_java_path "/usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java" "$jdk_version";
+    _set_javac_path "/usr/lib/jvm/java-7-openjdk-amd64/bin/javac" "$jdk_version";
+  elif [ "$jdk_version" == "openjdk8" ]; then
+    _export_java_path "/usr/lib/jvm/java-8-openjdk-amd64" "$jdk_version";
+    _set_java_path "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java" "$jdk_version";
+    _set_javac_path "/usr/lib/jvm/java-8-openjdk-amd64/bin/javac" "$jdk_version";
+  elif [ "$jdk_version" == "openjdk9" ]; then
+    _export_java_path "/usr/lib/jvm/java-9-openjdk-amd64" "$jdk_version";
+    _set_java_path "/usr/lib/jvm/java-9-openjdk-amd64/bin/java" "$jdk_version";
+    _set_javac_path "/usr/lib/jvm/java-9-openjdk-amd64/bin/javac" "$jdk_version";
+  elif [ "$jdk_version" == "openjdk10" ]; then
+    _export_java_path "/usr/lib/jvm/java-10-openjdk-amd64" "$jdk_version";
+    _set_java_path "/usr/lib/jvm/java-10-openjdk-amd64/bin/java" "$jdk_version";
+    _set_javac_path "/usr/lib/jvm/java-10-openjdk-amd64/bin/javac" "$jdk_version";
+  elif [ "$jdk_version" == "openjdk11" ]; then
+    _export_java_path "/usr/lib/jvm/java-11-openjdk-amd64" "$jdk_version";
+    _set_java_path "/usr/lib/jvm/java-11-openjdk-amd64/bin/java" "$jdk_version";
+    _set_javac_path "/usr/lib/jvm/java-11-openjdk-amd64/bin/javac" "$jdk_version";
+  elif [ "$jdk_version" == "oraclejdk7" ]; then
+    _export_java_path "/usr/lib/jvm/java-7-oracle" "$jdk_version";
+    _set_java_path "/usr/lib/jvm/java-7-oracle/jre/bin/java" "$jdk_version";
+    _set_javac_path "/usr/lib/jvm/java-7-oracle/bin/javac" "$jdk_version";
+  elif [ "$jdk_version" == "oraclejdk8" ]; then
+    _export_java_path "/usr/lib/jvm/java-8-oracle" "$jdk_version";
+    _set_java_path "/usr/lib/jvm/java-8-oracle/jre/bin/java" "$jdk_version";
+    _set_javac_path "/usr/lib/jvm/java-8-oracle/bin/javac" "$jdk_version";
+  elif [ "$jdk_version" == "oraclejdk9" ]; then
+    _export_java_path "/usr/lib/jvm/java-9-oracle" "$jdk_version";
+    _set_java_path "/usr/lib/jvm/java-9-oracle/bin/java" "$jdk_version";
+    _set_javac_path "/usr/lib/jvm/java-9-oracle/bin/javac" "$jdk_version";
+  elif [ "$jdk_version" == "oraclejdk10" ]; then
+    _export_java_path "/usr/lib/jvm/java-10-oracle" "$jdk_version";
+    _set_java_path "/usr/lib/jvm/java-10-oracle/bin/java" "$jdk_version";
+    _set_javac_path "/usr/lib/jvm/java-10-oracle/bin/javac" "$jdk_version";
+  elif [ "$jdk_version" == "oraclejdk11" ]; then
+    export_java_path "/usr/lib/jvm/java-11-oraclejdk-amd64" "$jdk_version";
+    _set_java_path "/usr/lib/jvm/java-11-oraclejdk-amd64/bin/java" "$jdk_version";
+    _set_javac_path "/usr/lib/jvm/java-11-oraclejdk-amd64/bin/javac" "$jdk_version";
+  else
+    echo "The version of the JDK you are trying to use is not supported. The supported versions include openjdk7, openjdk8, openjdk9, openjdk10, openjdk11, oraclejdk8, oraclejdk9, oraclejdk10, oraclejdk11" >&2
+    exit 99
+  fi
+
+  java -version
+}
+
 start_group() {
   # First argument is the name of the group
   # Second argument is whether the group should be visible or not
