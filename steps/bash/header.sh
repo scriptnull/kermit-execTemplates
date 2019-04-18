@@ -1138,47 +1138,15 @@ write_output() {
     touch $env_file_path
   fi
 
-  local value_separator=" "
-
-  for arg in "$@"
-  do
-    case $arg in
-      --separator)
-        value_separator="$2"
-        shift
-        shift
-        ;;
-      *)
-        break
-        ;;
-    esac
+  while [ $# -gt 0 ]; do
+    if [[ "$1" == *=* ]]; then
+      echo "$1" >> $env_file_path
+    else
+      echo "$1 is not a valid key-value pair."
+      echo "Please make sure the key and value are separated by an =."
+    fi
+    shift
   done
-
-  if [[ $value_separator == " " ]]; then
-    while [ $# -gt 0 ]; do
-      case $1 in
-        *)
-          echo "$1=\"$2\"" >> $env_file_path
-          shift
-          shift
-          ;;
-      esac
-    done
-  else
-    OIFS=$IFS
-    IFS=$value_separator
-    local key=""
-
-    for i in $(echo "$@"); do
-      if [[ $key == "" ]]; then
-        key="$i"
-      else
-        echo "$key=\"$i\"" >> $env_file_path
-        key=""
-      fi
-    done
-    IFS=$OIFS
-  fi
 }
 
 start_group() {
