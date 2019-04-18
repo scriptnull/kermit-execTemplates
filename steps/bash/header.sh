@@ -354,7 +354,8 @@ compare_git() {
   local git_repo_path="$opt_path"
   if [[ "$git_repo_path" == "" ]]; then
     local dependency_type=$(cat "$STEP_JSON_PATH" | jq -r '.'"$2")
-    git_repo_path="$STEP_DEPENDENCY_STATE_DIR/resources/$opt_resource/gitRepo"
+    local resource_directory=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourcePath")
+    git_repo_path="$resource_directory/gitRepo"
   fi
 
   if [[ ! -d "$git_repo_path/.git" ]]; then
@@ -536,7 +537,8 @@ replicate_resource() {
   fi
 
   # copy values
-  local mdFilePathTo="$STEP_OUTPUT_DIR/resources/$resTo/replicate.json"
+  local resource_directory=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourcePath")
+  local mdFilePathTo="$resource_directory/replicate.json"
 
   if [ ! -f "$mdFilePathTo" ]; then
     jq ".resources.$resFrom" $STEP_JSON_PATH > $mdFilePathTo
@@ -544,14 +546,14 @@ replicate_resource() {
 
   if [ -z "$opt_webhook_data_only" ]; then
     local fromVersion=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag")
-    local tmpFilePath="$STEP_OUTPUT_DIR/resources/$resTo/copyTmp.json"
+    local tmpFilePath="$resource_directory/copyTmp.json"
     cp $mdFilePathTo  $tmpFilePath
     jq ".resourceVersionContentPropertyBag = $fromVersion" $tmpFilePath > $mdFilePathTo
     rm $tmpFilePath
   else
     # update only the shaData
     local fromShaData=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData")
-    local tmpFilePath="$STEP_OUTPUT_DIR/resources/$resTo/copyTmp.json"
+    local tmpFilePath="$resource_directory/copyTmp.json"
 
     if [ "$fromShaData" != "null" ]; then
       cp $mdFilePathTo  $tmpFilePath
@@ -1111,6 +1113,72 @@ replace_envs() {
     envsubst < "$file" > "$temp_dest/$file"
     mv "$temp_dest/$file" "$file"
   done
+}
+
+write_output() {
+  if [ "$1" == "" ] || [ "$2" == "" ]; then
+    echo "Usage: write_output RESOURCE_NAME VALUES"
+    exit 99
+  fi
+
+  local resource_name=$1
+  shift
+
+  local resource_directory=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resource_name.resourcePath")
+
+  if [ -z "$resource_directory" ]; then
+    echo "Error: resource data not found for $resource_name" >&2
+    exit 99
+  fi
+
+  local env_file_path="$resource_directory/$resource_name.env"
+
+  if [ ! -f "$env_file_path" ]; then
+    echo "Creating .env file $env_file_path"
+    touch $env_file_path
+  fi
+
+  local value_separator=" "
+
+  for arg in "$@"
+  do
+    case $arg in
+      --separator)
+        value_separator="$2"
+        shift
+        shift
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+
+  if [[ $value_separator == " " ]]; then
+    while [ $# -gt 0 ]; do
+      case $1 in
+        *)
+          echo "$1=\"$2\"" >> $env_file_path
+          shift
+          shift
+          ;;
+      esac
+    done
+  else
+    OIFS=$IFS
+    IFS=$value_separator
+    local key=""
+
+    for i in $(echo "$@"); do
+      if [[ $key == "" ]]; then
+        key="$i"
+      else
+        echo "$key=\"$i\"" >> $env_file_path
+        key=""
+      fi
+    done
+    IFS=$OIFS
+  fi
 }
 
 start_group() {
