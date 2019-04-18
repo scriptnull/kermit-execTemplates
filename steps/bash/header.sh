@@ -1160,6 +1160,8 @@ switch_env() {
 
   if [ "$language" == "java" ]; then
     _set_jdk $version
+  elif [ "$language" == "go" ]; then
+    _set_go $version
   else
     echo "Error: unsupported language: $language" >&2
     exit 99
@@ -1245,11 +1247,42 @@ _set_jdk() {
     _set_java_path "/usr/lib/jvm/java-11-oraclejdk-amd64/bin/java" "$jdk_version";
     _set_javac_path "/usr/lib/jvm/java-11-oraclejdk-amd64/bin/javac" "$jdk_version";
   else
-    echo "The version of the JDK you are trying to use is not supported. The supported versions include openjdk7, openjdk8, openjdk9, openjdk10, openjdk11, oraclejdk8, oraclejdk9, oraclejdk10, oraclejdk11" >&2
+    echo "The version of the JDK you are trying to use is not supported. The supported versions include openjdk7, openjdk8, openjdk9, openjdk10, openjdk11, oraclejdk8, oraclejdk9, oraclejdk10, and oraclejdk11." >&2
     exit 99
   fi
 
   java -version
+}
+
+_set_go() {
+  local go_version=$1
+  if [ "$go_version" == "" ]; then
+    echo "Usage: _set_go 1.11.5" >&2
+    exit 1
+  fi
+
+  mkdir -p $HOME
+  export GOPATH=$HOME
+  export PATH=$PATH:$GOPATH/bin
+
+  . $HOME/.gvm/scripts/gvm;
+  local version_installed=false
+  for local_version in $(gvm list); do
+    if [[ $local_version =~ ^go([0-9]).([0-9]) ]] && [[ $local_version == "go$go_version" ]]; then
+      version_installed=true
+      break
+    fi
+  done
+
+  if [ $version_installed == true ]; then
+    gvm use go$go_version;
+  else
+    gvm install go$go_version --prefer-binary;
+    gvm use go$go_version;
+  fi
+
+  export GOPATH=$HOME
+  go env
 }
 
 start_group() {
