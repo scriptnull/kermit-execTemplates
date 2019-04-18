@@ -1164,6 +1164,8 @@ switch_env() {
     _set_go $version
   elif [ "$language" == "python" ]; then
     _set_python "$version"
+  elif [ "$language" == "nodejs" ]; then
+    _set_nodejs "$version"
   else
     echo "Error: unsupported language: $language" >&2
     exit 99
@@ -1321,6 +1323,19 @@ _set_python() {
   source $ve_dir/bin/activate
   python --version
   pip --version
+}
+
+_set_nodejs() {
+  local nodejs_version=$1
+  if [ "$nodejs_version" == "" ]; then
+    echo "Usage: _set_nodejs 3.7" >&2
+    exit 1
+  fi
+
+  . $HOME/.nvm/nvm.sh
+  nvm install "$nodejs_version"
+  nvm use "$nodejs_version"
+  node --version
 }
 
 start_group() {
