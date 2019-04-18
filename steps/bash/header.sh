@@ -5,6 +5,10 @@
 # contains the most common methods use across the script
 #
 
+# tracks groups started with start_group
+export open_group_list=()
+declare -x -A open_group_info=()
+
 bump_semver() {
   local version_to_bump=$1
   local action=$2
@@ -1152,31 +1156,71 @@ write_output() {
 start_group() {
   # First argument is the name of the group
   # Second argument is whether the group should be visible or not
-  export group_name=$1
-  export is_shown=true
-  export group_close=true
+  if [ -z "$1" ]; then
+    echo "Error: missing group name as first argument." >&2
+  fi
+  local group_name=$1
+  local is_shown=true
   if [ ! -z "$2" ]; then
     is_shown=$2
   fi
-
+  # if there are already 2 groups open, force close one before starting a new one
+  # this prevents repeated nesting
+  if [ "${#open_group_list[@]}" -gt 1 ]; then
+    stop_group
+  fi
   # TODO: use shipctl to compute this
-  export group_uuid=$(cat /proc/sys/kernel/random/uuid)
-  group_start_timestamp=`date +"%s"`
+  local group_uuid=$(cat /proc/sys/kernel/random/uuid)
+  # set up this group's name
+  local sanitizedName=$(echo "$group_name" | sed s/[^a-zA-Z0-9_]/_/g)
+  if [[ "$sanitizedName" =~ ^[0-9] ]]; then
+    sanitizedName="_"$sanitizedName
+  fi
+  # if at least one group is already open, use it as a parentConsoleId
+  local parent_uuid=""
+  if [ "${#open_group_list[@]}" -gt 0 ]; then
+    #look at the most recent group, and find its UUID
+    local last_element="${open_group_list[-1]}"
+    parent_uuid="${open_group_info[${last_element}_uuid]}"
+  else
+    parent_uuid="root"
+  fi
+  local group_start_timestamp=`date +"%s"`
   echo ""
-  echo "__SH__GROUP__START__|{\"type\":\"grp\",\"sequenceNumber\":\"$group_start_timestamp\",\"id\":\"$group_uuid\",\"is_shown\":\"$is_shown\"}|$group_name"
-  export group_status=0
+  echo "__SH__GROUP__START__|{\"type\":\"grp\",\"sequenceNumber\":\"$group_start_timestamp\",\"id\":\"$group_uuid\",\"is_shown\":\"$is_shown\",\"parentConsoleId\":\"$parent_uuid\"}|$group_name"
 
-  export current_grp=$group_name
-  export current_grp_uuid=$group_uuid
-
+  # add info to the global associative array
+  open_group_list+=("$sanitizedName")
+  open_group_info[${sanitizedName}_shown]="$is_shown"
+  open_group_info[${sanitizedName}_uuid]="$group_uuid"
+  open_group_info[${sanitizedName}_name]="$group_name"
+  open_group_info[${sanitizedName}_parent_uuid]="$parent_uuid"
+  open_group_info[${sanitizedName}_status]=0
 }
 
 stop_group() {
-  unset current_grp
-  unset current_grp_uuid
+
+  if [ "${#open_group_list[@]}" -lt 1 ]; then
+    return
+  fi
+  # stop the most recently started group.
+  local sanitizedName="${open_group_list[-1]}"
+  local group_uuid="${open_group_info[${sanitizedName}_uuid]}"
+  local parent_uuid="${open_group_info[${sanitizedName}_parent_uuid]}"
+  local is_shown="${open_group_info[${sanitizedName}_shown]}"
+  local group_status="${open_group_info[${sanitizedName}_status]}"
+  local group_name="${open_group_info[${sanitizedName}_name]}"
 
   group_end_timestamp=`date +"%s"`
-  echo "__SH__GROUP__END__|{\"type\":\"grp\",\"sequenceNumber\":\"$group_end_timestamp\",\"id\":\"$group_uuid\",\"is_shown\":\"$is_shown\",\"exitcode\":\"$group_status\"}|$group_name"
+  echo "__SH__GROUP__END__|{\"type\":\"grp\",\"sequenceNumber\":\"$group_end_timestamp\",\"id\":\"$group_uuid\",\"is_shown\":\"$is_shown\",\"exitcode\":\"$group_status\",\"parentConsoleId\":\"$parent_uuid\"}|$group_name"
+
+  # remove the group info from the global associative array
+  unset open_group_info[${sanitizedName}_uuid]
+  unset open_group_info[${sanitizedName}_parent_uuid]
+  unset open_group_info[${sanitizedName}_shown]
+  unset open_group_info[${sanitizedName}_status]
+  unset open_group_info[${sanitizedName}_name]
+  unset 'open_group_list[${#open_group_list[@]}-1]'
 }
 
 before_exit() {
@@ -1199,6 +1243,14 @@ before_exit() {
     echo "__SH__CMD__END__|{\"type\":\"cmd\",\"sequenceNumber\":\"$current_timestamp\",\"id\":\"$current_cmd_uuid\",\"exitcode\":\"$exit_code\"}|$current_cmd"
   fi
 
+  # before going into the final handlers, close any open groups.
+  # any non-root group that is still opened should be closed with a failed status.
+  # do not close the root group here
+  while [ "${#open_group_list[@]}" -gt 1 ]; do
+    last_element="${open_group_list[-1]}"
+    open_group_info[${last_element}_status]=1
+    stop_group
+  done
   if [ -z $SKIP_BEFORE_EXIT_METHODS ]; then
     SKIP_BEFORE_EXIT_METHODS=false
   fi
@@ -1222,9 +1274,10 @@ before_exit() {
     # considered as failure
     ) || subshell_exit_code=1
 
-    if [ -n "$current_grp_uuid" ]; then
-      current_timestamp=`date +"%s"`
-      echo "__SH__GROUP__END__|{\"type\":\"grp\",\"sequenceNumber\":\"$current_timestamp\",\"id\":\"$current_grp_uuid\",\"is_shown\":\"false\",\"exitcode\":\"$subshell_exit_code\"}|$current_grp"
+    if [ "${#open_group_list[@]}" -gt 0 ]; then
+      last_element="${open_group_list[-1]}"
+      open_group_info[${last_element}_status]="$subshell_exit_code"
+      stop_group
     fi
 
     if [ $subshell_exit_code -eq 0 ]; then
@@ -1248,9 +1301,10 @@ before_exit() {
     # closed correctly.
     ) || true
 
-    if [ -n "$current_grp_uuid" ]; then
-      current_timestamp=`date +"%s"`
-      echo "__SH__GROUP__END__|{\"type\":\"grp\",\"sequenceNumber\":\"$current_timestamp\",\"id\":\"$current_grp_uuid\",\"is_shown\":\"false\",\"exitcode\":\"$exit_code\"}|$current_grp"
+    if [ "${#open_group_list[@]}" -gt 0 ]; then
+      last_element="${open_group_list[-1]}"
+      open_group_info[${last_element}_status]="$exit_code"
+      stop_group
     fi
 
     echo "__SH__SCRIPT_END_FAILURE__";
@@ -1263,10 +1317,15 @@ on_error() {
 
 exec_cmd() {
   cmd="$@"
+
+  if [ "${#open_group_list[@]}" -gt 0 ]; then
+    local sanitizedName="${open_group_list[-1]}"
+    local group_uuid="${open_group_info[${sanitizedName}_uuid]}"
+  fi
   # TODO: use shipctl to compute this
   cmd_uuid=$(cat /proc/sys/kernel/random/uuid)
   cmd_start_timestamp=`date +"%s"`
-  echo "__SH__CMD__START__|{\"type\":\"cmd\",\"sequenceNumber\":\"$cmd_start_timestamp\",\"id\":\"$cmd_uuid\"}|$cmd"
+  echo "__SH__CMD__START__|{\"type\":\"cmd\",\"sequenceNumber\":\"$cmd_start_timestamp\",\"id\":\"$cmd_uuid\",\"parentConsoleId\":\"$group_uuid\"}|$cmd"
 
   export current_cmd=$cmd
   export current_cmd_uuid=$cmd_uuid
