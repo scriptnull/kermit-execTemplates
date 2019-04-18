@@ -1162,6 +1162,8 @@ switch_env() {
     _set_jdk $version
   elif [ "$language" == "go" ]; then
     _set_go $version
+  elif [ "$language" == "python" ]; then
+    _set_python "$version"
   else
     echo "Error: unsupported language: $language" >&2
     exit 99
@@ -1283,6 +1285,42 @@ _set_go() {
 
   export GOPATH=$HOME
   go env
+}
+
+_set_python() {
+  local python_version=$1
+  if [ "$python_version" == "" ]; then
+    echo "Usage: _set_python 3.7" >&2
+    exit 1
+  fi
+
+  local ve_dir="$HOME/venv/$python_version";
+  local python_path=""
+
+  if [ "$python_version" == "pypy" ]; then
+    python_path="/usr/local/bin/pypy"
+  elif [ "$python_version" == "pypy3" ]; then
+    python_path="/usr/local/bin/pypy3"
+  else
+    python_path="/usr/bin/python$python_version"
+  fi
+
+  if [ ! -f "$python_path" ]; then
+    echo "Python version $python_version not found at $python_path" >&2
+    exit 99
+  fi
+
+  if [ ! -f "$ve_dir/bin/activate" ]; then
+    virtualenv -p $python_path $ve_dir
+    virtualenv_result=$?
+    [ "$virtualenv_result" != 0 ] && return $virtualenv_result;
+  else
+    echo "Existing python virtual environment found at $ve_dir"
+  fi
+
+  source $ve_dir/bin/activate
+  python --version
+  pip --version
 }
 
 start_group() {
