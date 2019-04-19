@@ -1196,6 +1196,8 @@ switch_env() {
     _set_nodejs "$version"
   elif [ "$language" == "ruby" ]; then
     _set_ruby "$version" "$optional_jdk" "$optional_bundler"
+  elif [ "$language" == "php" ]; then
+    _set_php "$version"
   else
     echo "Error: unsupported language: $language" >&2
     exit 99
@@ -1459,6 +1461,25 @@ _set_ruby() {
   bundle --version;
   ruby -v;
   gem --version;
+}
+
+_set_php() {
+  local php_version=$1
+  if [ "$php_version" == "" ]; then
+    echo "Usage: _set_php 7.3.1" >&2
+    exit 1
+  fi
+
+  export PATH=$HOME/.phpenv/bin:$HOME/.phpenv/extensions:$PATH;
+
+  if [ ! -d "$HOME/.phpenv/versions/$php_version" ]; then
+    /usr/local/bin/phpenv-install "$php_version"
+  fi
+
+  eval "$(phpenv init -)"
+  $HOME/.phpenv/bin/phpenv global "$php_version"
+
+  php --version
 }
 
 start_group() {
