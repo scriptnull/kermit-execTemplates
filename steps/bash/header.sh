@@ -89,7 +89,7 @@ read_json() {
 decrypt_file() {
   local source_file=""
   local key_file=""
-  local dest_file=""
+  local dest_file="decrypted"
   local temp_dest='/tmp/shippable/decrypt'
 
   if [[ $# -gt 0 ]]; then
@@ -147,7 +147,7 @@ decrypt_file() {
 encrypt_file() {
   local source_file=""
   local key_file=""
-  local dest_file=""
+  local dest_file="encrypted"
   local temp_dest='/tmp/shippable/encrypt'
 
   if [[ $# -gt 0 ]]; then
@@ -810,7 +810,7 @@ send_notification() {
 
     # set up the default payloads once options have been parsed
     local default_slack_payload="{\"username\":\"\${opt_username}\",\"attachments\":[{\"pretext\":\"\${opt_pretext}\",\"text\":\"\${opt_text}\",\"color\":\"\${opt_color}\"}],\"channel\":\"\${opt_recipient}\",\"icon_url\":\"\${opt_icon_url}\"}"
-    local default_webhook_payload="{\"username\":\"\${opt_username}\",\"pretext\":\"\${opt_pretext}\",\"text\":\"\${opt_text}\",\"color\":\"\${opt_color}\",\"recipient\":\"\${opt_recipient}\",\"icon_url\":\"\${opt_icon_url}\"}"
+    local default_webhook_payload="{}"
     local default_payload=""
 
     local i_endpoint=""
