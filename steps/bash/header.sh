@@ -1150,18 +1150,17 @@ write_output() {
 }
 
 switch_env() {
-  if [[ $# -le 1 ]]; then
-    echo "Usage: switch_env LANGUAGE VERSION [OPTIONS]" >&2
+  if [[ $# -le 0 ]]; then
+    echo "Usage: switch_env LANGUAGE [VERSION] [OPTIONS]" >&2
     exit 99
   fi
 
   local language="$1"
-  local version="$2"
-  shift
   shift
 
   local optional_jdk=""
   local optional_bundler=""
+  local version=""
 
   while [ $# -gt 0 ]; do
     case $1 in
@@ -1176,8 +1175,13 @@ switch_env() {
         shift
         ;;
       *)
-        echo "Unrecognized option $1" >&2
-        exit 1
+        if [ -z "$version" ]; then
+          version=$1
+          shift
+        else
+          echo "Unrecognized option $1" >&2
+          exit 1
+        fi
         ;;
     esac
   done
@@ -1198,6 +1202,12 @@ switch_env() {
     _set_ruby "$version" "$optional_jdk" "$optional_bundler"
   elif [ "$language" == "php" ]; then
     _set_php "$version"
+  elif [ "$language" == "scala" ]; then
+    _set_scala "$version"
+  elif [ "$language" == "clojure" ]; then
+    _set_clojure "$version"
+  elif [ "$language" == "c" ]; then
+    _set_c "$version"
   else
     echo "Error: unsupported language: $language" >&2
     exit 99
@@ -1238,7 +1248,7 @@ _set_javac_path() {
 _set_jdk() {
   local jdk_version=$1
   if [ "$jdk_version" == "" ]; then
-    echo "Usage: _set_jdk openjdk9" >&2
+    echo "Usage: switch_env java openjdk9" >&2
     exit 1
   fi
 
@@ -1293,7 +1303,7 @@ _set_jdk() {
 _set_go() {
   local go_version=$1
   if [ "$go_version" == "" ]; then
-    echo "Usage: _set_go 1.11.5" >&2
+    echo "Usage: switch_env go 1.11.5" >&2
     exit 1
   fi
 
@@ -1324,7 +1334,7 @@ _set_go() {
 _set_python() {
   local python_version=$1
   if [ "$python_version" == "" ]; then
-    echo "Usage: _set_python 3.7" >&2
+    echo "Usage: switch_env python 3.7" >&2
     exit 1
   fi
 
@@ -1360,7 +1370,7 @@ _set_python() {
 _set_nodejs() {
   local nodejs_version=$1
   if [ "$nodejs_version" == "" ]; then
-    echo "Usage: _set_nodejs 11.6.0" >&2
+    echo "Usage: switch_env nodejs 11.6.0" >&2
     exit 1
   fi
 
@@ -1380,7 +1390,7 @@ _set_ruby() {
   fi
 
   if [ "$ruby_version" == "" ]; then
-    echo "Usage: _set_ruby 3.7 [--bundler 1.17.3 --jdk openjdk9]" >&2
+    echo "Usage: switch_env ruby 3.7 [--bundler 1.17.3 --jdk openjdk9]" >&2
     exit 1
   fi
 
@@ -1408,7 +1418,7 @@ _set_ruby() {
     if [[ "$ruby_version" == "jruby-head" ]]; then
       if [ "$jdk_version" == "" ]; then
         echo "A JDK version is required for $ruby_version." >&2
-        echo "Usage: _set_ruby $ruby_version --jdk openjdk9" >&2
+        echo "Usage: switch_env ruby $ruby_version --jdk openjdk9" >&2
         exit 1
       fi
       ## Installs "jruby-head" ##
@@ -1466,7 +1476,7 @@ _set_ruby() {
 _set_php() {
   local php_version=$1
   if [ "$php_version" == "" ]; then
-    echo "Usage: _set_php 7.3.1" >&2
+    echo "Usage: switch_env php 7.3.1" >&2
     exit 1
   fi
 
@@ -1480,6 +1490,34 @@ _set_php() {
   $HOME/.phpenv/bin/phpenv global "$php_version"
 
   php --version
+}
+
+_set_scala() {
+  local scala_version=$1
+  if [ ! -z "$scala_version" ]; then
+    echo "The Scala version cannot be changed.  Select a different image." >&2
+    exit 1
+  fi
+  java -version
+}
+
+_set_clojure() {
+  local clojure_version=$1
+  if [ ! -z "$clojure_version" ]; then
+    echo "The lien version cannot be changed.  Select a different image." >&2
+    exit 1
+  fi
+  lein version
+}
+
+_set_c() {
+  local c_version=$1
+  if [ ! -z "$c_version" ]; then
+    echo "The gcc and clang versions cannot be changed.  Select a different image." >&2
+    exit 1
+  fi
+  gcc --version
+  clang --version
 }
 
 start_group() {
