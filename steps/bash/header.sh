@@ -1609,6 +1609,57 @@ stop_group() {
   unset 'open_group_list[${#open_group_list[@]}-1]'
 }
 
+execute_command() {
+  local retry_cmd=false
+  if [ "$1" == "--retry" ]; then
+    retry_cmd=true
+    shift
+  fi
+  cmd="$@"
+  if [ "${#open_group_list[@]}" -gt 0 ]; then
+    local sanitizedName="${open_group_list[-1]}"
+    local group_uuid="${open_group_info[${sanitizedName}_uuid]}"
+  fi
+  # TODO: use shipctl to compute this
+  cmd_uuid=$(cat /proc/sys/kernel/random/uuid)
+  cmd_start_timestamp=`date +"%s"`
+  echo "__SH__CMD__START__|{\"type\":\"cmd\",\"sequenceNumber\":\"$cmd_start_timestamp\",\"id\":\"$cmd_uuid\",\"parentConsoleId\":\"$group_uuid\"}|$cmd"
+
+  export current_cmd=$cmd
+  export current_cmd_uuid=$cmd_uuid
+
+  trap on_error ERR
+
+  if [ "$retry_cmd" == "true" ]; then
+    eval retry_command "$cmd"
+    cmd_status=$?
+  else
+    eval "$cmd"
+    cmd_status=$?
+  fi
+
+  unset current_cmd
+  unset current_cmd_uuid
+
+  if [ "$2" ]; then
+    echo $2;
+  fi
+
+  cmd_end_timestamp=`date +"%s"`
+  # If cmd output has no newline at end, marker parsing
+  # would break. Hence force a newline before the marker.
+  echo ""
+  local cmd_first_line=$(printf "$cmd" | head -n 1)
+  echo "__SH__CMD__END__|{\"type\":\"cmd\",\"sequenceNumber\":\"$cmd_start_timestamp\",\"id\":\"$cmd_uuid\",\"exitcode\":\"$cmd_status\"}|$cmd_first_line"
+
+  trap before_exit EXIT
+  if [ "$cmd_status" != 0 ]; then
+    is_success=false
+    return $cmd_status;
+  fi
+  return $cmd_status
+}
+
 before_exit() {
   return_code=$?
   exit_code=1;
@@ -1699,144 +1750,6 @@ before_exit() {
 
 on_error() {
   exit $?
-}
-
-execute_command() {
-  local retry_cmd=false
-  if [ "$1" == "--retry" ]; then
-    retry_cmd=true
-    shift
-  fi
-  cmd="$@"
-  if [ "${#open_group_list[@]}" -gt 0 ]; then
-    local sanitizedName="${open_group_list[-1]}"
-    local group_uuid="${open_group_info[${sanitizedName}_uuid]}"
-  fi
-  # TODO: use shipctl to compute this
-  cmd_uuid=$(cat /proc/sys/kernel/random/uuid)
-  cmd_start_timestamp=`date +"%s"`
-  echo "__SH__CMD__START__|{\"type\":\"cmd\",\"sequenceNumber\":\"$cmd_start_timestamp\",\"id\":\"$cmd_uuid\",\"parentConsoleId\":\"$group_uuid\"}|$cmd"
-
-  export current_cmd=$cmd
-  export current_cmd_uuid=$cmd_uuid
-
-  trap on_error ERR
-
-  if [ "$retry_cmd" == "true" ]; then
-    eval retry_command "$cmd"
-    cmd_status=$?
-  else
-    eval "$cmd"
-    cmd_status=$?
-  fi
-
-  unset current_cmd
-  unset current_cmd_uuid
-
-  if [ "$2" ]; then
-    echo $2;
-  fi
-
-  cmd_end_timestamp=`date +"%s"`
-  # If cmd output has no newline at end, marker parsing
-  # would break. Hence force a newline before the marker.
-  echo ""
-  local cmd_first_line=$(printf "$cmd" | head -n 1)
-  echo "__SH__CMD__END__|{\"type\":\"cmd\",\"sequenceNumber\":\"$cmd_start_timestamp\",\"id\":\"$cmd_uuid\",\"exitcode\":\"$cmd_status\"}|$cmd_first_line"
-
-  trap before_exit EXIT
-  if [ "$cmd_status" != 0 ]; then
-    is_success=false
-    return $cmd_status;
-  fi
-  return $cmd_status
-}
-
-exec_cmd() {
-  cmd="$@"
-
-  if [ "${#open_group_list[@]}" -gt 0 ]; then
-    local sanitizedName="${open_group_list[-1]}"
-    local group_uuid="${open_group_info[${sanitizedName}_uuid]}"
-  fi
-  # TODO: use shipctl to compute this
-  cmd_uuid=$(cat /proc/sys/kernel/random/uuid)
-  cmd_start_timestamp=`date +"%s"`
-  echo "__SH__CMD__START__|{\"type\":\"cmd\",\"sequenceNumber\":\"$cmd_start_timestamp\",\"id\":\"$cmd_uuid\",\"parentConsoleId\":\"$group_uuid\"}|$cmd"
-
-  export current_cmd=$cmd
-  export current_cmd_uuid=$cmd_uuid
-
-  trap on_error ERR
-
-  eval "$cmd"
-  cmd_status=$?
-
-  unset current_cmd
-  unset current_cmd_uuid
-
-  if [ "$2" ]; then
-    echo $2;
-  fi
-
-  cmd_end_timestamp=`date +"%s"`
-  # If cmd output has no newline at end, marker parsing
-  # would break. Hence force a newline before the marker.
-  echo ""
-  local cmd_first_line=$(printf "$cmd" | head -n 1)
-  echo "__SH__CMD__END__|{\"type\":\"cmd\",\"sequenceNumber\":\"$cmd_start_timestamp\",\"id\":\"$cmd_uuid\",\"exitcode\":\"$cmd_status\"}|$cmd_first_line"
-
-  trap before_exit EXIT
-  if [ "$cmd_status" != 0 ]; then
-    is_success=false
-    return $cmd_status;
-  fi
-  return $cmd_status
-}
-
-exec_grp() {
-  # First argument is function to execute
-  # Second argument is function description to be shown
-  # Third argument is whether the group should be shown or not
-  group_name=$1
-  group_message=$2
-  is_shown=true
-  group_close=true
-  if [ ! -z "$3" ]; then
-    is_shown=$3
-  fi
-
-  if [ ! -z "$4" ]; then
-    group_close=$4
-  fi
-
-  if [ -z "$group_message" ]; then
-    group_message=$group_name
-  fi
-  # TODO: use shipctl to compute this
-  group_uuid=$(cat /proc/sys/kernel/random/uuid)
-  group_start_timestamp=`date +"%s"`
-  echo ""
-  echo "__SH__GROUP__START__|{\"type\":\"grp\",\"sequenceNumber\":\"$group_start_timestamp\",\"id\":\"$group_uuid\",\"is_shown\":\"$is_shown\"}|$group_message"
-  group_status=0
-
-  export current_grp=$group_message
-  export current_grp_uuid=$group_uuid
-
-  {
-    eval "$group_name"
-  } || {
-    group_status=1
-  }
-
-  if [ "$group_close" == "true" ]; then
-    unset current_grp
-    unset current_grp_uuid
-
-    group_end_timestamp=`date +"%s"`
-    echo "__SH__GROUP__END__|{\"type\":\"grp\",\"sequenceNumber\":\"$group_end_timestamp\",\"id\":\"$group_uuid\",\"is_shown\":\"$is_shown\",\"exitcode\":\"$group_status\"}|$group_message"
-  fi
-  return $group_status
 }
 
 trap before_exit EXIT
