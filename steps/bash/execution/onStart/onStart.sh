@@ -1,1 +1,1 @@
-exec_cmd $'%%context%%'
+execute_command $'%%context%%'

@@ -1153,6 +1153,21 @@ write_output() {
   done
 }
 
+retry_command() {
+  for i in $(seq 1 3);
+  do
+    {
+      "$@"
+      ret=$?
+      [ $ret -eq 0 ] && break;
+    } || {
+      echo "retrying $i of 3 times..."
+      echo "$@"
+    }
+  done
+  return $ret
+}
+
 start_group() {
   # First argument is the name of the group
   # Second argument is whether the group should be visible or not
@@ -1263,11 +1278,11 @@ before_exit() {
     subshell_exit_code=0
     (
       if [ "$(type -t onSuccess)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
-        exec_cmd "onSuccess" || true
+        execute_command "onSuccess" || true
       fi
 
       if [ "$(type -t onComplete)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
-        exec_cmd "onComplete" || true
+        execute_command "onComplete" || true
       fi
     # subshell_exit_code will be set to 1 only when there is a exit 1 command in
     # the onSuccess & onFailure sections. exit 1 in these sections, is
@@ -1290,11 +1305,11 @@ before_exit() {
     # exit 0/exit 1 in these sections not failing the build
     (
       if [ "$(type -t onFailure)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
-        exec_cmd "onFailure" || true
+        execute_command "onFailure" || true
       fi
 
       if [ "$(type -t onComplete)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
-        exec_cmd "onComplete" || true
+        execute_command "onComplete" || true
       fi
     # adding || true so that the script doesn't exit when onFailure/onComplete
     # section has exit 1. if the script exits the group will not be
@@ -1313,6 +1328,57 @@ before_exit() {
 
 on_error() {
   exit $?
+}
+
+execute_command() {
+  local retry_cmd=false
+  if [ "$1" == "--retry" ]; then
+    retry_cmd=true
+    shift
+  fi
+  cmd="$@"
+  if [ "${#open_group_list[@]}" -gt 0 ]; then
+    local sanitizedName="${open_group_list[-1]}"
+    local group_uuid="${open_group_info[${sanitizedName}_uuid]}"
+  fi
+  # TODO: use shipctl to compute this
+  cmd_uuid=$(cat /proc/sys/kernel/random/uuid)
+  cmd_start_timestamp=`date +"%s"`
+  echo "__SH__CMD__START__|{\"type\":\"cmd\",\"sequenceNumber\":\"$cmd_start_timestamp\",\"id\":\"$cmd_uuid\",\"parentConsoleId\":\"$group_uuid\"}|$cmd"
+
+  export current_cmd=$cmd
+  export current_cmd_uuid=$cmd_uuid
+
+  trap on_error ERR
+
+  if [ "$retry_cmd" == "true" ]; then
+    eval retry_command "$cmd"
+    cmd_status=$?
+  else
+    eval "$cmd"
+    cmd_status=$?
+  fi
+
+  unset current_cmd
+  unset current_cmd_uuid
+
+  if [ "$2" ]; then
+    echo $2;
+  fi
+
+  cmd_end_timestamp=`date +"%s"`
+  # If cmd output has no newline at end, marker parsing
+  # would break. Hence force a newline before the marker.
+  echo ""
+  local cmd_first_line=$(printf "$cmd" | head -n 1)
+  echo "__SH__CMD__END__|{\"type\":\"cmd\",\"sequenceNumber\":\"$cmd_start_timestamp\",\"id\":\"$cmd_uuid\",\"exitcode\":\"$cmd_status\"}|$cmd_first_line"
+
+  trap before_exit EXIT
+  if [ "$cmd_status" != 0 ]; then
+    is_success=false
+    return $cmd_status;
+  fi
+  return $cmd_status
 }
 
 exec_cmd() {
