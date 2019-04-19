@@ -1151,12 +1151,40 @@ write_output() {
 
 switch_env() {
   if [[ $# -le 1 ]]; then
-    echo "Usage: switch_env LANGUAGE VERSION" >&2
+    echo "Usage: switch_env LANGUAGE VERSION [OPTIONS]" >&2
     exit 99
   fi
 
   local language="$1"
   local version="$2"
+  shift
+  shift
+
+  local optional_jdk=""
+  local optional_bundler=""
+
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --jdk)
+        optional_jdk="$2"
+        shift
+        shift
+        ;;
+      --bundler)
+        optional_bundler="$2"
+        shift
+        shift
+        ;;
+      *)
+        echo "Unrecognized option $1" >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  if [ ! -z "$optional_jdk" ]; then
+    _set_jdk $optional_jdk
+  fi
 
   if [ "$language" == "java" ]; then
     _set_jdk $version
@@ -1166,6 +1194,8 @@ switch_env() {
     _set_python "$version"
   elif [ "$language" == "nodejs" ]; then
     _set_nodejs "$version"
+  elif [ "$language" == "ruby" ]; then
+    _set_ruby "$version" "$optional_jdk" "$optional_bundler"
   else
     echo "Error: unsupported language: $language" >&2
     exit 99
@@ -1328,7 +1358,7 @@ _set_python() {
 _set_nodejs() {
   local nodejs_version=$1
   if [ "$nodejs_version" == "" ]; then
-    echo "Usage: _set_nodejs 3.7" >&2
+    echo "Usage: _set_nodejs 11.6.0" >&2
     exit 1
   fi
 
@@ -1336,6 +1366,99 @@ _set_nodejs() {
   nvm install "$nodejs_version"
   nvm use "$nodejs_version"
   node --version
+}
+
+_set_ruby() {
+  local ruby_version=$1
+  local jdk_version=$2
+  local bundler_version="1.17.3"
+
+  if [ ! -z "$3" ]; then
+    bundler_version="$3"
+  fi
+
+  if [ "$ruby_version" == "" ]; then
+    echo "Usage: _set_ruby 3.7 [--bundler 1.17.3 --jdk openjdk9]" >&2
+    exit 1
+  fi
+
+  local rvm_path=/usr/local/rvm
+
+  if [ ! -f $rvm_path/scripts/rvm ]; then
+    curl -L https://get.rvm.io | bash;
+  fi
+
+  . $rvm_path/scripts/rvm;
+
+  if [[ "$ruby_version" == *rbx* ]]; then
+    ## RBX installation ##
+    if [[ "$ruby_version" == "rbx-2" ]]; then
+      ## install the latest rbx binary
+      rvm use rbx-2 --install --binary --fuzzy;
+    else
+      ## install the specified rbx binary
+      rvm use $ruby_version --install --binary --fuzzy;
+    fi
+  elif [[ "$ruby_version" == *jruby* ]]; then
+    ## JRUBY installation ##
+    java -version
+    JRUBY_OPTS="--server -Xcompile.invokedynamic=false";
+    if [[ "$ruby_version" == "jruby-head" ]]; then
+      if [ "$jdk_version" == "" ]; then
+        echo "A JDK version is required for $ruby_version." >&2
+        echo "Usage: _set_ruby $ruby_version --jdk openjdk9" >&2
+        exit 1
+      fi
+      ## Installs "jruby-head" ##
+      rvm install jruby-head -n $jdk_version --create;
+      rvm use jruby-head-$jdk_version --create;
+    else
+      if [[ "$ruby_version" =~ ^jruby-([0-9])([0-9])mode$ ]]; then
+        ## installs "jruby-a.bmode" ##
+        ### BASH_REMATCH values have to be stored explicitly here
+        ### because they change inside following commands
+        jruby_major_version=${BASH_REMATCH[1]};
+        jruby_minor_version=${BASH_REMATCH[2]};
+        rvm install jruby;
+        rvm use jruby --create;
+        export JRUBY_MODE_VERSION="$jruby_major_version.$jruby_minor_version";
+        export JRUBY_OPTS="$JRUBY_OPTS --$JRUBY_MODE_VERSION";
+
+        . $rvm_path/scripts/rvm;
+        rvm use jruby
+      else
+        ## Installs "jruby-a.b.cd" or "jruby" ##
+        rvm use $ruby_version --install --binary --fuzzy;
+      fi
+    fi
+  elif [[ "$ruby_version" == "ruby-head" ]]; then
+    ## ruby head, reinstall each time
+    rvm remove ruby-head --gems --fuzzy;
+    rvm reinstall $ruby_version --binary --verify-downloads 1;
+    . $HOME/.bashrc && . $rvm_path/scripts/rvm && rvm use $ruby_version;
+  else
+    ## Regular RUBY installation ##
+    rvm install $ruby_version --verify-downloads 1;
+    . $HOME/.bashrc && . $rvm_path/scripts/rvm && rvm use $ruby_version;
+  fi
+
+  rvm autolibs disable;
+  rvm ls;
+
+  local gem_version=$(gem --version)
+  local gem_version_major=$(echo $gem_version | awk '{split($0, a, "."); print a[1]}')
+  local gem_install_cmd=""
+
+  if [ $gem_version_major -gt 2 ]; then
+    gem_install_cmd="gem install bundler --no-document --version $bundler_version"
+  else
+    gem_install_cmd="gem install bundler --no-ri --no-rdoc --version $bundler_version"
+  fi
+
+  $gem_install_cmd;
+  bundle --version;
+  ruby -v;
+  gem --version;
 }
 
 start_group() {
