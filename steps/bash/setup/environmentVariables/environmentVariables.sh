@@ -1,1 +1,1 @@
-export %%context.key%%='%%context.value%%'
+export %%context.key%%="%%context.value%%"
