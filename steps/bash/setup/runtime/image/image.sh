@@ -14,17 +14,14 @@ boot_container() {
   start_group "Booting Container"
   local default_docker_options="-v /opt/docker/docker:/usr/bin/docker \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v $STEP_JSON_PATH:$STEP_JSON_PATH \
-    -v $(pwd):$(pwd) \
-    -v $PIPLELINES_RUN_STATUS_DIR:$PIPLELINES_RUN_STATUS_DIR \
+    -v $STEP_DIR:$STEP_DIR \
+    -v $PIPELINES_RUN_STATUS_DIR:$PIPELINES_RUN_STATUS_DIR \
     -v $REQEXEC_DIR:$REQEXEC_DIR \
-    -v $STEP_DEPENDENCY_STATE_DIR:$STEP_DEPENDENCY_STATE_DIR \
-    -v $STEP_OUTPUT_DIR:$STEP_OUTPUT_DIR:rw \
     -w $(pwd) -d --init --rm --privileged --name $(cat $STEP_JSON_PATH | jq .step.name)"
   local docker_run_cmd="docker run $DOCKER_CONTAINER_OPTIONS $default_docker_options \
     -e RUNNING_IN_CONTAINER=$RUNNING_IN_CONTAINER \
     $DOCKER_IMAGE \
-    bash -c \"$REQEXEC_BIN_PATH $STEPLET_SCRIPT_PATH $PIPLELINES_RUN_STATUS_DIR/step.env\""
+    bash -c \"$REQEXEC_BIN_PATH $STEPLET_SCRIPT_PATH $PIPELINES_RUN_STATUS_DIR/step.env\""
 
   execute_command "$docker_run_cmd"
 
