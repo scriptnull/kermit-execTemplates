@@ -1539,6 +1539,46 @@ _set_c() {
   clang --version
 }
 
+save_tests() {
+  local source_file="$1"
+  local reports_size_limit_mb=5
+
+  if [ "$source_file" == "" ]; then
+    echo "Usage: save_tests [DIRECTORY] [FILE]" >&2
+    exit 1
+  fi
+
+  if [ ! -z "$REPORTS_SIZE_LIMIT_MB" ]; then
+    reports_size_limit_mb=$REPORTS_SIZE_LIMIT_MB
+  fi
+
+  if [ ! -f $source_file ] && [ ! -d $source_file ]; then
+    echo "$source_file is not a file or directory." >&2
+    exit 99
+  fi
+
+  if [ -d $source_file ] && [ -z "$(ls -A $source_file)" ]; then
+    echo "$source_file is an empty directory."
+    return 0
+  fi
+
+  echo "Copying test reports"
+  local output_directory=$STEP_WORKSPACE_DIR/upload/tests/$STEP_ID
+  mkdir -p $output_directory
+
+  local test_reports_size_kb=$(du -s $source_file | awk '{print $1}')
+  local test_reports_size_limit_kb=$(($reports_size_limit_mb * 1024))
+
+  if [ $test_reports_size_kb -gt $test_reports_size_limit_kb ]; then
+    echo "Test reports size exceeds limit"
+    echo "Test Reports size: $test_reports_size_kb KB, Max size: $test_reports_size_limit_kb KB"
+    return 1
+  else
+    echo "Test reports size: $test_reports_size_kb KB"
+    cp -r $source_file $output_directory
+  fi
+}
+
 start_group() {
   # First argument is the name of the group
   # Second argument is whether the group should be visible or not
