@@ -1579,6 +1579,30 @@ save_tests() {
   fi
 }
 
+cache_files() {
+  if [ "$1" == "" ] || [ "$2" == "" ]; then
+    echo "Usage: cache_files [DIRECTORY or FILE] [NAME]" >&2
+    exit 1
+  fi
+  # Wildcards will be expanded.  The last item is the name.
+  local source_files=( "$@" )
+  local cache_name="${!#}"
+  unset "source_files[${#source_files[@]}-1]"
+
+  echo "Copying files for cache"
+  local output_directory=$STEP_WORKSPACE_DIR/upload/cache
+  if [ "${#source_files[@]}" -gt 1 ]; then
+    mkdir -p "$output_directory/$cache_name"
+    for filepath in "${source_files[@]}"; do
+      cp -r "$filepath" "$output_directory/$cache_name/$filepath"
+    done
+  else
+    mkdir -p "$output_directory"
+    cp -r "$source_files" "$output_directory/$cache_name"
+  fi
+  echo "Files copied"
+}
+
 start_group() {
   # First argument is the name of the group
   # Second argument is whether the group should be visible or not
