@@ -1581,13 +1581,19 @@ save_tests() {
 
 cache_files() {
   if [ "$1" == "" ] || [ "$2" == "" ]; then
-    echo "Usage: cache_files [DIRECTORY or FILE] [NAME]" >&2
+    echo "Usage: cache_files [DIRECTORY] [FILE] NAME" >&2
     exit 1
   fi
   # Wildcards will be expanded.  The last item is the name.
   local source_files=( "$@" )
   local cache_name="${!#}"
   unset "source_files[${#source_files[@]}-1]"
+
+  local pattern=" |'"
+  if [[ $cache_name =~ $pattern ]]; then
+    echo "Cache name may not contain spaces."
+    exit 1
+  fi
 
   echo "Copying files for cache"
   local output_directory=$STEP_WORKSPACE_DIR/upload/cache
@@ -1601,6 +1607,38 @@ cache_files() {
     cp -r "$source_files" "$output_directory/$cache_name"
   fi
   echo "Files copied"
+}
+
+restore_cache() {
+  if [ "$1" == "" ] || [ "$2" == "" ]; then
+    echo "Usage: restore_cache NAME PATH" >&2
+    exit 1
+  fi
+
+  local cache_name="$1"
+  local restore_path="$2"
+  local cache_location="$STEP_WORKSPACE_DIR/download/cache/$cache_name"
+
+  local pattern=" |'"
+  if [[ $cache_name =~ $pattern ]]; then
+    echo "Cache name may not contain spaces."
+    exit 1
+  fi
+
+  if [ ! -d $cache_location ] && [ ! -f $cache_location ]; then
+    echo "No cache found for $cache_name."
+    return 0
+  fi
+
+  echo "Restoring cache files"
+  if [ -d "$cache_location" ]; then
+    mkdir -p "$restore_path"
+    cp -r "$cache_location/." "$restore_path"
+  elif [ -f "$cache_location" ]; then
+    mkdir -p "$(dirname $cache_location)"
+    cp "$cache_location" "$restore_path"
+  fi
+  echo "Files restored"
 }
 
 start_group() {
