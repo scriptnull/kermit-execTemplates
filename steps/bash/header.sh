@@ -1770,7 +1770,16 @@ before_exit() {
     exit_code=0
   else
     is_success=false
-    exit_code=$return_code
+    if [ "${#open_group_list[@]}" -gt 0 ]; then
+      last_element="${open_group_list[-1]}"
+       if [ "$last_element" == "Processing required resources" ]; then
+         exit_code=299
+       else
+         exit_code=$return_code
+       fi
+    else
+      exit_code=$return_code
+    fi
   fi
 
   # Flush any remaining console
@@ -1846,7 +1855,7 @@ before_exit() {
       stop_group
     fi
 
-    echo "__SH__SCRIPT_END_FAILURE__";
+    echo "__SH__SCRIPT_END_FAILURE__|$exit_code";
   fi
 }
 
