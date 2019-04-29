@@ -1772,8 +1772,8 @@ before_exit() {
     is_success=false
     if [ "${#open_group_list[@]}" -gt 0 ]; then
       last_element="${open_group_list[-1]}"
-       if [ "$last_element" == "Processing required resources" ]; then
-         exit_code=299
+       if [ "$last_element" == "Processing_required_resources" ]; then
+         exit_code=199
        else
          exit_code=$return_code
        fi
