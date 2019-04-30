@@ -15,6 +15,7 @@ boot_container() {
   local default_docker_options="-v /opt/docker/docker:/usr/bin/docker \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v $STEP_DIR:$STEP_DIR \
+    -v $RUN_DIR:$RUN_DIR \
     -v $PIPELINES_RUN_STATUS_DIR:$PIPELINES_RUN_STATUS_DIR \
     -v $REQEXEC_DIR:$REQEXEC_DIR \
     -w $(pwd) -d --init --rm --privileged --name $(cat $STEP_JSON_PATH | jq .step.name)"
