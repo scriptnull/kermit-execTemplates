@@ -1641,6 +1641,37 @@ restore_cache() {
   echo "Files restored"
 }
 
+add_run_variable() {
+  if [ "$1" == "" ]; then
+    echo "Usage: add_run_variable KEY=VALUE" >&2
+    exit 1
+  fi
+
+  local env_file_path="$RUN_DIR/workspace/run.env"
+
+  if [ ! -f "$env_file_path" ]; then
+    echo "Creating .env file $env_file_path"
+    touch $env_file_path
+  fi
+
+  while [ $# -gt 0 ]; do
+    if [[ "$1" == *=* ]]; then
+      export $1
+      echo "export $1" >> $env_file_path
+    else
+      echo "$1 is not valid."
+      echo "Please make sure the key and value are separated by an =."
+    fi
+    shift
+  done
+}
+
+export_run_variables() {
+  if [ -f $RUN_DIR/workspace/run.env ]; then
+    source $RUN_DIR/workspace/run.env
+  fi
+}
+
 start_group() {
   # First argument is the name of the group
   # Second argument is whether the group should be visible or not
