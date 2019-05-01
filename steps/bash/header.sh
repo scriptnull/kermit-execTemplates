@@ -1672,6 +1672,73 @@ export_run_variables() {
   fi
 }
 
+save_run_state() {
+  if [ "$1" == "" ] || [ "$2" == "" ]; then
+    echo "Usage: save_run_state [DIRECTORY] [FILE] NAME" >&2
+    exit 1
+  fi
+  # Wildcards will be expanded.  The last item is the name.
+  local source_files=( "$@" )
+  local cache_name="${!#}"
+  unset "source_files[${#source_files[@]}-1]"
+
+  local pattern=" |'"
+  if [[ $cache_name =~ $pattern ]]; then
+    echo "Name may not contain spaces."
+    exit 1
+  fi
+
+  if [[ "$cache_name" == "run.env" ]]; then
+    echo "The name may not be run.env."
+    exit 1
+  fi
+
+  echo "Copying files to state"
+  local output_directory=$RUN_DIR/workspace
+  if [ "${#source_files[@]}" -gt 1 ]; then
+    mkdir -p "$output_directory/$cache_name"
+    for filepath in "${source_files[@]}"; do
+      cp -r "$filepath" "$output_directory/$cache_name/$filepath"
+    done
+  else
+    mkdir -p "$output_directory"
+    cp -r "$source_files" "$output_directory/$cache_name"
+  fi
+  echo "Files copied"
+}
+
+restore_run_state() {
+  if [ "$1" == "" ] || [ "$2" == "" ]; then
+    echo "Usage: restore_run_state NAME PATH" >&2
+    exit 1
+  fi
+
+  local cache_name="$1"
+  local restore_path="$2"
+  local cache_location="$RUN_DIR/workspace/$cache_name"
+
+  local pattern=" |'"
+  if [[ $cache_name =~ $pattern ]]; then
+    echo "Name may not contain spaces."
+    exit 1
+  fi
+
+  if [ ! -d $cache_location ] && [ ! -f $cache_location ]; then
+    echo "No state found for $cache_name."
+    return 0
+  fi
+
+  echo "Restoring state files"
+  if [ -d "$cache_location" ]; then
+    mkdir -p "$restore_path"
+    cp -r "$cache_location/." "$restore_path"
+  elif [ -f "$cache_location" ]; then
+    mkdir -p "$(dirname $cache_location)"
+    cp "$cache_location" "$restore_path"
+  fi
+  echo "Files restored"
+}
+
 start_group() {
   # First argument is the name of the group
   # Second argument is whether the group should be visible or not
