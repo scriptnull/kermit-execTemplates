@@ -39,6 +39,9 @@ git_sync() {
     pushd $repoPath
       git config --get user.name || git config user.name 'Shippable Build'
       git config --get user.email || git config user.email 'build@shippable.com'
+      if [ "$NO_VERIFY_SSL" == "true" ]; then
+        git config --global http.sslVerify false
+      fi
 
       if $isPullRequest; then
         if [ "$scmName" == "github" ]; then
