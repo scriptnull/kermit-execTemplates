@@ -1,5 +1,5 @@
-git_sync_%%context.resourceName%%() {
-  local resourceName="%%context.resourceName%%"
+git_sync() {
+  local resourceName="$1"
   local resourcePath=$(eval echo "$"res_"$resourceName"_resourcePath)
   pushd $resourcePath
     local scmName=$(eval echo "$"res_"$resourceName"_masterName)
@@ -14,9 +14,7 @@ git_sync_%%context.resourceName%%() {
     local isPullRequest=$(eval echo "$"res_"$resourceName"_isPullRequest)
     local isPullRequestClose=$(eval echo "$"res_"$resourceName"_isPullRequestClose)
     local pullRequestNumber=$(eval echo "$"res_"$resourceName"_pullRequestNumber)
-    local shallowDepth=$(cat $STEP_JSON_PATH | jq .resources.$resourceName.resourceConfigPropertyBag.shallowDepth)
-    local gitConfigs=$(cat $STEP_JSON_PATH | jq .resources.$resourceName.resourceConfigPropertyBag.gitConfig)
-    local gitConfigsCount=$(echo $gitConfigs | jq '. | length')
+    local shallowDepth=$(eval echo "$"res_"$resourceName"_shallowDepth)
     if [ -z "$shallowDepth" ] || [ "$shallowDepth" == "null" ]; then
       unset shallowDepth
     fi
@@ -37,14 +35,10 @@ git_sync_%%context.resourceName%%() {
     if [ ! -z $shallowDepth ]; then
       gitCloneCmd="git clone --no-single-branch --depth $shallowDepth $cloneUrl $repoPath"
     fi
-    shippable_retry ssh-agent bash -c "ssh-add $privateKeyPath; $gitCloneCmd"
+    retry_command ssh-agent bash -c "ssh-add $privateKeyPath; $gitCloneCmd"
     pushd $repoPath
       git config --get user.name || git config user.name 'Shippable Build'
       git config --get user.email || git config user.email 'build@shippable.com'
-      # Set git configs, if present
-      for i in $(seq 1 $gitConfigsCount); do
-        git config $(echo $gitConfigs | jq -r '.['"$i-1"']')
-      done
 
       if $isPullRequest; then
         if [ "$scmName" == "github" ]; then
@@ -52,7 +46,7 @@ git_sync_%%context.resourceName%%() {
           if [ ! -z $shallowDepth ]; then
             gitFetchCmd="git fetch --depth $shallowDepth origin pull/$pullRequestNumber/head"
           fi
-          shippable_retry ssh-agent bash -c "ssh-add $privateKeyPath; $gitFetchCmd"
+          retry_command ssh-agent bash -c "ssh-add $privateKeyPath; $gitFetchCmd"
           git checkout -f FETCH_HEAD
           local mergeResult=0
           {
@@ -90,7 +84,9 @@ git_sync_%%context.resourceName%%() {
         fi
       fi
     popd
+
+    rm $privateKeyPath
   popd
 }
 
-execute_command "git_sync_%%context.resourceName%%"
+execute_command "git_sync %%context.resourceName%%"
