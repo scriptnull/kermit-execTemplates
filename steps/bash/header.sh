@@ -818,7 +818,7 @@ send_notification() {
     # set up type-unique options
     case "$i_mastername" in
       "slackKey" )
-        i_endpoint=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.webhookUrl")
+        i_endpoint=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.url")
         default_payload="$default_slack_payload"
         ;;
       "outgoingWebhook" )
