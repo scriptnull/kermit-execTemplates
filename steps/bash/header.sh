@@ -359,7 +359,7 @@ compare_git() {
   if [[ "$git_repo_path" == "" ]]; then
     local dependency_type=$(cat "$STEP_JSON_PATH" | jq -r '.'"$2")
     local resource_directory=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourcePath")
-    git_repo_path="$resource_directory/gitRepo"
+    git_repo_path="$resource_directory"
   fi
 
   if [[ ! -d "$git_repo_path/.git" ]]; then
