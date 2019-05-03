@@ -1860,6 +1860,10 @@ execute_command() {
   return $cmd_status
 }
 
+on_error() {
+  exit $?
+}
+
 before_exit() {
   return_code=$?
   exit_code=1;
@@ -1926,10 +1930,33 @@ before_exit() {
       stop_group
     fi
 
+    if [ "$(type -t output)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+      start_group "Processing outputs" true
+      # unsetting -e flag so that the script doesn't exit on error
+      set +e
+      # setting -o errtrace so that ERR trap gets called inside functions
+      set -o errtrace
+      # unsetting the error trap in this shell so that if the subshell errors
+      # out, the main shell doesn't run the ERR trap function
+      trap "" ERR
+      # run output function inside a subshell
+      ( output )
+      subshell_exit_code=$?
+      # reset -e flag
+      set -e
+      # unset the errtrace flag
+      set +o errtrace
+      # add the ERR trap
+      trap on_error ERR
+      last_element="Processing_outputs"
+      open_group_info[${last_element}_status]=$subshell_exit_code
+      stop_group
+    fi
+
     if [ $subshell_exit_code -eq 0 ]; then
       echo "__SH__SCRIPT_END_SUCCESS__";
     else
-      echo "__SH__SCRIPT_END_FAILURE__";
+      echo "__SH__SCRIPT_END_FAILURE__|199";
     fi
   else
     # running onComplete and onFailure inside a subshell to handle the scenario of
@@ -1955,10 +1982,6 @@ before_exit() {
 
     echo "__SH__SCRIPT_END_FAILURE__|$exit_code";
   fi
-}
-
-on_error() {
-  exit $?
 }
 
 trap before_exit EXIT
