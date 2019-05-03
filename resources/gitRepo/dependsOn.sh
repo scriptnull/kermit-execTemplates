@@ -24,8 +24,8 @@ git_sync() {
     else
       local cloneUrl=$httpCloneUrl
     fi
-    local repoPath=gitRepo
-    local privateKeyPath=$resourceName.pem
+
+    local privateKeyPath="$STEP_TMP_DIR/$resourceName.pem"
     echo "$privateKey" > $privateKeyPath
     chmod 600 $privateKeyPath
     git config --global credential.helper store
@@ -34,60 +34,58 @@ git_sync() {
     fi
 
     # clone git repo
-    local gitCloneCmd="git clone $cloneUrl $repoPath"
+    local gitCloneCmd="git clone $cloneUrl $resourcePath"
     if [ ! -z $shallowDepth ]; then
-      gitCloneCmd="git clone --no-single-branch --depth $shallowDepth $cloneUrl $repoPath"
+      gitCloneCmd="git clone --no-single-branch --depth $shallowDepth $cloneUrl $resourcePath"
     fi
     retry_command ssh-agent bash -c "ssh-add $privateKeyPath; $gitCloneCmd"
-    pushd $repoPath
-      git config --get user.name || git config user.name 'Shippable Build'
-      git config --get user.email || git config user.email 'build@shippable.com'
 
-      if $isPullRequest; then
-        if [ "$scmName" == "github" ]; then
-          local gitFetchCmd="git fetch origin pull/$pullRequestNumber/head"
-          if [ ! -z $shallowDepth ]; then
-            gitFetchCmd="git fetch --depth $shallowDepth origin pull/$pullRequestNumber/head"
-          fi
-          retry_command ssh-agent bash -c "ssh-add $privateKeyPath; $gitFetchCmd"
-          git checkout -f FETCH_HEAD
-          local mergeResult=0
-          {
-            git merge origin/$branchName
-          } || {
-            mergeResult=$?
-          }
-          if [ $mergeResult -ne 0 ]; then
-            if [ ! -z $shallowDepth ]; then
-              {
-                git rev-list FETCH_HEAD | grep $beforeCommitSha >> /dev/null 2>&1
-              } || {
-                echo "The PR was fetched with depth $shallowDepth, but the base commit $beforeCommitSha is not present. Please try increasing the depth setting on your project."
-              }
-            fi
-            exit $mergeResult
-          fi
+    git config --get user.name || git config user.name 'Shippable Build'
+    git config --get user.email || git config user.email 'build@shippable.com'
+
+    if $isPullRequest; then
+      if [ "$scmName" == "github" ]; then
+        local gitFetchCmd="git fetch origin pull/$pullRequestNumber/head"
+        if [ ! -z $shallowDepth ]; then
+          gitFetchCmd="git fetch --depth $shallowDepth origin pull/$pullRequestNumber/head"
         fi
-      else
-        checkoutResult=0
+        retry_command ssh-agent bash -c "ssh-add $privateKeyPath; $gitFetchCmd"
+        git checkout -f FETCH_HEAD
+        local mergeResult=0
         {
-          git checkout $commitSha
+          git merge origin/$branchName
         } || {
-          checkoutResult=$?
+          mergeResult=$?
         }
-        if [ $checkoutResult -ne 0 ]; then
-          if [ ! -z "$shallowDepth" ]; then
+        if [ $mergeResult -ne 0 ]; then
+          if [ ! -z $shallowDepth ]; then
             {
-              git cat-file -t $commitSha >> /dev/null 2>&1
+              git rev-list FETCH_HEAD | grep $beforeCommitSha >> /dev/null 2>&1
             } || {
-              echo "The repository was cloned with depth $shallowDepth, but the commit $commitSha is not present in this depth. Please increase the depth to run this build."
+              echo "The PR was fetched with depth $shallowDepth, but the base commit $beforeCommitSha is not present. Please try increasing the depth setting on your project."
             }
           fi
-          exit $checkoutResult
+          exit $mergeResult
         fi
       fi
-    popd
-
+    else
+      checkoutResult=0
+      {
+        git checkout $commitSha
+      } || {
+        checkoutResult=$?
+      }
+      if [ $checkoutResult -ne 0 ]; then
+        if [ ! -z "$shallowDepth" ]; then
+          {
+            git cat-file -t $commitSha >> /dev/null 2>&1
+          } || {
+            echo "The repository was cloned with depth $shallowDepth, but the commit $commitSha is not present in this depth. Please increase the depth to run this build."
+          }
+        fi
+        exit $checkoutResult
+      fi
+    fi
     rm $privateKeyPath
   popd
 }
