@@ -1860,6 +1860,10 @@ execute_command() {
   return $cmd_status
 }
 
+on_error() {
+  exit $?
+}
+
 before_exit() {
   return_code=$?
   exit_code=1;
@@ -1926,10 +1930,25 @@ before_exit() {
       stop_group
     fi
 
+    if [ "$(type -t output)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+      start_group "Processing outputs" true
+      set +e
+      set -o errtrace
+      trap "" ERR
+      ( output )
+      subshell_exit_code=$?
+      set -e
+      set +o errtrace
+      trap on_error ERR
+      last_element="Processing_outputs"
+      open_group_info[${last_element}_status]=$subshell_exit_code
+      stop_group
+    fi
+
     if [ $subshell_exit_code -eq 0 ]; then
       echo "__SH__SCRIPT_END_SUCCESS__";
     else
-      echo "__SH__SCRIPT_END_FAILURE__";
+      echo "__SH__SCRIPT_END_FAILURE__|199";
     fi
   else
     # running onComplete and onFailure inside a subshell to handle the scenario of
@@ -1955,10 +1974,6 @@ before_exit() {
 
     echo "__SH__SCRIPT_END_FAILURE__|$exit_code";
   fi
-}
-
-on_error() {
-  exit $?
 }
 
 trap before_exit EXIT
