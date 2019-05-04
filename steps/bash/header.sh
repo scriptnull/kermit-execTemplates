@@ -1739,6 +1739,74 @@ restore_run_state() {
   echo "Files restored"
 }
 
+save_resource_state() {
+  if [ "$1" == "" ] || [ "$2" == "" ] || [ "$3" == "" ]; then
+    echo "Usage: save_resource_state RESOURCE_NAME [DIRECTORY] [FILE] NAME" >&2
+    exit 1
+  fi
+  local resource_name="$1"
+  shift
+  local resource_path=$(eval echo "$"res_"$resource_name"_resourcePath)
+  # Wildcards will be expanded.  The last item is the name.
+  local source_files=( "$@" )
+  local cache_name="${!#}"
+  unset "source_files[${#source_files[@]}-1]"
+
+  local pattern=" |'"
+  if [[ $cache_name =~ $pattern ]]; then
+    echo "Name may not contain spaces."
+    exit 1
+  fi
+
+  echo "Copying files to state"
+  if [ "${#source_files[@]}" -gt 1 ]; then
+    mkdir -p "$resource_path/$cache_name"
+    for filepath in "${source_files[@]}"; do
+      cp -r "$filepath" "$resource_path/$cache_name/$filepath"
+    done
+  else
+    mkdir -p "$resource_path"
+    cp -r "$source_files" "$resource_path/$cache_name"
+  fi
+  echo "Files copied"
+}
+
+restore_resource_state() {
+  if [ "$1" == "" ] || [ "$2" == "" ] || [ "$3" == "" ]; then
+    echo "Usage: restore_resource_state RESOURCE_NAME NAME PATH" >&2
+    exit 1
+  fi
+
+  local resource_name="$1"
+  shift
+  local resource_path=$(eval echo "$"res_"$resource_name"_resourcePath)
+
+  local cache_name="$1"
+  local restore_path="$2"
+  local cache_location="$resource_path/$cache_name"
+
+  local pattern=" |'"
+  if [[ $cache_name =~ $pattern ]]; then
+    echo "Name may not contain spaces."
+    exit 1
+  fi
+
+  if [ ! -d $cache_location ] && [ ! -f $cache_location ]; then
+    echo "No state found for $cache_name."
+    return 0
+  fi
+
+  echo "Restoring state files"
+  if [ -d "$cache_location" ]; then
+    mkdir -p "$restore_path"
+    cp -r "$cache_location/." "$restore_path"
+  elif [ -f "$cache_location" ]; then
+    mkdir -p "$(dirname $cache_location)"
+    cp "$cache_location" "$restore_path"
+  fi
+  echo "Files restored"
+}
+
 start_group() {
   # First argument is the name of the group
   # Second argument is whether the group should be visible or not
