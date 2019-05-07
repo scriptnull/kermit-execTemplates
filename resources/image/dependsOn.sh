@@ -27,7 +27,7 @@ get_image() {
 
   local autoPull=$(eval echo "$"res_"$resourceName"_autoPull)
 
-  if [ ! -z "$autoPull" ] || "$autoPull" == "true" ; then
+  if [ -z "$autoPull" ] || "$autoPull" == "true" ; then
 
     local imageName=$(eval echo "$"res_"$resourceName"_imageName)
     local imageTag=$(eval echo "$"res_"$resourceName"_imageTag)
