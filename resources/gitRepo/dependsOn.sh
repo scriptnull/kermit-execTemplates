@@ -68,7 +68,7 @@ git_sync() {
           fi
           exit $mergeResult
         fi
-      elif [ "$scmName" == "bitbucket" ]; then
+      elif [ "$scmName" == "bitbucket" ] || [ "$scmName" == "bitbucketServerBasic" ]; then
         if [ "$cloneUrl" != "$pullRequestSourceUrl" ]; then
           git remote add PR $pullRequestSourceUrl
           local git_fetch_cmd="git fetch PR"
@@ -109,6 +109,9 @@ git_sync() {
           fi
           exit $merge_result
         fi
+      else
+        echo "Pull requests not supported for $scmName"
+        exit 1
       fi
     else
       checkoutResult=0
