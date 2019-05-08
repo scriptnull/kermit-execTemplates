@@ -33,14 +33,14 @@ get_image() {
     gcloud config set project "$projectId"
     gcloud docker -a
   elif [ "$intMasterName" == "artifactory" ]; then
+    local url=$(eval echo "$"res_"$resourceName"_int_url)
     local apiKey=$(eval echo "$"res_"$resourceName"_int_apiKey)
     if _is_jfrog_version_new; then
       jfrog rt config default-server --url "$url" \
-      --apiKey "$apiKey" --interactive=false
+      --apikey "$apiKey" --interactive=false
       jfrog rt use default-server
     else
-      jfrog rt config --url "$url" --apiKey \
-      "$apiKey"
+      jfrog rt config --url "$url" --apikey "$apiKey"
     fi;
   fi
 
