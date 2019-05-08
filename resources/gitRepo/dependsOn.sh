@@ -14,6 +14,7 @@ git_sync() {
     local isPullRequest=$(eval echo "$"res_"$resourceName"_isPullRequest)
     local isPullRequestClose=$(eval echo "$"res_"$resourceName"_isPullRequestClose)
     local pullRequestNumber=$(eval echo "$"res_"$resourceName"_pullRequestNumber)
+    local pullRequestSourceUrl=$(eval echo "$"res_"$resourceName"_pullRequestSourceUrl)
     local shallowDepth=$(eval echo "$"res_"$resourceName"_shallowDepth)
     if [ -z "$shallowDepth" ] || [ "$shallowDepth" == "null" ]; then
       unset shallowDepth
@@ -66,6 +67,47 @@ git_sync() {
             }
           fi
           exit $mergeResult
+        fi
+      elif [ "$scmName" == "bitbucket" ]; then
+        if [ "$cloneUrl" != "$pullRequestSourceUrl" ]; then
+          git remote add PR $pullRequestSourceUrl
+          local git_fetch_cmd="git fetch PR"
+          if [ ! -z "$shallowDepth" ]; then
+            git_fetch_cmd="git fetch --depth $shallowDepth PR"
+          fi
+          shippable_retry ssh-agent bash -c "ssh-add $privateKeyPath; $git_fetch_cmd"
+        fi;
+        reset_result=0
+        {
+          git reset --hard $commitSha
+        } || {
+          reset_result=$?
+        }
+        if [ $reset_result -ne 0 ]; then
+          if [ ! -z "$shallowDepth" ]; then
+            {
+              git rev-list HEAD | grep $commitSha >> /dev/null 2>&1
+            } || {
+              echo "The PR was fetched with depth $shallowDepth, but the commit $commitSha is not present. Please try increasing the depth setting on your project."
+            }
+          fi
+          exit $reset_result
+        fi
+        merge_result=0
+        {
+          git merge origin/$branchName
+        } || {
+          merge_result=$?
+        }
+        if [ $merge_result -ne 0 ]; then
+          if [ ! -z "$shallowDepth" ]; then
+            {
+              git rev-list HEAD | grep $beforeCommitSha >> /dev/null 2>&1
+            } || {
+              echo "The PR was fetched with depth $shallowDepth, but the base commit $beforeCommitSha is not present. Please try increasing the depth setting on your project."
+            }
+          fi
+          exit $merge_result
         fi
       fi
     else
