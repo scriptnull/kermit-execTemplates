@@ -36,7 +36,7 @@ get_image() {
     local url=$(eval echo "$"res_"$resourceName"_int_url)
     local apiKey=$(eval echo "$"res_"$resourceName"_int_apiKey)
     jfrog rt config default-server --url "$url" \
-    --apikey "$apiKey" --interactive=false
+      --apikey "$apiKey" --interactive=false
     jfrog rt use default-server
   fi
 
