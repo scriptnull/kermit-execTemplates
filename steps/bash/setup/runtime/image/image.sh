@@ -1,6 +1,6 @@
 boot_container() {
   wait_for_exit() {
-    local exit_code=$(docker wait $(cat $STEP_JSON_PATH | jq -r '.step.name'))
+    local exit_code=$(docker wait $DOCKER_CONTAINER_NAME)
 
     if [ $exit_code -ne 0 ]; then
       start_group "Container exit code"
@@ -17,7 +17,7 @@ boot_container() {
     -v $RUN_DIR:$RUN_DIR \
     -v $STATUS_DIR:$STATUS_DIR \
     -v $REQEXEC_DIR:$REQEXEC_DIR \
-    -w $(pwd) -d --init --rm --privileged --name $(cat $STEP_JSON_PATH | jq .step.name)"
+    -w $(pwd) -d --init --rm --privileged --name $DOCKER_CONTAINER_NAME"
   local docker_run_cmd="docker run $DOCKER_CONTAINER_OPTIONS $default_docker_options \
     -e RUNNING_IN_CONTAINER=$RUNNING_IN_CONTAINER \
     $DOCKER_IMAGE \
@@ -36,6 +36,7 @@ fi
 if ! $RUNNING_IN_CONTAINER; then
   export DOCKER_IMAGE="%%context.imageName%%:%%context.imageTag%%"
   export DOCKER_CONTAINER_OPTIONS="%%context.containerOptions%%"
+  export DOCKER_CONTAINER_NAME="$STEP_DOCKER_CONTAINER_NAME"
   SKIP_BEFORE_EXIT_METHODS=true
   RUNNING_IN_CONTAINER=true
   boot_container
