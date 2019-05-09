@@ -3,7 +3,7 @@
 get_image() {
   local resourceName="$1"
   local resourceId=$(eval echo "$"res_"$resourceName"_resourceId)
-  local intMasterName=$(eval echo "$"res_"$resourceName"_masterName)
+  local intMasterName=$(eval echo "$"res_"$resourceName"_int_masterName)
 
   if [ "$intMasterName" == "dockerRegistryLogin" ]; then
     local userName=$(eval echo "$"res_"$resourceName"_int_username)
@@ -12,7 +12,7 @@ get_image() {
 
     retry_command docker login -u "$userName" -p "$password" "$url"
     echo "Docker login for resource $resourceName was successful"
-  elif [ "$intMasterName" == "aws" ]; then
+  elif [ "$intMasterName" == "amazonKeys" ]; then
 
     local accessKeyId=$(eval echo "$"res_"$resourceName"_int_accessKeyId)
     local secretAccessKey=$(eval echo "$"res_"$resourceName"_int_secretAccessKey)
