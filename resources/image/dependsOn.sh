@@ -35,13 +35,9 @@ get_image() {
   elif [ "$intMasterName" == "artifactory" ]; then
     local url=$(eval echo "$"res_"$resourceName"_int_url)
     local apiKey=$(eval echo "$"res_"$resourceName"_int_apiKey)
-    if _is_jfrog_version_new; then
-      jfrog rt config default-server --url "$url" \
-      --apikey "$apiKey" --interactive=false
-      jfrog rt use default-server
-    else
-      jfrog rt config --url "$url" --apikey "$apiKey"
-    fi;
+    jfrog rt config default-server --url "$url" \
+    --apikey "$apiKey" --interactive=false
+    jfrog rt use default-server
   fi
 
   local autoPull=$(eval echo "$"res_"$resourceName"_autoPull)
@@ -54,20 +50,6 @@ get_image() {
     retry_command docker pull "$imageName:$imageTag"
     echo "Docker pull for image $imageName:$imageTag was successful"
   fi
-}
-
-# _is_jfrog_version_new checks if jfrog version is new or old
-_is_jfrog_version_new() {
-  local jfrog_version=""
-  local jfrog_major_version=""
-  local jfrog_minor_version=""
-
-  jfrog_version=$(jfrog --version | awk '{print $3}' )
-  jfrog_major_version=$(echo "$jfrog_version" | awk -F '.' '{print $1}' )
-  jfrog_minor_version=$(echo "$jfrog_version" | awk -F '.' '{print $2}' )
-
-  [[ "$jfrog_major_version" -gt "1" ]] || ( [[ "$jfrog_major_version" -eq "1" ]] &&
-    [[ "$jfrog_minor_version" -gt "9" ]] )
 }
 
 execute_command "get_image %%context.resourceName%%"
