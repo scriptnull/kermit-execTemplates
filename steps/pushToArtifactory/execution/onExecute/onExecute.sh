@@ -1,10 +1,10 @@
 push_to_artifactory() {
   local rtIntName="$artifactoryIntegrationName";
-  local rtIntMasterName=$(eval echo "$"res_"$rtIntName"_int_masterName)
+  local rtIntMasterName=$(eval echo "$"int_"$rtIntName"_masterName)
 
   if [ "$rtIntMasterName" != "artifactory" ]; then
     echo "ERROR: $rtIntName is not an Artifactory integration"
-    exit 1;
+    exit 1
   fi
 
   local rtUrl=$(eval echo "$"int_"$rtIntName"_url)
@@ -13,14 +13,17 @@ push_to_artifactory() {
 
   jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 
-  if [ "$stepPackageType" == "files" ]; then
+  if [ "$PUSH_TO_RT_PACKAGE_TYPE" == "file" ]; then
     jfrog rt u $sourcePath $targetPath --build-name=$STEP_NAME --build-number=$STEP_ID
     #jfrog rt bce $STEP_NAME $STEP_NUMBER
     jfrog rt bp $STEP_NAME $STEP_NUMBER
-  elif [ "$stepPackageType" == "docker" ]; then
+  elif [ "$PUSH_TO_RT_PACKAGE_TYPE" == "docker" ]; then
     jfrog rt docker-push $imageTag $targetRepo --build-name=$STEP_NAME --build-number=$STEP_ID
     #jfrog rt bce $STEP_NAME $STEP_ID
     jfrog rt bp $STEP_NAME $STEP_ID
+  else
+    echo "Unknown packageType: $PUSH_TO_RT_PACKAGE_TYPE"
+    exit 1
   fi
 }
 
