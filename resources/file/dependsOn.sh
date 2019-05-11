@@ -5,6 +5,7 @@ get_file() {
   local resourcePath=$(eval echo "$"res_"$resourceName"_resourcePath)
   local intMasterName=$(eval echo "$"res_"$resourceName"_int_masterName)
   local fileLocation=$(eval echo "$"res_"$resourceName"_fileLocation)
+  local fileName=$(eval echo "$"res_"$resourceName"_fileName)
   local autoPull=$(eval echo "$"res_"$resourceName"_autoPull)
 
   if [ -z "$autoPull" ] || "$autoPull" == "true" ; then
@@ -18,7 +19,7 @@ get_file() {
       aws configure set aws_secret_access_key "$secretAccessKey"
       aws configure set region "$region"
 
-      aws s3 sync $fileLocation $resourcePath
+      aws s3 cp $fileLocation/$fileName $resourcePath
     elif [ "$intMasterName" == "gcloudKey" ]; then
       local jsonKey=$(eval echo "$"res_"$resourceName"_int_jsonKey)
       local projectId="$( echo "$jsonKey" | jq -r '.project_id' )"
