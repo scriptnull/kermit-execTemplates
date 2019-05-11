@@ -29,7 +29,7 @@ get_file() {
       gcloud -q auth activate-service-account --key-file "key.json"
       gcloud config set project "$projectId"
 
-      gcloud compute scp --recurse $fileLocation $resourcePath
+      gsutil cp $fileLocation/$fileName $resourcePath
     fi
     echo "Successfully fetched file"
   fi
