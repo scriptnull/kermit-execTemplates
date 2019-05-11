@@ -30,6 +30,13 @@ get_file() {
       gcloud config set project "$projectId"
 
       gsutil cp $fileLocation/$fileName $resourcePath
+    elif [ "$intMasterName" == "artifactory" ]; then
+      local rtUrl=$(eval echo "$"res_"$resourceName"_int_url)
+      local rtUser=$(eval echo "$"res_"$resourceName"_int_user)
+      local rtApiKey=$(eval echo "$"res_"$resourceName"_int_apikey)
+
+      jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
+      jfrog rt dl $fileLocation/$fileName $resourcePath
     fi
     echo "Successfully fetched file"
   fi
