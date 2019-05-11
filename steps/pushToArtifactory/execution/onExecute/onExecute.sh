@@ -13,16 +13,16 @@ push_to_artifactory() {
 
   jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 
-  if [ "$PUSH_TO_RT_PACKAGE_TYPE" == "file" ]; then
+  if [ "$payloadType" == "file" ]; then
     jfrog rt u $sourcePath $targetPath --build-name=$STEP_NAME --build-number=$STEP_ID
     #jfrog rt bce $STEP_NAME $STEP_NUMBER
     jfrog rt bp $STEP_NAME $STEP_NUMBER
-  elif [ "$PUSH_TO_RT_PACKAGE_TYPE" == "docker" ]; then
+  elif [ "$payloadType" == "docker" ]; then
     jfrog rt docker-push $imageTag $targetRepo --build-name=$STEP_NAME --build-number=$STEP_ID
     #jfrog rt bce $STEP_NAME $STEP_ID
     jfrog rt bp $STEP_NAME $STEP_ID
   else
-    echo "Unknown packageType: $PUSH_TO_RT_PACKAGE_TYPE"
+    echo "Unknown packageType: $payloadType"
     exit 1
   fi
 }
