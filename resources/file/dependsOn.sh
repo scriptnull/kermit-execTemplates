@@ -37,6 +37,26 @@ get_file() {
 
       jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
       jfrog rt dl $fileLocation/$fileName $resourcePath
+    elif [ "$intMasterName" == "fileServer" ]; then
+      local fsProtocol=$(eval echo "$"res_"$resourceName"_int_protocol)
+      local fsUrl=$(eval echo "$"res_"$resourceName"_int_url)
+      local fsUsername=$(eval echo "$"res_"$resourceName"_int_username)
+      local fsPassword=$(eval echo "$"res_"$resourceName"_int_password)
+
+      if [ "$fsProtocol" == "FTP" ]; then
+        local ftpScriptFileName="ftp_get_file.txt"
+        pushd $resourcePath
+        touch $ftpScriptFileName
+        cp /dev/null $ftpScriptFileName
+        echo "open $fsUrl" >> $ftpScriptFileName
+        echo "user $fsUsername $fsPassword" >> $ftpScriptFileName
+        echo "cd $fileLocation" >> $ftpScriptFileName
+        echo "get $fileName" >> $ftpScriptFileName
+        echo "bye" >> $ftpScriptFileName
+        ftp -n < $ftpScriptFileName
+        rm -f $ftpScriptFileName
+        popd
+      fi
     fi
     echo "Successfully fetched file"
   fi
