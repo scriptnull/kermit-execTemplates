@@ -1227,6 +1227,8 @@ switch_env() {
     _set_clojure "$version"
   elif [ "$language" == "c" ]; then
     _set_c "$version"
+  elif [ "$language" == "none" ]; then
+    echo "Skipping version setup for language: none" >&2
   else
     echo "Error: unsupported language: $language" >&2
     exit 99
