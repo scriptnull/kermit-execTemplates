@@ -1215,7 +1215,7 @@ switch_env() {
     _set_go $version
   elif [ "$language" == "python" ]; then
     _set_python "$version"
-  elif [ "$language" == "nodejs" ]; then
+  elif [ "$language" == "nodeJs" ]; then
     _set_nodejs "$version"
   elif [ "$language" == "ruby" ]; then
     _set_ruby "$version" "$optional_jdk" "$optional_bundler"
@@ -1227,6 +1227,8 @@ switch_env() {
     _set_clojure "$version"
   elif [ "$language" == "c" ]; then
     _set_c "$version"
+  elif [ "$language" == "none" ]; then
+    echo "Skipping version setup for language: none" >&2
   else
     echo "Error: unsupported language: $language" >&2
     exit 99
