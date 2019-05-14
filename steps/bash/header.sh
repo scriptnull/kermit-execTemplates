@@ -1215,7 +1215,7 @@ switch_env() {
     _set_go $version
   elif [ "$language" == "python" ]; then
     _set_python "$version"
-  elif [ "$language" == "nodeJs" ]; then
+  elif [ "$language" == "nodejs" ]; then
     _set_nodejs "$version"
   elif [ "$language" == "ruby" ]; then
     _set_ruby "$version" "$optional_jdk" "$optional_bundler"
