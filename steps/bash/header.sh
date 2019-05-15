@@ -413,6 +413,116 @@ compare_git() {
   echo "$result" | uniq
 }
 
+update_commit_status() {
+  if [[ $# -le 0 ]]; then
+    echo "Usage: update_commit_status RESOURCE --status STATUS [--message \"MESSAGE\" --context CONTEXT]" >&2
+    exit 99
+  fi
+
+  # parse and validate the resource details
+  local resourceName="$1"
+  shift
+
+  local integration_name=$(eval echo "$"res_"$resourceName"_int_name)
+  if [ -z "$integration_name" ]; then
+    echo "Error: integration data not found for $resourceName" >&2
+    exit 99
+  fi
+
+  local i_mastername=$(eval echo "$"res_"$resourceName"_int_masterName)
+
+  # declare options and defaults, and parse arguments
+  export opt_status=""
+  export opt_message=""
+
+  export opt_context=""
+  if [ -z "$opt_context" ]; then
+    opt_context="${PIPELINE_NAME}_${STEP_NAME}"
+  fi
+
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --status)
+        opt_status="$2"
+        shift
+        shift
+        ;;
+      --message)
+        opt_message="$2"
+        shift
+        shift
+        ;;
+      --context)
+        opt_context="$2"
+        shift
+        shift
+        ;;
+      *)
+        echo "Warning: Unrecognized flag \"$1\""
+        shift
+        ;;
+    esac
+  done
+
+  if [ -z "$opt_status" ]; then
+    echo "Error: --status is required" >&2
+    exit 99
+  fi
+
+  if [ "$opt_status" != "processing" ] && [ "$opt_status" != "success" ] && [ "$opt_status" != "failure" ] ; then
+    echo "Error: --status may only be processing, success, or failure" >&2
+    exit 99
+  fi
+
+  if [ -z "$opt_message" ]; then
+    opt_message="Step $opt_status in pipeline $PIPELINE_NAME"
+  fi
+
+  local payload=""
+  local endpoint=""
+  local headers=""
+
+  local commit=$(eval echo "$"res_"$resourceName"_commitSha)
+  local full_name=$(eval echo "$"res_"$resourceName"_gitRepoFullName)
+  local integration_url=$(eval echo "$"res_"$resourceName"_int_url)
+
+  # set up type-unique options
+  case "$i_mastername" in
+    github | githubEnterprise )
+      local token=$(eval echo "$"res_"$resourceName"_int_token)
+      local state=""
+      if [ "$opt_status" == "processing" ] ; then
+        state="pending"
+      elif [ "$opt_status" == "success" ] ; then
+        state="success"
+      elif [ "$opt_status" == "failure" ] ; then
+        state="failure"
+      fi
+      payload="{\"target_url\": \"\${STEP_URL}\",\"description\": \"\${opt_message}\", \"context\": \"\${opt_context}\", \"state\": \"$state\"}"
+      endpoint="$integration_url/repos/$full_name/statuses/$commit"
+      headers="-H Authorization:'token $token' -H Accept:'application/vnd.GithubProvider.v3'"
+      ;;
+    *)
+      echo "Error: unsupported provider: $i_mastername" >&2
+      exit 99
+      ;;
+  esac
+
+  local payload_file=/tmp/payload.json
+  echo $payload > $payload_file
+
+  replace_envs $payload_file
+
+  local isValid=$(jq type $payload_file || true)
+  if [ -z "$isValid" ]; then
+    echo "Error: payload is not valid JSON" >&2
+    exit 99
+  fi
+
+  echo "sending update"
+  _post_curl "$payload_file" "$headers" "$endpoint"
+}
+
 replicate_resource() {
   if [ "$1" == "" ] || [ "$2" == "" ]; then
     echo "Usage: replicate_resource FROM_resource_name TO_resource_name" >&2
