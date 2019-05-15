@@ -22,22 +22,13 @@ download_resource_state() {
 
     echo "Received a short lived download url for resource"
     echo 'Downloading archive'
-    if [ -z "$artifact_get_opts" ]; then
-      curl \
-        -s \
-        --connect-timeout 60 \
-        --max-time 120 \
-        -XGET "$artifact_get_url" \
-        -o "$archiveFile"
-    else
-      curl \
-        -s \
-        "$artifact_get_opts" \
-        --connect-timeout 60 \
-        --max-time 120 \
-        -XGET "$artifact_get_url" \
-        -o "$archiveFile"
-    fi
+    curl \
+      -s \
+      "$artifact_get_opts" \
+      --connect-timeout 60 \
+      --max-time 120 \
+      -XGET "$artifact_get_url" \
+      -o "$archiveFile"
 
     tar -xzf $archiveFile -C $resourcePath
 

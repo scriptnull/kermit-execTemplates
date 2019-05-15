@@ -20,22 +20,13 @@ upload_resource_state() {
   local artifact_opts=$(eval $get_artifact_url | jq -r '.putOpts')
   echo "Received a short lived upload url for resource"
 
-  if [ -z "$artifact_opts" ]; then
-    curl \
-      -s \
-      --connect-timeout 60 \
-      --max-time 120 \
-      -XPUT "$artifact_url" \
-      -T "$archiveFile"
-  else
-    curl \
-      -s \
-      "$artifact_opts" \
-      --connect-timeout 60 \
-      --max-time 120 \
-      -XPUT "$artifact_url" \
-      -T "$archiveFile"
-  fi
+  curl \
+    -s \
+    "$artifact_opts" \
+    --connect-timeout 60 \
+    --max-time 120 \
+    -XPUT "$artifact_url" \
+    -T "$archiveFile"
 
   write_output $resourceName "artifactName=$artifactName"
 
