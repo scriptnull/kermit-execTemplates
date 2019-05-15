@@ -415,7 +415,7 @@ compare_git() {
 
 update_commit_status() {
   if [[ $# -le 0 ]]; then
-    echo "Usage: update_commit_status RESOURCE --status STATUS [--message \"MESSAGE\" --context CONTEXT]" >&2
+    echo "Usage: update_commit_status RESOURCE [--status STATUS --message \"MESSAGE\" --context CONTEXT]" >&2
     exit 99
   fi
 
@@ -465,8 +465,28 @@ update_commit_status() {
   done
 
   if [ -z "$opt_status" ]; then
-    echo "Error: --status is required" >&2
-    exit 99
+    case "$CURRENT_SCRIPT_SECTION" in
+      onStart | onExecute )
+        opt_status="processing"
+        ;;
+      onSuccess )
+        opt_status="success"
+        ;;
+      onFailure )
+        opt_status="failure"
+        ;;
+      onComplete )
+        if [ "$is_success" == "true" ]; then
+          opt_status="success"
+        else
+          opt_status="failure"
+        fi
+        ;;
+      *)
+        echo "Error: unable to determine status in section $CURRENT_SCRIPT_SECTION" >&2
+        exit 99
+        ;;
+    esac
   fi
 
   if [ "$opt_status" != "processing" ] && [ "$opt_status" != "success" ] && [ "$opt_status" != "failure" ] ; then
