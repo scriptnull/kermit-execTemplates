@@ -17,10 +17,12 @@ upload_resource_state() {
     -H 'Content-Type: application/json'"
 
   local artifact_url=$(eval $get_artifact_url | jq -r '.put')
+  local artifact_opts=$(eval $get_artifact_url | jq -r '.putOpts')
   echo "Received a short lived upload url for resource"
 
   curl \
     -s \
+    "$artifact_opts" \
     --connect-timeout 60 \
     --max-time 120 \
     -XPUT "$artifact_url" \

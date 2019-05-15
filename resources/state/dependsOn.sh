@@ -18,10 +18,13 @@ download_resource_state() {
       -H 'Content-Type: application/json'"
     local artifact_urls=$(eval $get_artifact_url)
     local artifact_get_url=$(echo $artifact_urls | jq -r '.get')
+    local artifact_get_opts=$(echo $artifact_urls | jq -r '.getOpts')
+
     echo "Received a short lived download url for resource"
     echo 'Downloading archive'
     curl \
       -s \
+      "$artifact_get_opts" \
       --connect-timeout 60 \
       --max-time 120 \
       -XGET "$artifact_get_url" \
