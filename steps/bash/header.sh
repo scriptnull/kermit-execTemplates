@@ -502,6 +502,23 @@ update_commit_status() {
       endpoint="$integration_url/repos/$full_name/statuses/$commit"
       headers="-H Authorization:'token $token' -H Accept:'application/vnd.GithubProvider.v3'"
       ;;
+    bitbucket )
+      local username=$(eval echo "$"res_"$resourceName"_int_username)
+      local app_password=$(eval echo "$"res_"$resourceName"_int_token)
+      local token=$( echo -n "$username:$app_password" | base64 )
+      local state=""
+      if [ "$opt_status" == "processing" ] ; then
+        state="INPROGRESS"
+      elif [ "$opt_status" == "success" ] ; then
+        state="SUCCESSFUL"
+      elif [ "$opt_status" == "failure" ] ; then
+        state="FAILED"
+      fi
+
+      payload="{\"url\": \"\${STEP_URL}\",\"description\": \"\${opt_message}\", \"key\": \"\${opt_context}\", \"name\": \"\${STEP_NAME}\", \"state\": \"$state\"}"
+      endpoint="$integration_url/2.0/repositories/$full_name/commit/$commit/statuses/build"
+      headers="-H Authorization:'Basic $token'"
+      ;;
     *)
       echo "Error: unsupported provider: $i_mastername" >&2
       exit 99
