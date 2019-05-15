@@ -1,4 +1,4 @@
-push_to_artifactory() {
+push() {
   local outputIntName="$outputIntegrationName";
   local outputIntMasterName=$(eval echo "$"int_"$outputIntName"_masterName)
 
@@ -11,7 +11,7 @@ push_to_artifactory() {
     local dhUrl=$(eval echo "$"int_"$outputIntName"_url)
     local dhUsername=$(eval echo "$"int_"$outputIntName"_username)
     local dhPassword=$(eval echo "$"int_"$outputIntName"_password)
-    retry_command docker login -u "$userName" -p "$password" "$url"
+    retry_command docker login -u "$dhUsername" -p "$dhPassword" "$dhUrl"
   else
     echo "$outputIntegrationName is not an Artifactory or Docker Registry integration"
     exit 1
@@ -36,4 +36,4 @@ push_to_artifactory() {
   fi
 }
 
-execute_command push_to_artifactory
+execute_command push
