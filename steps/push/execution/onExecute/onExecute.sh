@@ -3,21 +3,25 @@ push() {
     # We need to use the integration from the output resource
     if [ "$step_payloadType" == "docker" ]; then
       local outputIntMasterName=$(eval echo "$"res_"$outputImageResourceName"_int_masterName)
+      local outputResName=$outputImageResourceName
+    elif [ "$step_payloadType" == "file" ]; then
+      local outputIntMasterName=$(eval echo "$"res_"$outputFileResourceName"_int_masterName)
+      local outputResName=$outputFileResourceName
     fi
 
-    echo "[push] Authenticating using resource $outputImageResourceName"
+    echo "[push] Authenticating using resource $outputResName"
     if [ "$outputIntMasterName" == "artifactory" ]; then
-      local rtUrl=$(eval echo "$"res_"$outputImageResourceName"_int_url)
-      local rtUser=$(eval echo "$"res_"$outputImageResourceName"_int_user)
-      local rtApiKey=$(eval echo "$"res_"$outputImageResourceName"_int_apikey)
+      local rtUrl=$(eval echo "$"res_"$outputResName"_int_url)
+      local rtUser=$(eval echo "$"res_"$outputResName"_int_user)
+      local rtApiKey=$(eval echo "$"res_"$outputResName"_int_apikey)
       retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
     elif [ "$outputIntMasterName" == "dockerRegistryLogin" ]; then
-      local dhUrl=$(eval echo "$"res_"$outputImageResourceName"_int_url)
-      local dhUsername=$(eval echo "$"res_"$outputImageResourceName"_int_username)
-      local dhPassword=$(eval echo "$"res_"$outputImageResourceName"_int_password)
+      local dhUrl=$(eval echo "$"res_"$outputResName"_int_url)
+      local dhUsername=$(eval echo "$"res_"$outputResName"_int_username)
+      local dhPassword=$(eval echo "$"res_"$outputResName"_int_password)
       retry_command docker login -u "$dhUsername" -p "$dhPassword" "$dhUrl"
     else
-      echo "[push] $outputImageResourceName uses an unsupported integration"
+      echo "[push] $outputResName uses an unsupported integration"
       exit 1
     fi
   else
@@ -45,9 +49,21 @@ push() {
   fi
 
   if [ "$step_payloadType" == "file" ]; then
-    retry_command jfrog rt u $sourcePath $targetPath --build-name=$STEP_NAME --build-number=$STEP_ID
-    #retry_command jfrog rt bce $STEP_NAME $STEP_ID
-    retry_command jfrog rt bp $STEP_NAME $STEP_ID
+    if [ ! -z "$inputFileResourceName" ]; then
+      # We need to get $inputFileLocation and $inputFileName from the resource
+      local inputFileLocation=$(eval echo "$"res_"$inputFileResourceName"_resourcePath)
+      local inputFileName=$(eval echo "$"res_"$inputFileResourceName"_fileName)
+    fi
+    if [ ! -z "$outputFileResourceName" ]; then
+      # We need to get $inputFileLocation and $inputFileName from the resource
+      local outputFileLocation=$(eval echo "$"res_"$outputFileResourceName"_fileLocation)
+    fi
+
+    if [ "$outputIntMasterName" == "artifactory" ]; then
+      retry_command jfrog rt u $inputFileLocation/$inputFileName $outputFileLocation/$outputFileName --build-name=$STEP_NAME --build-number=$STEP_ID
+      #retry_command jfrog rt bce $STEP_NAME $STEP_ID
+      retry_command jfrog rt bp $STEP_NAME $STEP_ID
+    fi
   elif [ "$step_payloadType" == "docker" ]; then
     if [ ! -z "$inputImageResourceName" ]; then
       local inputImageName=$(eval echo "$"res_"$inputImageResourceName"_imageName)

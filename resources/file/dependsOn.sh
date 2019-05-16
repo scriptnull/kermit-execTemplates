@@ -36,7 +36,7 @@ get_file() {
       local rtApiKey=$(eval echo "$"res_"$resourceName"_int_apikey)
 
       jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
-      jfrog rt dl $fileLocation/$fileName $resourcePath
+      jfrog rt dl "$fileLocation/$fileName" "$resourcePath/$fileName"
     elif [ "$intMasterName" == "fileServer" ]; then
       local fsProtocol=$(eval echo "$"res_"$resourceName"_int_protocol)
       local fsUrl=$(eval echo "$"res_"$resourceName"_int_url)
