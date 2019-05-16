@@ -34,10 +34,12 @@ get_image() {
     gcloud docker -a
   elif [ "$intMasterName" == "artifactory" ]; then
     local url=$(eval echo "$"res_"$resourceName"_int_url)
-    local apiKey=$(eval echo "$"res_"$resourceName"_int_apiKey)
-    jfrog rt config default-server --url "$url" \
+    local user=$(eval echo "$"res_"$resourceName"_int_user)
+    local apiKey=$(eval echo "$"res_"$resourceName"_int_apikey)
+    jfrog rt config default-server --url "$url" --user "$user" \
       --apikey "$apiKey" --interactive=false
     jfrog rt use default-server
+    retry_command docker login -u "$user" -p "$apiKey" "$url"
   fi
 
   local autoPull=$(eval echo "$"res_"$resourceName"_autoPull)
