@@ -13,13 +13,11 @@ get_file() {
     if [ "$intMasterName" == "amazonKeys" ]; then
       local accessKeyId=$(eval echo "$"res_"$resourceName"_int_accessKeyId)
       local secretAccessKey=$(eval echo "$"res_"$resourceName"_int_secretAccessKey)
-      local region=$(eval echo "$"res_"$resourceName"_region)
 
       aws configure set aws_access_key_id "$accessKeyId"
       aws configure set aws_secret_access_key "$secretAccessKey"
-      aws configure set region "$region"
 
-      aws s3 cp $fileLocation/$fileName $resourcePath
+      aws s3 cp "$fileLocation/$fileName" "$resourcePath"
     elif [ "$intMasterName" == "gcloudKey" ]; then
       local jsonKey=$(eval echo "$"res_"$resourceName"_int_jsonKey)
       local projectId="$( echo "$jsonKey" | jq -r '.project_id' )"
@@ -50,6 +48,7 @@ get_file() {
         cp /dev/null $ftpScriptFileName
         echo "open $fsUrl" >> $ftpScriptFileName
         echo "user $fsUsername $fsPassword" >> $ftpScriptFileName
+        echo "pass" >> $ftpScriptFileName
         echo "cd $fileLocation" >> $ftpScriptFileName
         echo "get $fileName" >> $ftpScriptFileName
         echo "bye" >> $ftpScriptFileName
