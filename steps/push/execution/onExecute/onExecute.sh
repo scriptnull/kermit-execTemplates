@@ -20,6 +20,24 @@ push() {
       local dhUsername=$(eval echo "$"res_"$outputResName"_int_username)
       local dhPassword=$(eval echo "$"res_"$outputResName"_int_password)
       retry_command docker login -u "$dhUsername" -p "$dhPassword" "$dhUrl"
+    elif [ "$outputIntMasterName" == "amazonKeys" ]; then
+      local accessKeyId=$(eval echo "$"res_"$outputResName"_int_accessKeyId)
+      local secretAccessKey=$(eval echo "$"res_"$outputResName"_int_secretAccessKey)
+      aws configure set aws_access_key_id "$accessKeyId"
+      aws configure set aws_secret_access_key "$secretAccessKey"
+    elif [ "$outputIntMasterName" == "gcloudKey" ]; then
+      local jsonKey=$(eval echo "$"res_"$outputResName"_int_jsonKey)
+      local projectId="$( echo "$jsonKey" | jq -r '.project_id' )"
+
+      touch key.json
+      echo "$jsonKey" > key.json
+      gcloud -q auth activate-service-account --key-file "key.json"
+      gcloud config set project "$projectId"
+    elif [ "$outputIntMasterName" == "fileServer" ]; then
+      local fsProtocol=$(eval echo "$"res_"$outputResName"_int_protocol)
+      local fsUrl=$(eval echo "$"res_"$outputResName"_int_url)
+      local fsUsername=$(eval echo "$"res_"$outputResName"_int_username)
+      local fsPassword=$(eval echo "$"res_"$outputResName"_int_password)
     else
       echo "[push] $outputResName uses an unsupported integration"
       exit 1
@@ -40,6 +58,24 @@ push() {
       local dhUsername=$(eval echo "$"int_"$outputIntName"_username)
       local dhPassword=$(eval echo "$"int_"$outputIntName"_password)
       retry_command docker login -u "$dhUsername" -p "$dhPassword" "$dhUrl"
+    elif [ "$outputIntMasterName" == "amazonKeys" ]; then
+      local accessKeyId=$(eval echo "$"int_"$outputIntName"_accessKeyId)
+      local secretAccessKey=$(eval echo "$"int_"$outputIntName"_secretAccessKey)
+      aws configure set aws_access_key_id "$accessKeyId"
+      aws configure set aws_secret_access_key "$secretAccessKey"
+    elif [ "$outputIntMasterName" == "gcloudKey" ]; then
+      local jsonKey=$(eval echo "$"int_"$outputIntName"_jsonKey)
+      local projectId="$( echo "$jsonKey" | jq -r '.project_id' )"
+
+      touch /tmp/key.json
+      echo "$jsonKey" > /tmp/key.json
+      gcloud -q auth activate-service-account --key-file "/tmp/key.json"
+      gcloud config set project "$projectId"
+    elif [ "$intMasterName" == "fileServer" ]; then
+      local fsProtocol=$(eval echo "$"int_"$outputIntName"_protocol)
+      local fsUrl=$(eval echo "$"int_"$outputIntName"_url)
+      local fsUsername=$(eval echo "$"int_"$outputIntName"_username)
+      local fsPassword=$(eval echo "$"int_"$outputIntName"_password)
     else
       echo "[push] $outputIntegrationName is an unsupported integration"
       exit 1
@@ -63,7 +99,32 @@ push() {
       retry_command jfrog rt u $inputFileLocation/$inputFileName $outputFileLocation/$outputFileName --build-name=$STEP_NAME --build-number=$STEP_ID
       #retry_command jfrog rt bce $STEP_NAME $STEP_ID
       retry_command jfrog rt bp $STEP_NAME $STEP_ID
+    elif [ "$outputIntMasterName" == "amazonKeys" ]; then
+      aws s3 cp $inputFileLocation/$inputFileName $outputFileLocation/$outputFileName
+    elif [ "$outputIntMasterName" == "gcloudKey" ]; then
+      gsutil cp $inputFileLocation/$inputFileName $outputFileLocation/$outputFileName
+      rm -f /tmp/key.json
+    elif [ "$outputIntMasterName" == "fileServer" ]; then
+      if [ "$fsProtocol" == "FTP" ]; then
+        local ftpScriptFileName="ftp_put_file.txt"
+        touch $ftpScriptFileName
+        cp /dev/null $ftpScriptFileName
+        echo "open $fsUrl" >> $ftpScriptFileName
+        echo "user $fsUsername $fsPassword" >> $ftpScriptFileName
+        echo "pass" >> $ftpScriptFileName
+        echo "cd $outputFileLocation" >> $ftpScriptFileName
+        echo "put $inputFileLocation/$inputFileName $outputFileName" >> $ftpScriptFileName
+        echo "bye" >> $ftpScriptFileName
+        ftp -n < $ftpScriptFileName
+        rm -f $ftpScriptFileName
+      fi
     fi
+
+    if [ ! -z "$outputFileResourceName" ]; then
+      echo "[push] Writing output to resource $outputFileResourceName"
+      write_output $outputFileResourceName fileLocation=$outputFileLocation fileName=$outputFileName
+    fi
+
   elif [ "$step_payloadType" == "docker" ]; then
     if [ ! -z "$inputImageResourceName" ]; then
       local inputImageName=$(eval echo "$"res_"$inputImageResourceName"_imageName)
