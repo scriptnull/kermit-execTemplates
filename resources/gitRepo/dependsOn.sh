@@ -34,12 +34,15 @@ git_sync() {
       git config --global http.sslVerify false
     fi
 
+    echo 'ssh -o StrictHostKeyChecking=no $*' > "$STEP_TMP_DIR/${resourceName}ssh"
+    chmod +x "$STEP_TMP_DIR/${resourceName}ssh"
+
     # clone git repo
     local gitCloneCmd="git clone $cloneUrl $resourcePath"
     if [ ! -z $shallowDepth ]; then
       gitCloneCmd="git clone --no-single-branch --depth $shallowDepth $cloneUrl $resourcePath"
     fi
-    retry_command ssh-agent bash -c "ssh-add $privateKeyPath; $gitCloneCmd"
+    retry_command ssh-agent bash -c "ssh-add $privateKeyPath; GIT_SSH="$STEP_TMP_DIR/${resourceName}ssh" $gitCloneCmd"
 
     git config --get user.name || git config user.name 'Shippable Build'
     git config --get user.email || git config user.email 'build@shippable.com'
@@ -50,7 +53,7 @@ git_sync() {
         if [ ! -z $shallowDepth ]; then
           gitFetchCmd="git fetch --depth $shallowDepth origin pull/$pullRequestNumber/head"
         fi
-        retry_command ssh-agent bash -c "ssh-add $privateKeyPath; $gitFetchCmd"
+        retry_command ssh-agent bash -c "ssh-add $privateKeyPath; GIT_SSH="$STEP_TMP_DIR/${resourceName}ssh" $gitFetchCmd"
         git checkout -f FETCH_HEAD
         local mergeResult=0
         {
@@ -75,7 +78,7 @@ git_sync() {
           if [ ! -z "$shallowDepth" ]; then
             git_fetch_cmd="git fetch --depth $shallowDepth PR"
           fi
-          shippable_retry ssh-agent bash -c "ssh-add $privateKeyPath; $git_fetch_cmd"
+          retry_command ssh-agent bash -c "ssh-add $privateKeyPath; GIT_SSH="$STEP_TMP_DIR/${resourceName}ssh" $git_fetch_cmd"
         fi;
         reset_result=0
         {
