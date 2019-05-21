@@ -1838,6 +1838,12 @@ export_run_variables() {
   fi
 }
 
+export_pipeline_variables() {
+  if [ -f $PIPELINE_WORKSPACE_DIR/pipeline.env ]; then
+    source $PIPELINE_WORKSPACE_DIR/pipeline.env
+  fi
+}
+
 save_run_state() {
   if [ "$1" == "" ] || [ "$2" == "" ]; then
     echo "Usage: save_run_state [DIRECTORY] [FILE] NAME" >&2
