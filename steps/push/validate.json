@@ -1,0 +1,200 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://jfrog.com/cicd/steps/step.schema.json",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["push"]
+    },
+    "payloadType": {
+      "type": "string",
+      "enum": ["docker", "file"]
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "affinityGroup": {
+          "type": "string"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "nodePool": {
+          "type": "string"
+        }
+      }
+    },
+    "setup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "environmentVariables": {
+          "type": "object",
+          "properties": {
+            "normal": {
+              "type": "object",
+              "additionalProperties": {
+                "type": ["string", "number"]
+              }
+            },
+            "encrypted": {
+              "type": "object",
+              "additionalProperties": {
+                "type": ["string", "number"]
+              }
+            }
+          }
+        },
+        "runtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["image", "host"]
+            },
+            "image": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "auto": {
+                  "type": "object",
+                  "required": ["language"],
+                  "properties": {
+                    "language": {
+                      "type": "string"
+                    },
+                    "versions": {
+                      "type": "array",
+                      "items":  {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "custom": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["name", "tag"],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "tag": {
+                      "type": "string"
+                    },
+                    "options": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": ["type"]
+        }
+      }
+    },
+    "requires": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "integrations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "triggeredBy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "onStart": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "onSuccess": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "onFailure": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "onComplete": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "onCancel": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "outputResources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "payloadType"
+  ],
+  "additionalProperties": false
+}
