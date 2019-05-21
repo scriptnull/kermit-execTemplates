@@ -19,7 +19,7 @@ Function stop_group() {
   $date_time = (Get-Date).ToUniversalTime()
   $group_end_timestamp = [System.Math]::Truncate((Get-Date -Date $date_time -UFormat %s))
 
-  Write-Output "__SH__GROUP__END__|{`"type`":`"grp`",`"sequenceNumber`":`"$group_end_timestamp`",`"id`":`"$group.uuid`",`"is_shown`":`"$group.shown`",`"exitcode`":`"$group.status`"}|$($group.name)"
+  Write-Output "__SH__GROUP__END__|{`"type`":`"grp`",`"sequenceNumber`":`"$group_end_timestamp`",`"id`":`"$($group.uuid)`",`"is_shown`":`"$($group.shown)`",`"exitcode`":`"$($group.status)`"}|$($group.name)"
 
   $open_group_list.Pop() | Out-Null
 }
@@ -71,7 +71,7 @@ Function execute_command([string]$cmd) {
   $cmd_uuid = [guid]::NewGuid().Guid
   $date_time = (Get-Date).ToUniversalTime()
   $cmd_start_timestamp = [System.Math]::Truncate((Get-Date -Date $date_time -UFormat %s))
-  Write-Output "__SH__CMD__START__|{`"type`":`"cmd`",`"sequenceNumber`":`"$cmd_start_timestamp`",`"id`":`"$cmd_uuid`",`"parentConsoleId`": `"$group.uuid`"}|$cmd"
+  Write-Output "__SH__CMD__START__|{`"type`":`"cmd`",`"sequenceNumber`":`"$cmd_start_timestamp`",`"id`":`"$cmd_uuid`",`"parentConsoleId`": `"$($group.uuid)`"}|$cmd"
 
   $cmd_status = 0
   $ErrorActionPreference = "Stop"
