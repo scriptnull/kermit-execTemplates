@@ -19,7 +19,7 @@ Function stop_group() {
   $date_time = (Get-Date).ToUniversalTime()
   $group_end_timestamp = [System.Math]::Truncate((Get-Date -Date $date_time -UFormat %s))
 
-  Write-Output "__SH__GROUP__END__|{`"type`":`"grp`",`"sequenceNumber`":`"$group_end_timestamp`",`"id`":`"$group.uuid`",`"is_shown`":`"$group.shown`",`"exitcode`":`"$group.status`"}|$group.name"
+  Write-Output "__SH__GROUP__END__|{`"type`":`"grp`",`"sequenceNumber`":`"$group_end_timestamp`",`"id`":`"$group.uuid`",`"is_shown`":`"$group.shown`",`"exitcode`":`"$group.status`"}|${group.name}"
 
   $open_group_list.Pop()
 }
