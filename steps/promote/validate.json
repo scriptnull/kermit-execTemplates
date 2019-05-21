@@ -56,7 +56,8 @@
                 "type": ["string", "number"]
               }
             }
-          }
+          },
+          "required": ["normal"]
         },
         "runtime": {
           "type": "object",
