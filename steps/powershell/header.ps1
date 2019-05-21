@@ -1,5 +1,4 @@
 $open_group_list = New-Object System.Collections.Stack
-$open_group_info = @{}
 
 class Group {
   [string]$name
@@ -15,8 +14,7 @@ Function stop_group() {
   }
 
   # stop the most recently started group
-  $group_name = $open_group_list.Peek()
-  $group = $open_group_info[$group_name]
+  $group = $open_group_list.Peek()
 
   $date_time = (Get-Date).ToUniversalTime()
   $group_end_timestamp = [System.Math]::Truncate((Get-Date -Date $date_time -UFormat %s))
@@ -24,7 +22,6 @@ Function stop_group() {
   echo "__SH__GROUP__END__|{\"type\":\"grp\",\"sequenceNumber\":\"$group_end_timestamp\",\"id\":\"$group.uuid\",\"is_shown\":\"$group.shown\",\"exitcode\":\"$group.status\",\"parentConsoleId\":\"$group.parent_uuid\"}|$group.name"
 
   $open_group_list.Pop()
-  $open_group_info.Remove($group_name)
 }
 
 Function start_group([string]$group_name, [bool]$is_shown = $TRUE) {
@@ -44,8 +41,7 @@ Function start_group([string]$group_name, [bool]$is_shown = $TRUE) {
   $parent_uuid = ""
   if ($open_group_list.Count -gt 0) {
     # look at the most recent group, and find its UUID
-    $parent_group_name = $open_group_list.Peek()
-    $parent_uuid = $open_group_info[$parent_group_name]
+    $parent_uuid = $open_group_list.Peek().uuid
   } else {
     $parent_uuid = "root"
   }
@@ -62,10 +58,46 @@ Function start_group([string]$group_name, [bool]$is_shown = $TRUE) {
   $group.shown = $is_shown
   $group.status = 0
 
-  $open_group_list.Push($group.name)
-  $open_group_info.Add($group.name, $group)
+  $open_group_list.Push($group)
 }
 
-Function execute_command() {
+Function execute_command([string]$cmd) {
+  $group = [Group]::New()
 
+  if ($open_group_list.Count -gt 0) {
+    $group = $open_group_list.Peek()
+  }
+
+  $cmd_uuid = [guid]::NewGuid().Guid
+  $date_time = (Get-Date).ToUniversalTime()
+  $cmd_start_timestamp = [System.Math]::Truncate((Get-Date -Date $date_time -UFormat %s))
+  Write-Output "__SH__CMD__START__|{`"type`":`"cmd`",`"sequenceNumber`":`"$cmd_start_timestamp`",`"id`":`"$cmd_uuid`",`"parentConsoleId`": `"$group.uuid`"}|$cmd"
+
+  $cmd_status = 0
+  $ErrorActionPreference = "Stop"
+
+  Try
+  {
+    $global:LASTEXITCODE = 0;
+    Invoke-Expression $cmd
+    $ret = $LASTEXITCODE
+    if ($ret -ne 0) {
+      $cmd_status = $ret
+      Throw
+    }
+  }
+  Catch
+  {
+    $cmd_status = 1
+    Write-Output $_
+    Throw
+  }
+  Finally
+  {
+    $date_time = (Get-Date).ToUniversalTime()
+    $cmd_end_timestamp = [System.Math]::Truncate((Get-Date -Date $date_time -UFormat %s))
+    $cmd_first_line = $cmd.Split([Environment]::NewLine) | select -First 1
+    Write-Output ""
+    Write-Output "__SH__CMD__END__|{`"type`":`"cmd`",`"sequenceNumber`":`"$cmd_end_timestamp`",`"id`":`"$cmd_uuid`",`"exitcode`":`"$cmd_status`"}|$cmd_first_line"
+  }
 }

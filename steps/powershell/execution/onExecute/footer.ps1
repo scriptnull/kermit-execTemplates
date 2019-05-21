@@ -1,1 +1,1 @@
-Write-Output "footer of onExecute"
+stop_group
