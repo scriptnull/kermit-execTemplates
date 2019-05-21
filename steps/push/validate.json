@@ -158,12 +158,6 @@
             "type": "string"
           }
         },
-        "onExecute": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "onSuccess": {
           "type": "array",
           "items": {
