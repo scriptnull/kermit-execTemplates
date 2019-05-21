@@ -193,7 +193,8 @@
   },
   "required": [
     "name",
-    "type"
+    "type",
+    "payloadType"
   ],
   "additionalProperties": false
 }
