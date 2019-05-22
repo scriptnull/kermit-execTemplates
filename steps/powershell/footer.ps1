@@ -1,1 +1,1 @@
-Write-Output "__SH__SCRIPT_END_SUCCESS__"
+Write-Output "this is footer"
