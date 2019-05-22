@@ -852,9 +852,16 @@ send_notification() {
     opt_text="${step_name} #${step_id}"
   fi
 
-  for arg in "$@"
-  do
-    case $arg in
+  # email options
+  export opt_status="$NOTIFY_STATUS"
+
+  export opt_recipients=("${NOTIFY_RECIPIENTS[@]}")
+  if [ ${#opt_recipients[@]} -eq 0 ]; then
+    opt_recipients=()
+  fi
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
       --color)
         opt_color="$2"
         shift
@@ -960,6 +967,13 @@ send_notification() {
         shift
         shift
         ;;
+      --recipients)
+        shift
+        while [ $# -gt 0 ] && [[ "$1" != --* ]]; do
+          opt_recipients+=("$1")
+          shift
+        done
+        ;;
     esac
   done
 
@@ -969,6 +983,8 @@ send_notification() {
     _notify_airbrake
   elif [ "$i_mastername" == "jira" ]; then
     _notify_jira
+  elif [ "$i_mastername" == "smtpCreds" ]; then
+    _notify_email
   else
     local curl_auth=""
 
@@ -1031,6 +1047,56 @@ send_notification() {
       _post_curl "$opt_payload" "$curl_auth" "$i_endpoint"
     fi
   fi
+}
+
+_notify_email() {
+  if [ -z "$opt_status" ]; then
+    case "$CURRENT_SCRIPT_SECTION" in
+      onStart | onExecute )
+        opt_status="processing"
+        ;;
+      onSuccess )
+        opt_status="success"
+        ;;
+      onFailure )
+        opt_status="failure"
+        ;;
+      onComplete )
+        if [ "$is_success" == "true" ]; then
+          opt_status="success"
+        else
+          opt_status="failure"
+        fi
+        ;;
+      *)
+        echo "Error: unable to determine status in section $CURRENT_SCRIPT_SECTION" >&2
+        exit 99
+        ;;
+    esac
+  fi
+
+  if [ ! ${#opt_recipients[@]} -gt 0 ]; then
+    echo "Error: missing recipients. At least one recipient is required." >&2
+    exit 99
+  fi
+  local i_id=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.id")
+  local curl_auth="-H Authorization:'apiToken $BUILDER_API_TOKEN'"
+  export json_recipients=$(printf '%s\n' "${opt_recipients[@]}" | jq -R . | jq -s .)
+
+  local default_email_payload="{\"stepId\":\"\${STEP_ID}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients}}"
+
+  opt_payload=/tmp/payload.json
+  echo $default_email_payload > $opt_payload
+  replace_envs $opt_payload
+  local isValid=$(jq type $opt_payload || true)
+  if [ -z "$isValid" ]; then
+    echo "Error: payload is not valid JSON" >&2
+    exit 99
+  fi
+
+  full_url="${SHIPPABLE_API_URL}/projectIntegrations/${i_id}/sendEmail"
+  _post_curl "$opt_payload" "$curl_auth" "$full_url"
+
 }
 
 _notify_newrelic() {
@@ -1272,7 +1338,7 @@ replace_envs() {
     local path
     path=$(dirname "$file")
     if [ -d "$file" ]; then
-      echo "replace_envs is not supported for directories"
+      echo "replace_envs is not supported for directories" >&2
       return 82
     fi
     if [ "$path" != '.' ]; then
