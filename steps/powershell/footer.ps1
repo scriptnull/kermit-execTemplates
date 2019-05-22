@@ -18,6 +18,7 @@ Function main() {
   }
   Finally
   {
+    execute_command "onComplete"
     before_exit
   }
 }
