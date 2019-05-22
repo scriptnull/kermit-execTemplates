@@ -1326,7 +1326,6 @@ retry_command() {
       [ $ret -eq 0 ] && break;
     } || {
       echo "retrying $i of 3 times..."
-      echo "$@"
     }
   done
   return $ret
