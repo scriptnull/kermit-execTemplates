@@ -10,6 +10,7 @@ Function main() {
   $global:is_success = $TRUE
   Try
   {
+    onStart
     onExecute
     execute_command "onSuccess"
   }
