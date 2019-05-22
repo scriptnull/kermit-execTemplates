@@ -1832,6 +1832,31 @@ add_run_variable() {
   done
 }
 
+add_pipeline_variable() {
+  if [ "$1" == "" ]; then
+    echo "Usage: add_pipeline_variable KEY=VALUE" >&2
+    exit 1
+  fi
+
+  local env_file_path="$PIPELINE_WORKSPACE_DIR/pipeline.env"
+
+  if [ ! -f "$env_file_path" ]; then
+    echo "Creating .env file $env_file_path"
+    touch $env_file_path
+  fi
+
+  while [ $# -gt 0 ]; do
+    if [[ "$1" == *=* ]]; then
+      export $1
+      echo "export $1" >> $env_file_path
+    else
+      echo "$1 is not valid."
+      echo "Please make sure the key and value are separated by an =."
+    fi
+    shift
+  done
+}
+
 export_run_variables() {
   if [ -f $RUN_DIR/workspace/run.env ]; then
     source $RUN_DIR/workspace/run.env
@@ -1888,6 +1913,74 @@ restore_run_state() {
   local cache_name="$1"
   local restore_path="$2"
   local cache_location="$RUN_DIR/workspace/$cache_name"
+
+  local pattern=" |'"
+  if [[ $cache_name =~ $pattern ]]; then
+    echo "Name may not contain spaces."
+    exit 1
+  fi
+
+  if [ ! -d $cache_location ] && [ ! -f $cache_location ]; then
+    echo "No state found for $cache_name."
+    return 0
+  fi
+
+  echo "Restoring state files"
+  if [ -d "$cache_location" ]; then
+    mkdir -p "$restore_path"
+    cp -r "$cache_location/." "$restore_path"
+  elif [ -f "$cache_location" ]; then
+    mkdir -p "$(dirname $cache_location)"
+    cp "$cache_location" "$restore_path"
+  fi
+  echo "Files restored"
+}
+
+save_pipeline_state() {
+  if [ "$1" == "" ] || [ "$2" == "" ]; then
+    echo "Usage: save_pipeline_state [DIRECTORY] [FILE] NAME" >&2
+    exit 1
+  fi
+
+  # Wildcards will be expanded.  The last item is the name.
+  local source_files=( "$@" )
+  local cache_name="${!#}"
+  unset "source_files[${#source_files[@]}-1]"
+
+  local pattern=" |'"
+  if [[ $cache_name =~ $pattern ]]; then
+    echo "Name may not contain spaces."
+    exit 1
+  fi
+
+  if [[ "$cache_name" == "pipeline.env" ]]; then
+    echo "The name may not be pipeline.env."
+    exit 1
+  fi
+
+  echo "Copying files to state"
+  local output_directory=$PIPELINE_WORKSPACE_DIR
+  if [ "${#source_files[@]}" -gt 1 ]; then
+    mkdir -p "$output_directory/$cache_name"
+    for filepath in "${source_files[@]}"; do
+      cp -r "$filepath" "$output_directory/$cache_name/$filepath"
+    done
+  else
+    mkdir -p "$output_directory"
+    cp -r "$source_files" "$output_directory/$cache_name"
+  fi
+  echo "Files copied"
+}
+
+restore_pipeline_state() {
+  if [ "$1" == "" ] || [ "$2" == "" ]; then
+    echo "Usage: restore_pipeline_state NAME PATH" >&2
+    exit 1
+  fi
+
+  local cache_name="$1"
+  local restore_path="$2"
+  local cache_location="$PIPELINE_WORKSPACE_DIR/$cache_name"
 
   local pattern=" |'"
   if [[ $cache_name =~ $pattern ]]; then
