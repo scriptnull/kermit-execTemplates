@@ -1,3 +1,3 @@
 Function onStart() {
-  start_group "Executing step" $TRUE
+  start_group "onStart" $TRUE
   $env:CURRENT_SCRIPT_SECTION = "onStart"
