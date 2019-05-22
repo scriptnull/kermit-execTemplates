@@ -17,6 +17,7 @@ Function main() {
   Catch
   {
     $global:is_success = $FALSE
+    execute_command "onFailure"
   }
   Finally
   {
