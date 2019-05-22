@@ -1,2 +1,2 @@
 Function onComplete() {
-export CURRENT_SCRIPT_SECTION="onComplete"
+$env:CURRENT_SCRIPT_SECTION = "onComplete"
