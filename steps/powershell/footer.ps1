@@ -11,6 +11,7 @@ Function main() {
   Try
   {
     onExecute
+    execute_command "onSuccess"
   }
   Catch
   {
