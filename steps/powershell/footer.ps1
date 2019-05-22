@@ -4,7 +4,6 @@ Function before_exit() {
   } else {
     Write-Output "__SH__SCRIPT_END_FAILURE__"
   }
-  execute_command "onComplete"
 }
 
 Function main() {
@@ -19,6 +18,7 @@ Function main() {
   }
   Finally
   {
+    execute_command "onComplete"
     before_exit
   }
 }
