@@ -756,7 +756,27 @@ send_notification() {
 
   export opt_color="$NOTIFY_COLOR"
   if [ -z "$opt_color" ]; then
-    opt_color="#65cea7"
+    case "$CURRENT_SCRIPT_SECTION" in
+      onStart | onExecute )
+        opt_color="#5183a0"
+        ;;
+      onSuccess )
+        opt_color="#65cea7"
+        ;;
+      onFailure )
+        opt_color="#fc8675"
+        ;;
+      onComplete )
+        if [ "$is_success" == "true" ]; then
+          opt_color="#65cea7"
+        else
+          opt_color="#fc8675"
+        fi
+        ;;
+      * )
+        opt_color="#65cea7"
+        ;;
+    esac
   fi
 
   export opt_icon_url="$NOTIFY_ICON_URL"
@@ -849,7 +869,27 @@ send_notification() {
     # set up default text
     local step_name=$(cat "$STEP_JSON_PATH" | jq -r ."step.name")
     local step_id=$(cat "$STEP_JSON_PATH" | jq -r ."step.id")
-    opt_text="${step_name} #${step_id}"
+    case "$CURRENT_SCRIPT_SECTION" in
+      onStart | onExecute )
+        opt_text="${step_name} PROCESSING <${STEP_URL}|#${step_id}>"
+        ;;
+      onSuccess )
+        opt_text="${step_name} SUCCESS <${STEP_URL}|#${step_id}>"
+        ;;
+      onFailure )
+        opt_text="${step_name} FAILURE <${STEP_URL}|#${step_id}>"
+        ;;
+      onComplete )
+        if [ "$is_success" == "true" ]; then
+          opt_text="${step_name} SUCCESS <${STEP_URL}|#${step_id}>"
+        else
+          opt_text="${step_name} FAILURE<${STEP_URL}|#${step_id}>"
+        fi
+        ;;
+      * )
+        opt_text="${step_name} <${STEP_URL}|#${step_id}>"
+        ;;
+    esac
   fi
 
   for arg in "$@"
