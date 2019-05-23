@@ -860,6 +860,11 @@ send_notification() {
     opt_recipients=()
   fi
 
+  export opt_attach_logs="$NOTIFY_ATTACH_LOGS"
+  if [ -z "$opt_attach_logs" ]; then
+    opt_attach_logs=false
+  fi
+
   while [ $# -gt 0 ]; do
     case "$1" in
       --color)
@@ -967,12 +972,20 @@ send_notification() {
         shift
         shift
         ;;
+      --attach-logs)
+        opt_attach_logs=true
+        shift
+        ;;
       --recipients)
         shift
         while [ $# -gt 0 ] && [[ "$1" != --* ]]; do
           opt_recipients+=("$1")
           shift
         done
+        ;;
+      *)
+        echo "unrecognized option: $1" >&2
+        shift
         ;;
     esac
   done
@@ -1083,7 +1096,7 @@ _notify_email() {
   local curl_auth="-H Authorization:'apiToken $BUILDER_API_TOKEN'"
   export json_recipients=$(printf '%s\n' "${opt_recipients[@]}" | jq -R . | jq -s .)
 
-  local default_email_payload="{\"stepId\":\"\${STEP_ID}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients}}"
+  local default_email_payload="{\"stepletId\":\"\${STEPLET_ID}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}}"
 
   opt_payload=/tmp/payload.json
   echo $default_email_payload > $opt_payload
