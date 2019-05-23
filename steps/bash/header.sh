@@ -905,6 +905,11 @@ send_notification() {
     opt_attach_logs=false
   fi
 
+  export opt_show_failing_commands="$NOTIFY_SHOW_FAILING_COMMANDS"
+  if [ -z "$opt_show_failing_commands" ]; then
+    opt_show_failing_commands=false
+  fi
+
   while [ $# -gt 0 ]; do
     case "$1" in
       --color)
@@ -1016,6 +1021,10 @@ send_notification() {
         opt_attach_logs=true
         shift
         ;;
+      --show-failing-commands)
+        opt_show_failing_commands=true
+        shift
+        ;;
       --recipients)
         shift
         while [ $# -gt 0 ] && [[ "$1" != --* ]]; do
@@ -1112,13 +1121,13 @@ _notify_email() {
         opt_status="success"
         ;;
       onFailure )
-        opt_status="failure"
+        opt_status="failed"
         ;;
       onComplete )
         if [ "$is_success" == "true" ]; then
           opt_status="success"
         else
-          opt_status="failure"
+          opt_status="failed"
         fi
         ;;
       *)
@@ -1136,7 +1145,7 @@ _notify_email() {
   local curl_auth="-H Authorization:'apiToken $BUILDER_API_TOKEN'"
   export json_recipients=$(printf '%s\n' "${opt_recipients[@]}" | jq -R . | jq -s .)
 
-  local default_email_payload="{\"stepletId\":\"\${STEPLET_ID}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}}"
+  local default_email_payload="{\"stepletId\":\"\${STEPLET_ID}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}, \"showFailingCommands\":\${opt_show_failing_commands}}"
 
   opt_payload=/tmp/payload.json
   echo $default_email_payload > $opt_payload
