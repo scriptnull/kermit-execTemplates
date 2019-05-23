@@ -190,7 +190,7 @@ encrypt_file() {
   fi
   mkdir -p $temp_dest/fragments
 
-  split -b 256 "$source_file" $temp_dest/fragments/
+  split -b 128 "$source_file" $temp_dest/fragments/
   local fragments
   fragments=$(ls -b $temp_dest/fragments)
 
@@ -290,7 +290,7 @@ encrypt_string() {
 
   echo $source_string >> $temp_dest/input
 
-  split -b 256 "$temp_dest/input" $temp_dest/fragments/
+  split -b 128 "$temp_dest/input" $temp_dest/fragments/
   local fragments
   fragments=$(ls -b $temp_dest/fragments)
 
