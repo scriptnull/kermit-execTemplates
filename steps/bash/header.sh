@@ -910,6 +910,16 @@ send_notification() {
     opt_show_failing_commands=false
   fi
 
+  export opt_subject="$NOTIFY_SUBJECT"
+  if [ -z "$opt_subject" ]; then
+    opt_subject=""
+  fi
+
+  export opt_body="$NOTIFY_BODY"
+  if [ -z "$opt_body" ]; then
+    opt_body=""
+  fi
+
   while [ $# -gt 0 ]; do
     case "$1" in
       --color)
@@ -1023,6 +1033,16 @@ send_notification() {
         ;;
       --show-failing-commands)
         opt_show_failing_commands=true
+        shift
+        ;;
+      --subject)
+        opt_subject="$2"
+        shift
+        shift
+        ;;
+      --body)
+        opt_body="$2"
+        shift
         shift
         ;;
       --recipients)
@@ -1145,7 +1165,7 @@ _notify_email() {
   local curl_auth="-H Authorization:'apiToken $BUILDER_API_TOKEN'"
   export json_recipients=$(printf '%s\n' "${opt_recipients[@]}" | jq -R . | jq -s .)
 
-  local default_email_payload="{\"stepletId\":\"\${STEPLET_ID}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}, \"showFailingCommands\":\${opt_show_failing_commands}}"
+  local default_email_payload="{\"stepletId\":\"\${STEPLET_ID}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}, \"showFailingCommands\":\${opt_show_failing_commands},\"subject\":\"\${opt_subject}\",\"body\":\"\${opt_body}\"}"
 
   opt_payload=/tmp/payload.json
   echo $default_email_payload > $opt_payload
