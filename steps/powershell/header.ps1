@@ -101,3 +101,15 @@ Function execute_command([string]$cmd) {
     Write-Output "__SH__CMD__END__|{`"type`":`"cmd`",`"sequenceNumber`":`"$cmd_end_timestamp`",`"id`":`"$cmd_uuid`",`"exitcode`":`"$cmd_status`"}|$cmd_first_line"
   }
 }
+
+Function export_run_variables() {
+  if (Test-Path -Path $env:RUN_DIR/workspace/run.env) {
+    & $env:RUN_DIR/workspace/run.env
+  }
+}
+
+Function export_pipeline_variables() {
+  if (Test-Path -Path $env:PIPELINE_WORKSPACE_DIR/pipeline.env) {
+    & $env:PIPELINE_WORKSPACE_DIR/pipeline.env
+  }
+}
