@@ -1,1 +1,1 @@
-start_group "Exporting envs" "false"
+start_group "Exporting envs" $TRUE
