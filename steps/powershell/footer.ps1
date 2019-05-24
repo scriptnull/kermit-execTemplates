@@ -10,18 +10,28 @@ Function main() {
   $global:is_success = $TRUE
   Try
   {
-    onStart
-    onExecute
-    execute_command "onSuccess"
+    if (Get-Command "onStart" -errorAction SilentlyContinue) {
+      onStart
+    }
+    if (Get-Command "onExecute" -errorAction SilentlyContinue) {
+      onExecute
+    }
+    if (Get-Command "onSuccess" -errorAction SilentlyContinue) {
+      execute_command "onSuccess"
+    }
   }
   Catch
   {
     $global:is_success = $FALSE
-    execute_command "onFailure"
+    if (Get-Command "onFailure" -errorAction SilentlyContinue) {
+      execute_command "onFailure"
+    }
   }
   Finally
   {
-    execute_command "onComplete"
+    if (Get-Command "onComplete" -errorAction SilentlyContinue) {
+      execute_command "onComplete"
+    }
     before_exit
   }
 }
