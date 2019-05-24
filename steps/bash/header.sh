@@ -1706,7 +1706,6 @@ _set_nodejs() {
     exit 1
   fi
 
-  . $HOME/.nvm/nvm.sh
   nvm install "$nodejs_version"
   nvm use "$nodejs_version"
   node --version
