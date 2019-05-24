@@ -22,6 +22,7 @@ Function main() {
   Finally
   {
     execute_command "onComplete"
+    output
     before_exit
   }
 }
