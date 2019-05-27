@@ -135,6 +135,7 @@ git_sync() {
       fi
     fi
     rm $privateKeyPath
+    jfrog rt bag $PIPELINE_NAME $RUN_NUMBER
   popd
 }
 
