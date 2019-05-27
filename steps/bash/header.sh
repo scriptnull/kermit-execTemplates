@@ -900,6 +900,11 @@ send_notification() {
     opt_recipients=()
   fi
 
+  export opt_attachments=("${NOTIFY_ATTACHMENTS[@]}")
+  if [ ${#opt_attachments[@]} -eq 0 ]; then
+    opt_attachments=()
+  fi
+
   export opt_attach_logs="$NOTIFY_ATTACH_LOGS"
   if [ -z "$opt_attach_logs" ]; then
     opt_attach_logs=false
@@ -1052,6 +1057,13 @@ send_notification() {
           shift
         done
         ;;
+      --attachments)
+        shift
+        while [ $# -gt 0 ] && [[ "$1" != --* ]]; do
+          opt_attachments+=("$1")
+          shift
+        done
+        ;;
       *)
         echo "unrecognized option: $1" >&2
         shift
@@ -1161,24 +1173,52 @@ _notify_email() {
     echo "Error: missing recipients. At least one recipient is required." >&2
     exit 99
   fi
-  local i_id=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.id")
-  local curl_auth="-H Authorization:'apiToken $BUILDER_API_TOKEN'"
   export json_recipients=$(printf '%s\n' "${opt_recipients[@]}" | jq -R . | jq -s .)
 
-  local default_email_payload="{\"stepletId\":\"\${STEPLET_ID}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}, \"showFailingCommands\":\${opt_show_failing_commands},\"subject\":\"\${opt_subject}\",\"body\":\"\${opt_body}\"}"
+  local tmp_attachments=$STEP_TMP_DIR/attachments.json
+  echo -n "[]" > $tmp_attachments
+  if [ ${#opt_attachments[@]} -gt 0 ]; then
+    local totalSizeInBytes=0
+    echo -n "[" > $tmp_attachments
+    for item in ${opt_attachments[@]}; do
+      if [ ! -f "$item" ]; then
+        echo "Attachment $item is not a file" >&2
+        continue
+      elif [ type wc >/dev/null 2>&1 ]; then
+        echo "Unable to determine file size." >&2
+      else
+        totalSizeInBytes=$(($totalSizeInBytes + $(wc --bytes < $item)))
+      fi
+      local fileName=$(basename "$item")
+      echo "Attaching file: $fileName"
+      echo -n "{\"fileName\":\"$fileName\",\"contents\":\"" >> $tmp_attachments
+      base64 $item >> $tmp_attachments
+      echo -n "\"}" >> $tmp_attachments
+      if [ "$item" != "${opt_attachments[-1]}" ]; then
+        echo -n "," >> $tmp_attachments
+      fi
+    done
+    if [ "$totalSizeInBytes" -gt "5000000" ]; then
+      echo "Combined attachment size cannot exceed 5MB. Skipping attachments" >&2
+      echo -n "[]" > $tmp_attachments
+    else
+      echo -n "]" >> $tmp_attachments
+    fi
+  fi
 
-  opt_payload=/tmp/payload.json
+  local i_id=$(eval echo "$"int_"$i_name"_id)
+  local curl_auth="-H Authorization:'apiToken $BUILDER_API_TOKEN'"
+  local default_email_payload="{\"stepletId\":\"\${STEPLET_ID}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}, \"showFailingCommands\":\${opt_show_failing_commands},\"subject\":\"\${opt_subject}\",\"body\":\"\${opt_body}\",\"attachments\":"
+
+  local opt_payload=$STEP_TMP_DIR/payload.json
+
   echo $default_email_payload > $opt_payload
   replace_envs $opt_payload
-  local isValid=$(jq type $opt_payload || true)
-  if [ -z "$isValid" ]; then
-    echo "Error: payload is not valid JSON" >&2
-    exit 99
-  fi
+  cat $tmp_attachments >> $opt_payload
+  echo -n "}" >> $opt_payload
 
   full_url="${SHIPPABLE_API_URL}/projectIntegrations/${i_id}/sendEmail"
   _post_curl "$opt_payload" "$curl_auth" "$full_url"
-
 }
 
 _notify_newrelic() {
