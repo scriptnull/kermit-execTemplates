@@ -28,7 +28,10 @@
         },
         "nodePool": {
           "type": "string"
-        }
+        },
+        "chronological": {
+          "type": "boolean"
+        }        
       }
     },
     "setup": {
