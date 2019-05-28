@@ -44,6 +44,7 @@ build() {
     fi
   popd
 
+  jfrog rt bce $buildName $buildNumber
   save_run_state /tmp/jfrog jfrog
 }
 

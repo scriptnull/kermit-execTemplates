@@ -17,8 +17,6 @@ publish() {
     fi
   fi
 
-  jfrog rt bce $buildName $buildNumber
-
   local publish=""
   local envInclude=""
   local envExclude=""
