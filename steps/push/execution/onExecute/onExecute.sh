@@ -17,7 +17,7 @@ push() {
     jfrog rt docker-push $imageName:$imageTag $targetRepo --build-name=$buildName --build-number=$buildNumber
   fi
 
-  save_run_state /tmp/jfrog jfrog
+  save_run_state /tmp/jfrog/. jfrog
 }
 
 execute_command push
