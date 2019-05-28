@@ -223,7 +223,9 @@
   },
   "required": [
     "name",
-    "type"
+    "type",
+    "payloadType",
+    "setup"
   ],
   "if": {
     "properties": {
