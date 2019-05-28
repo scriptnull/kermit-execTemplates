@@ -43,6 +43,8 @@ build() {
       exit 1
     fi
   popd
+
+  save_pipeline_state /tmp/jfrog jfrog
 }
 
 execute_command build
