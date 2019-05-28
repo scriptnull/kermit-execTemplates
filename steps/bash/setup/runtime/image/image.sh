@@ -11,6 +11,14 @@ boot_container() {
     exit $exit_code
   }
 
+  local image_autopull="%%context.autoPull%%"
+
+  if [ "$image_autopull" == "true" ]; then
+    start_group "Pulling Image"
+    execute_command "docker pull $DOCKER_IMAGE"
+    stop_group
+  fi
+
   start_group "Booting Container"
   local default_docker_options="-v /opt/docker/docker:/usr/bin/docker \
     -v /var/run/docker.sock:/var/run/docker.sock \
