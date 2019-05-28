@@ -29,7 +29,7 @@ promote() {
 
   if [ ! -z "$outputBuildInfoResourceName" ]; then
     echo "[promote] Updating output resource: $outputBuildInfoResourceName"
-    write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber targetRepo=$targetRepo
+    write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber targetRepo=$targetRepo --include-dependencies
   fi
 }
 
