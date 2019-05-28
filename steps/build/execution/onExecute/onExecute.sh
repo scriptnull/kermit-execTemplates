@@ -44,7 +44,7 @@ build() {
     fi
   popd
 
-  save_pipeline_state /tmp/jfrog jfrog
+  save_run_state /tmp/jfrog jfrog
 }
 
 execute_command build
