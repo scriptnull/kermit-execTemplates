@@ -38,6 +38,16 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "push": {
+          "type": "object",
+          "properties": {
+            "targetRepo": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": []
+        },
         "environmentVariables": {
           "type": "object",
           "properties": {
