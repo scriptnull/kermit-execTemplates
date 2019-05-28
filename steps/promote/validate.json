@@ -31,13 +31,21 @@
         },
         "chronological": {
           "type": "boolean"
-        }        
+        }
       }
     },
     "setup": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "promote": {
+          "properties": {
+            "targetRepo": {
+              "type": "string"
+            }
+          },
+          "required": ["targetRepo"]
+        },
         "environmentVariables": {
           "type": "object",
           "properties": {
@@ -110,8 +118,7 @@
           },
           "required": ["type"]
         }
-      },
-      "required": ["environmentVariables"]
+      }
     },
     "requires": {
       "type": "object",
