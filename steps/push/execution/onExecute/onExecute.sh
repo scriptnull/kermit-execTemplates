@@ -13,8 +13,8 @@ push() {
     local imageTag=$(eval echo "$""$buildStepName"_imageTag)
     local targetRepo=$(jq -r ".step.setup.push.targetRepo" $STEP_JSON_PATH)
     local buildName=$(eval echo "$""$buildStepName"_buildName)
-    local runNumber=$(eval echo "$""$buildStepName"_runNumber)
-    jfrog rt docker-push $imageName:$imageTag $targetRepo --build-name=$buildName --build-number=$runNumber
+    local buildNumber=$(eval echo "$""$buildStepName"_buildNumber)
+    jfrog rt docker-push $imageName:$imageTag $targetRepo --build-name=$buildName --build-number=$buildNumber
   fi
 
   save_run_state /tmp/jfrog jfrog
