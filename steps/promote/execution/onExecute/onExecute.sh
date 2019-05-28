@@ -10,15 +10,26 @@ promote() {
       echo "[promote] Using build name and number from buildInfo resource: $inputBuildInfoResourceName"
       buildName=$(eval echo "$"res_"$inputBuildInfoResourceName"_buildName)
       buildNumber=$(eval echo "$"res_"$inputBuildInfoResourceName"_buildNumber)
+    elif [ ! -z "$buildStepName" ]; then
+      buildName=$(eval echo "$""$buildStepName"_buildName)
+      buildNumber=$(eval echo "$""$buildStepName"_buildNumber)
+    else
+      echo "[promote] ERROR: Unable to find a build name and number to work with."
+      echo "[promote] Please use environment variables, an input buildInfo resource"
+      echo "[promote] or configure promote to run in an affinity group that also"
+      echo "[promote] runs a build step."
+      exit 1;
     fi
   fi
+
+  targetRepo=$(jq -r ".step.setup.promote.targetRepo" $STEP_JSON_PATH)
 
   echo "[promote] Promoting build $buildName/$buildNumber to: $targetRepo"
   retry_command jfrog rt build-promote $buildName $buildNumber $targetRepo
 
-  if [ ! -z "$outputPromoteInfoResourceName" ]; then
-    echo "[promote] Updating output resource: $outputPromoteInfoResourceName"
-    write_output $outputPromoteInfoResourceName buildName=$buildName buildNumber=$buildNumber targetRepo=$targetRepo
+  if [ ! -z "$outputBuildInfoResourceName" ]; then
+    echo "[promote] Updating output resource: $outputBuildInfoResourceName"
+    write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber targetRepo=$targetRepo
   fi
 }
 
