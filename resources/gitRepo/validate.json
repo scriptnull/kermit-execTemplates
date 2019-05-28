@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://jfrog.com/cicd/steps/step.schema.json",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["gitRepo"]
+    },
+    "repoPath": {
+      "type": "string"
+    },
+    "configuration": {
+      "type": "object",
+      "properties": {
+        "integrationName": {
+          "type": "string"
+        },
+        "files": {
+          "type": "object",
+          "properties": {
+            "except": {
+              "type": "string",
+              "format": "regex"
+            },
+            "only": {
+              "type": "string",
+              "format": "regex"
+            }
+          }
+        },
+        "branches": {
+          "type": "object",
+          "properties": {
+            "except": {
+              "type": "string",
+              "format": "regex"
+            },
+            "only": {
+              "type": "string",
+              "format": "regex"
+            }
+          }
+        },
+        "tags": {
+          "type": "object",
+          "properties": {
+            "except": {
+              "type": "string",
+              "format": "regex"
+            },
+            "only": {
+              "type": "string",
+              "format": "regex"
+            }
+          }
+        },
+        "buildOn": {
+          "type": "object",
+          "properties": {
+            "commit": {
+              "type": "boolean"
+            },
+            "pullRequest": {
+              "type": "boolean"
+            },
+            "pullRequestClose": {
+              "type": "boolean"
+            },
+            "release": {
+              "type": "boolean"
+            },
+            "tagPush": {
+              "type": "boolean"
+            }
+          }
+        },
+        "shallowDepth": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "gitConfig": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["integrationName"]
+    },
+    "version": {
+      "type": "object",
+      "properties": {
+        "sha": {
+          "type": "string"
+        }
+      },
+      "required": ["sha"]
+    }
+  },
+  "required": ["name", "type", "repoPath", "configuration", "version"]
+}
