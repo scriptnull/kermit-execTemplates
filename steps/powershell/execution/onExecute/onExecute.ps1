@@ -1,3 +1,3 @@
-execute_command @"
+execute_command @'
 %%context%%
-"@
+'@
