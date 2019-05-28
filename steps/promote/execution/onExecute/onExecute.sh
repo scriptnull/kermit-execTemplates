@@ -25,11 +25,11 @@ promote() {
   targetRepo=$(jq -r ".step.setup.promote.targetRepo" $STEP_JSON_PATH)
 
   echo "[promote] Promoting build $buildName/$buildNumber to: $targetRepo"
-  retry_command jfrog rt build-promote $buildName $buildNumber $targetRepo
+  retry_command jfrog rt build-promote $buildName $buildNumber $targetRepo --include-dependencies
 
   if [ ! -z "$outputBuildInfoResourceName" ]; then
     echo "[promote] Updating output resource: $outputBuildInfoResourceName"
-    write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber targetRepo=$targetRepo --include-dependencies
+    write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber targetRepo=$targetRepo
   fi
 }
 
