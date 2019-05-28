@@ -35,7 +35,7 @@ get_file() {
 
       jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
       if [ ! -z "$fileLocation" ] && [ ! -z "$fileName" ]; then
-        jfrog rt dl "$fileLocation/$fileName" "$resourcePath/$fileName"
+        jfrog rt dl --build-name=$PIPELINE_NAME --build-number=$RUN_NUMBER "$fileLocation/$fileName" "$resourcePath/$fileName"
       else
         local pattern=$(eval echo "$"res_"$resourceName"_pattern)
         local aql=$(eval echo "$"res_"$resourceName"_aql)
