@@ -1367,7 +1367,8 @@ _notify_jira() {
   local i_username=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.username")
   local i_endpoint=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.url")
   local i_token=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.token")
-  local default_jira_payload="{\"fields\":{\"project\":{\"key\":\"\${opt_project_id}\"},\"summary\":\"\${opt_summary}\",\"description\":\"\${opt_description}\",\"issuetype\":{\"name\":\"\${opt_type}\"}}}"
+  local default_v2_payload="{\"fields\":{\"project\":{\"key\":\"\${opt_project_id}\"},\"summary\":\"\${opt_summary}\",\"description\":\"\${opt_description}\",\"issuetype\":{\"name\":\"\${opt_type}\"}}}"
+  local default_v3_payload="{\"fields\":{\"project\":{\"id\":\"\${project_key_id}\"},\"summary\":\"\${opt_summary}\",\"description\":{\"type\":\"doc\",\"version\":1,\"content\":[{\"type\":\"paragraph\",\"content\":[{\"text\":\"\${opt_description}\",\"type\":\"text\"}]}]},\"issuetype\":{\"id\":\"\${type_id}\"}}}"
 
   if [ -z "$(which base64)" ]; then
     echo "Error: base64 utility is not present, but is required for Jira authorization" >&2
@@ -1399,9 +1400,36 @@ _notify_jira() {
   fi
 
   local encoded_auth=$(echo -n "$i_username:$i_token" | base64)
-
-  echo $default_jira_payload > /tmp/payload.json
+  local split_endpoint=(${i_endpoint//\// })
+  last_item=${split_endpoint[-1]}
   opt_payload=/tmp/payload.json
+
+  case $last_item in
+    2)
+      echo $default_v2_payload > $opt_payload
+      ;;
+    3)
+      echo $default_v3_payload > $opt_payload
+      issue_meta=$(curl -XGET -s \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Basic $encoded_auth" \
+        "$i_endpoint/issue/createmeta")
+      export project_key_id=$(jq -r ".projects[] | select(.key==\"$opt_project_id\") | .id  " <<<$issue_meta)
+      if [ -z "$project_key_id" ]; then
+        echo "Error: unable to determine project ID from provided key: $opt_project_id"
+        exit 99
+      fi
+      export type_id=$(jq -r ".projects[].issuetypes[] | select(.name==\"$opt_type\") | .id  " <<<$issue_meta)
+      if [ -z "$type_id" ]; then
+        echo "Error: unable to determine issue type ID from provided type name: $opt_type"
+        exit 99
+      fi
+      ;;
+    *)
+      echo "Error: Jira integration url must be 'https://<domain>/rest/api/2' or 'https://<domain>/rest/api/3'"
+      exit 99
+  esac
+
   replace_envs $opt_payload
 
   local isValid=$(jq type $opt_payload || true)
