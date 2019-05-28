@@ -10,10 +10,6 @@
       "type": "string",
       "enum": ["push"]
     },
-    "payloadType": {
-      "type": "string",
-      "enum": ["docker", "file"]
-    },
     "configuration": {
       "type": "object",
       "additionalProperties": false,
@@ -196,8 +192,7 @@
   },
   "required": [
     "name",
-    "type",
-    "payloadType"
+    "type"
   ],
   "additionalProperties": false
 }
