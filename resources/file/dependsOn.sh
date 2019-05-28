@@ -95,13 +95,12 @@ get_file() {
         if [ ! -z "$sortOrder" ]; then
           specs=$(echo $specs | jq --arg sortOrder $sortOrder '. + {sortOrder: $sortOrder}')
         fi
-
         if [ ! -z "$limit" ]; then
-          specs=$(echo $specs | jq --arg limit $limit '. + {limit: $limit}')
+          specs=$(echo $specs | jq --arg limit $limit '. + {limit: $limit|tonumber}')
         fi
 
         if [ ! -z "$offset" ]; then
-          specs=$(echo $specs | jq --arg offset $offset '. + {offset: $offset}')
+          specs=$(echo $specs | jq --arg offset $offset '. + {offset: $offset|tonumber}')
         fi
 
         fileSpecs='{"files": []}'
