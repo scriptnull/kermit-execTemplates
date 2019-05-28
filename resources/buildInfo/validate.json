@@ -10,7 +10,7 @@
       "type": "string",
       "enum": ["buildInfo"]
     },
-    "initialVersion": {
+    "version": {
       "type": "object",
       "properties": {
         "buildNumber": {
@@ -23,5 +23,5 @@
       "required": ["buildNumber", "buildName"]
     }
   },
-  "required": ["name", "type", "initialVersion"]
+  "required": ["name", "type", "version"]
 }
