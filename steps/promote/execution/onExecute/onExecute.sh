@@ -23,9 +23,16 @@ promote() {
   fi
 
   targetRepo=$(jq -r ".step.setup.promote.targetRepo" $STEP_JSON_PATH)
+  includeDependencies=$(jq -r ".step.setup.promote.includeDependencies" $STEP_JSON_PATH)
 
   echo "[promote] Promoting build $buildName/$buildNumber to: $targetRepo"
-  retry_command jfrog rt build-promote $buildName $buildNumber $targetRepo --include-dependencies
+  local promoteCmd="jfrog rt build-promote $buildName $buildNumber $targetRepo"
+  if [ ! -z "$includeDependencies" ] && [ "$includeDependencies" == "true" ]; then
+    promoteCmd="$promoteCmd --include-dependencies"
+    echo "[promote] (including dependencies)"
+  fi
+
+  retry_command $promoteCmd
 
   if [ ! -z "$outputBuildInfoResourceName" ]; then
     echo "[promote] Updating output resource: $outputBuildInfoResourceName"
