@@ -42,9 +42,13 @@
           "properties": {
             "targetRepo": {
               "type": "string"
+            },
+            "includeDependencies": {
+              "type": "boolean"
             }
           },
-          "required": ["targetRepo"]
+          "required": ["targetRepo"],
+          "additionalProperties": false
         },
         "environmentVariables": {
           "type": "object",
