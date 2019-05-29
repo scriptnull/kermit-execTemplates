@@ -71,12 +71,6 @@
               "additionalProperties": {
                 "type": ["string", "number"]
               }
-            },
-            "encrypted": {
-              "type": "object",
-              "additionalProperties": {
-                "type": ["string", "number"]
-              }
             }
           }
         },

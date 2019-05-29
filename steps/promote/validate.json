@@ -64,12 +64,6 @@
                 "type": ["string", "number"]
               },
               "required": ["targetRepo"]
-            },
-            "encrypted": {
-              "type": "object",
-              "additionalProperties": {
-                "type": ["string", "number"]
-              }
             }
           },
           "required": ["normal"]
