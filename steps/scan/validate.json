@@ -45,8 +45,7 @@
               "type": "string"
             },
             "buildNumber": {
-              "type": "integer",
-              "minimum": 0
+              "type": "string"
             }
           },
           "additionalProperties": false
