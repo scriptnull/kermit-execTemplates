@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://jfrog.com/cicd/steps/step.schema.json",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["aql"]
+    },
+    "version": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "addedProperties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "number"]
+          }
+        },
+        "mappings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["object"]
+          }
+        }
+      },
+      "required": ["query"]
+    }
+  },
+  "required": ["name", "type", "version"]
+}
