@@ -20,6 +20,7 @@ publish() {
   local publish=""
   local envInclude=""
   local envExclude=""
+  local scan=false
   local publishCmd="jfrog rt bp $buildName $buildNumber"
 
   local stepSetup=$(cat $STEP_JSON_PATH | jq .step.setup)
@@ -28,6 +29,7 @@ publish() {
     if [ ! -z "$publish" ] && [ "$publish" != "null" ]; then
       envInclude=$(echo $publish | jq -r .envInclude)
       envExclude=$(echo $publish | jq -r .envExclude)
+      scan=$(echo $publish | jq -r .scan)
     fi
   fi
 
@@ -41,6 +43,11 @@ publish() {
 
   echo "[publish] Publishing build info $buildName/$buildNumber"
   retry_command $publishCmd
+
+  if [ "$scan" == "true" ]; then
+    echo "[push] Scanning build $buildName/$buildNumber"
+    jfrog rt bs $buildName $buildNumber
+  fi
 
   if [ ! -z "$outputBuildInfoResourceName" ]; then
     echo "[publish] Updating output resource: $outputBuildInfoResourceName"

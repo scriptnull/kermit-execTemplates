@@ -43,6 +43,12 @@
           "properties": {
             "targetRepo": {
               "type": "string"
+            },
+            "publish": {
+              "type": "boolean"
+            },
+            "scan": {
+              "type": "boolean"
             }
           },
           "additionalProperties": false,

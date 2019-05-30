@@ -34,7 +34,7 @@ scan() {
     exit 1;
   fi
 
-  echo "[scan] Scanning build with build name: $buildName, build number: $buildNumber"
+  echo "[scan] Scanning build $buildName/$buildNumber"
   jfrog rt bs $buildName $buildNumber
 }
 

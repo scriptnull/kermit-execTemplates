@@ -46,6 +46,9 @@
             },
             "envExclude": {
               "type": "string"
+            },
+            "scan": {
+              "type": "boolean"
             }
           },
           "additionalProperties": false
