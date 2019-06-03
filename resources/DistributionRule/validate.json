@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://jfrog.com/cicd/steps/step.schema.json",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["DistributionRule"]
+    },
+    "version": {
+      "type": "object",
+      "properties": {
+        "serviceName": {
+          "type": "string"
+        },
+        "cityName": {
+          "type": "string"
+        },
+        "siteName": {
+          "type": "string"
+        },
+        "countryCodes": {
+          "type": "object",
+          "patternProperties": {
+            "^countryCode": {
+              "type": ["string", "number"]
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        }
+      },
+      "required": ["serviceName", "cityName", "siteName", "countryCodes"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["name", "type", "version"],
+  "additionalProperties": false
+}
