@@ -133,9 +133,11 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "minItems": 1
         }
-      }
+      },
+      "required": ["integrations"]
     },
     "triggeredBy": {
       "type": "object",
@@ -200,7 +202,8 @@
   },
   "required": [
     "name",
-    "type"
+    "type",
+    "requires"
   ],
   "additionalProperties": false
 }
