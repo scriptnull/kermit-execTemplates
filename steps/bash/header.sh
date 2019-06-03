@@ -423,6 +423,12 @@ update_commit_status() {
   local resourceName="$1"
   shift
 
+  local resource_id=$(eval echo "$"res_"$resourceName"_resourceId)
+  if [ -z "$resource_id" ]; then
+    echo "Error: resource not found for $resourceName" >&2
+    exit 99
+  fi
+
   local integration_name=$(eval echo "$"res_"$resourceName"_int_name)
   if [ -z "$integration_name" ]; then
     echo "Error: integration data not found for $resourceName" >&2
