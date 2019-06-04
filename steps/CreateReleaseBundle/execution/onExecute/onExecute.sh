@@ -191,12 +191,14 @@ postRelease() {
       "$distUrl/api/v1/release_bundle" -T $payloadPath)
   fi
 
-  res_body=$(cat $STEP_TMP_DIR/curl_res_body)
+  jq . $STEP_TMP_DIR/curl_res_body > $STEP_TMP_DIR/"$STEP_NAME"_response.json
+  save_run_state $STEP_TMP_DIR/"$STEP_NAME"_response.json .
   if [ $STATUS -ge 200 ] && [ $STATUS -lt 300 ]; then
-    echo $res_body | jq .
+    echo -e "\n[CreateReleaseBundle] Successfully created release bundle."
+    echo -e "\n[CreateReleaseBundle] Download run state and check "$STEP_NAME"_response.json to check the complete response."
   else
     echo -e "\n[CreateReleaseBundle] Failed to create release bundle with error: "
-    echo $res_body | jq .
+    cat $STEP_TMP_DIR/"$STEP_NAME"_response.json
     exit 1
   fi
 }
