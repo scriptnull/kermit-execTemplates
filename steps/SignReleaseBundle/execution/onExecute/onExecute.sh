@@ -21,7 +21,7 @@ signReleaseBundle() {
   save_run_state $STEP_TMP_DIR/"$STEP_NAME"_response.json .
   if [ $STATUS -ge 200 ] && [ $STATUS -lt 300 ]; then
     echo -e "\n[SignReleaseBundle] Successfully signed release bundle."
-    echo -e "\n[SignReleaseBundle] Download run state and check the content of "$STEP_NAME"_response.json to check the api response."
+    echo -e "\n[SignReleaseBundle] Download run state and check the content of "$STEP_NAME"_response.json to check the complete response."
   else
     echo -e "\n[SignReleaseBundle] Failed to sign release bundle with error: "
     cat $STEP_TMP_DIR/"$STEP_NAME"_response.json
