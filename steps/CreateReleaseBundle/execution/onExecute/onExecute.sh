@@ -181,12 +181,23 @@ postRelease() {
   local rtApiKey=$(eval echo "$"int_"$integrationName"_apikey)
 
   if [ ! -z "$SIGNING_KEY_PASSPHRASE" ]; then
-    curl -XPOST -u $rtUser:$rtApiKey -H "Content-Type: application/json" \
+    STATUS=$(curl -o >(cat >/tmp/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
+      -H "Content-Type: application/json" \
       -H "X-GPG-PASSPHRASE: $SIGNING_KEY_PASSPHRASE" \
-      "$distUrl/api/v1/release_bundle" -T $payloadPath
+      "$distUrl/api/v1/release_bundle" -T $payloadPath)
   else
-    curl -XPOST -u $rtUser:$rtApiKey -H "Content-Type: application/json" \
-      "$distUrl/api/v1/release_bundle" -T $payloadPath
+    STATUS=$(curl -o >(cat >/tmp/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
+      -H "Content-Type: application/json" \
+      "$distUrl/api/v1/release_bundle" -T $payloadPath)
+  fi
+
+  res_body=$(cat /tmp/curl_res_body)
+  if [ $STATUS -ne 200 ]; then
+    echo "Failed to create release bundle with error: "
+    echo $res_body | jq .
+    exit 1
+  else
+    echo $res_body | jq .
   fi
 }
 
@@ -196,22 +207,22 @@ createReleaseBundle() {
   echo "[CreateReleaseBundle] Authenticating with integration: $artifactoryIntegrationName"
   authenticate $artifactoryIntegrationName
 
-  echo "[CreateReleaseBundle] Getting Artifactory service id"
+  echo -e "\n[CreateReleaseBundle] Getting Artifactory service id"
   local artifactoryServiceId=$(getArtifactoryServiceId)
 
   releaseBundleName=$(jq -r ".step.configuration.releaseBundleName" $STEP_JSON_PATH)
   releaseBundleVersion=$(jq -r ".step.configuration.releaseBundleVersion" $STEP_JSON_PATH)
-  echo "[CreateReleaseBundle] Creating payload for release bundle"
+  echo -e "\n[CreateReleaseBundle] Creating payload for release bundle"
   payload=$(createPayload "$releaseBundleName" "$releaseBundleVersion" "$artifactoryServiceId")
   echo $payload | jq . > $STEP_TMP_DIR/$payloadFile
   # TODO: remove this after testing
   cat $STEP_TMP_DIR/$payloadFile
 
-  echo "[CreateReleaseBundle] Creating Release Bundle with name: "$releaseBundleName" and version: "$releaseBundleVersion""
+  echo -e "\n[CreateReleaseBundle] Creating Release Bundle with name: "$releaseBundleName" and version: "$releaseBundleVersion""
   postRelease $STEP_TMP_DIR/$payloadFile $artifactoryIntegrationName
 
   if [ ! -z "$outputReleaseBundleResourceName" ]; then
-    echo "[CreateReleaseBundle] Updating output resource: $outputReleaseBundleResourceName"
+    echo -e "\n[CreateReleaseBundle] Updating output resource: $outputReleaseBundleResourceName"
     write_output $outputReleaseBundleResourceName name=$releaseBundleName version=$releaseBundleVersion isSigned=$signed
   fi
 }
