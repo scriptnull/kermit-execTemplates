@@ -32,10 +32,10 @@
         "chronological": {
           "type": "boolean"
         },
-        "bundleName": {
+        "releaseBundleName": {
           "type": "string"
         },
-        "bundleVersion": {
+        "releaseBundleVersion": {
           "type": "string"
         },
         "dryRun": {
