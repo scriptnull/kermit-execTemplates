@@ -156,16 +156,16 @@ createPayload() {
 
   description=$(jq -r ".step.configuration.description" $STEP_JSON_PATH)
   if [ ! -z "$description" ] && [ "$description" != "null" ]; then
-    payload=$(echo $payload | jq --arg description $description '. + {description: $description}')
+    payload=$(echo $payload | jq --arg description "$description" '. + {description: $description}')
   fi
 
   releaseNotesContent=$(jq -r ".step.configuration.releaseNotes.content" $STEP_JSON_PATH)
   if [ ! -z "$releaseNotesContent" ] && [ "$releaseNotesContent" != "null" ]; then
     releaseNotes='{}'
-    releaseNotes=$(echo $releaseNotes | jq --arg content $releaseNotesContent '. + {content: $content}')
+    releaseNotes=$(echo $releaseNotes | jq --arg content "$releaseNotesContent" '. + {content: $content}')
     releaseNotesSyntax=$(jq -r ".step.configuration.releaseNotes.syntax" $STEP_JSON_PATH)
     if [ ! -z "$releaseNotesSyntax" ] && [ "$releaseNotesSyntax" != "null" ]; then
-      releaseNotes=$(echo $releaseNotes | jq --arg syntax $releaseNotesSyntax '. + {syntax: $syntax}')
+      releaseNotes=$(echo $releaseNotes | jq --arg syntax "$releaseNotesSyntax" '. + {syntax: $syntax}')
     fi
     payload=$(echo $payload | jq --argjson json "$releaseNotes" '.release_notes = $json')
   fi
