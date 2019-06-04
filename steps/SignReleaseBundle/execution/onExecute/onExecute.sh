@@ -7,27 +7,27 @@ signReleaseBundle() {
 
   echo "[SignReleaseBundle] Signing Release Bundle with name: "$releaseBundleName" and version: "$releaseBundleVersion""
   if [ ! -z "$SIGNING_KEY_PASSPHRASE" ]; then
-    STATUS=$(curl -o >(cat >/tmp/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
+    STATUS=$(curl -o >(cat > $STEP_TMP_DIR/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
       -H "Content-Type: application/json" \
       -H "X-GPG-PASSPHRASE: $SIGNING_KEY_PASSPHRASE" \
       "$distUrl/api/v1/release_bundle/$releaseBundleName/$releaseBundleVersion/sign")
   else
-    STATUS=$(curl -o >(cat >/tmp/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
+    STATUS=$(curl -o >(cat > $STEP_TMP_DIR/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
       -H "Content-Type: application/json" \
       "$distUrl/api/v1/release_bundle/$releaseBundleName/$releaseBundleVersion/sign")
   fi
 
-  res_body=$(cat /tmp/curl_res_body)
-  if [ $STATUS -ne 200 ]; then
-    echo "Failed to sign release bundle with error: "
+  res_body=$(cat $STEP_TMP_DIR/curl_res_body)
+  if [ $STATUS -ge 200 ] && [ $STATUS -lt 300 ]; then
+    echo $res_body | jq .
+  else
+    echo -e "\n[SignReleaseBundle] Failed to sign release bundle with error: "
     echo $res_body | jq .
     exit 1
-  else
-    echo $res_body | jq .
   fi
 
   if [ ! -z "$outputReleaseBundleResourceName" ]; then
-    echo -e "\n[CreateReleaseBundle] Updating output resource: $outputReleaseBundleResourceName"
+    echo -e "\n[SignReleaseBundle] Updating output resource: $outputReleaseBundleResourceName"
     write_output $outputReleaseBundleResourceName name=$releaseBundleName version=$releaseBundleVersion isSigned=true
   fi
 }

@@ -181,23 +181,23 @@ postRelease() {
   local rtApiKey=$(eval echo "$"int_"$integrationName"_apikey)
 
   if [ ! -z "$SIGNING_KEY_PASSPHRASE" ]; then
-    STATUS=$(curl -o >(cat >/tmp/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
+    STATUS=$(curl -o >(cat > $STEP_TMP_DIR/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
       -H "Content-Type: application/json" \
       -H "X-GPG-PASSPHRASE: $SIGNING_KEY_PASSPHRASE" \
       "$distUrl/api/v1/release_bundle" -T $payloadPath)
   else
-    STATUS=$(curl -o >(cat >/tmp/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
+    STATUS=$(curl -o >(cat > $STEP_TMP_DIR/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
       -H "Content-Type: application/json" \
       "$distUrl/api/v1/release_bundle" -T $payloadPath)
   fi
 
-  res_body=$(cat /tmp/curl_res_body)
-  if [ $STATUS -ne 200 ]; then
-    echo "Failed to create release bundle with error: "
+  res_body=$(cat $STEP_TMP_DIR/curl_res_body)
+  if [ $STATUS -ge 200 ] && [ $STATUS -lt 300 ]; then
+    echo $res_body | jq .
+  else
+    echo -e "\n[CreateReleaseBundle] Failed to create release bundle with error: "
     echo $res_body | jq .
     exit 1
-  else
-    echo $res_body | jq .
   fi
 }
 
