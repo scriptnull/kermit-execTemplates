@@ -17,14 +17,14 @@ signReleaseBundle() {
       "$distUrl/api/v1/release_bundle/$releaseBundleName/$releaseBundleVersion/sign")
   fi
 
-  jq . $STEP_TMP_DIR/curl_res_body > $STEP_TMP_DIR/response.json
-  save_run_state $STEP_TMP_DIR/response.json .
+  jq . $STEP_TMP_DIR/curl_res_body > $STEP_TMP_DIR/"$STEP_NAME"_response.json
+  save_run_state $STEP_TMP_DIR/"$STEP_NAME"_response.json .
   if [ $STATUS -ge 200 ] && [ $STATUS -lt 300 ]; then
     echo -e "\n[SignReleaseBundle] Successfully signed release bundle."
-    echo -e "\n[SignReleaseBundle] Download run state and check the content of response.json to check the api response."
+    echo -e "\n[SignReleaseBundle] Download run state and check the content of "$STEP_NAME"_response.json to check the api response."
   else
     echo -e "\n[SignReleaseBundle] Failed to sign release bundle with error: "
-    cat $STEP_TMP_DIR/response.json
+    cat $STEP_TMP_DIR/"$STEP_NAME"_response.json
     exit 1
   fi
 
