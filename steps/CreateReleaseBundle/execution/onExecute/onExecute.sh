@@ -88,7 +88,7 @@ constructQueryForAqlResource() {
   }'
 
   local aql=$(eval echo "$"res_"$aqlResName"_query)
-  aqlQuery=$( jq -n \
+  aqlQuery=$(jq -n \
     --arg aql "$aql" \
     --arg aqlResName "$aqlResName" \
     "$queryTemplate")
@@ -114,7 +114,7 @@ createPayload() {
     "aql": $aql
   }'
 
-  payload=$( jq -n \
+  payload=$(jq -n \
     --arg releaseBundleName "$releaseBundleName" \
     --arg releaseBundleVersion "$releaseBundleVersion" \
     --arg sourceArtifactoryId "$sourceArtifactoryId" \
@@ -122,7 +122,7 @@ createPayload() {
 
   if [ ! -z "$buildInfoCount" ]; then
     buildInfoAql=$(constructQueryForBuildInfoResources)
-    buildInfoQuery=$( jq -n \
+    buildInfoQuery=$(jq -n \
       --arg aql "$buildInfoAql" \
       "$queryTemplate")
     payload=$(echo $payload | jq --argjson json "$buildInfoQuery" '.spec.queries += [ $json ]')
