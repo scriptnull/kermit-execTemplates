@@ -137,9 +137,7 @@ createPayload() {
     done
   fi
 
-  if [ -z "$signed" ]; then
-    signed=$(jq -r ".step.configuration.signed" $STEP_JSON_PATH)
-  fi
+  signed=$(jq -r ".step.configuration.signed" $STEP_JSON_PATH)
   if [ ! -z "$signed" ] && [ "$signed" != "null" ]; then
     payload=$(echo $payload | jq --arg sign_immediately $signed '. + {sign_immediately: $sign_immediately|test("true")}')
   fi
@@ -151,16 +149,12 @@ createPayload() {
     payload=$(echo $payload | jq --arg dry_run $dryRun '. + {dry_run: $dry_run|test("true")}')
   fi
 
-  if [ -z "$storeAtSourceArtifactory" ]; then
-    storeAtSourceArtifactory=$(jq -r ".step.configuration.storeAtSourceArtifactory" $STEP_JSON_PATH)
-  fi
+  storeAtSourceArtifactory=$(jq -r ".step.configuration.storeAtSourceArtifactory" $STEP_JSON_PATH)
   if [ ! -z "$storeAtSourceArtifactory" ] && [ "$storeAtSourceArtifactory" != "null" ]; then
     payload=$(echo $payload | jq --arg store_at_source_artifactory $storeAtSourceArtifactory '. + {store_at_source_artifactory: $store_at_source_artifactory|test("true")}')
   fi
 
-  if [ -z "$description" ]; then
-    description=$(jq -r ".step.configuration.description" $STEP_JSON_PATH)
-  fi
+  description=$(jq -r ".step.configuration.description" $STEP_JSON_PATH)
   if [ ! -z "$description" ] && [ "$description" != "null" ]; then
     payload=$(echo $payload | jq --arg description $description '. + {description: $description}')
   fi
