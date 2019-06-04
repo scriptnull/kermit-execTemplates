@@ -140,37 +140,37 @@ createPayload() {
   if [ -z "$signed" ]; then
     signed=$(jq -r ".step.configuration.signed" $STEP_JSON_PATH)
   fi
-  if [ ! -z "$signed" ]; then
+  if [ ! -z "$signed" ] && [ "$signed" != "null" ]; then
     payload=$(echo $payload | jq --arg sign_immediately $signed '. + {sign_immediately: $sign_immediately|test("true")}')
   fi
 
   if [ -z "$dryRun" ]; then
-    signed=$(jq -r ".step.configuration.dryRun" $STEP_JSON_PATH)
+    dryRun=$(jq -r ".step.configuration.dryRun" $STEP_JSON_PATH)
   fi
-  if [ ! -z "$dryRun" ]; then
+  if [ ! -z "$dryRun" ] && [ "$dryRun" != "null" ]; then
     payload=$(echo $payload | jq --arg dry_run $dryRun '. + {dry_run: $dry_run|test("true")}')
   fi
 
   if [ -z "$storeAtSourceArtifactory" ]; then
-    signed=$(jq -r ".step.configuration.storeAtSourceArtifactory" $STEP_JSON_PATH)
+    storeAtSourceArtifactory=$(jq -r ".step.configuration.storeAtSourceArtifactory" $STEP_JSON_PATH)
   fi
-  if [ ! -z "$storeAtSourceArtifactory" ]; then
+  if [ ! -z "$storeAtSourceArtifactory" ] && [ "$storeAtSourceArtifactory" != "null" ]; then
     payload=$(echo $payload | jq --arg store_at_source_artifactory $storeAtSourceArtifactory '. + {store_at_source_artifactory: $store_at_source_artifactory|test("true")}')
   fi
 
   if [ -z "$description" ]; then
-    signed=$(jq -r ".step.configuration.description" $STEP_JSON_PATH)
+    description=$(jq -r ".step.configuration.description" $STEP_JSON_PATH)
   fi
-  if [ ! -z "$description" ]; then
+  if [ ! -z "$description" ] && [ "$description" != "null" ]; then
     payload=$(echo $payload | jq --arg description $description '. + {description: $description}')
   fi
 
   releaseNotesContent=$(jq -r ".step.configuration.releaseNotes.content" $STEP_JSON_PATH)
-  if [ ! -z "$releaseNotesContent" ]; then
+  if [ ! -z "$releaseNotesContent" ] && [ "$releaseNotesContent" != "null" ]; then
     releaseNotes='{}'
     releaseNotes=$(echo $releaseNotes | jq --arg content $releaseNotesContent '. + {content: $content}')
     releaseNotesSyntax=$(jq -r ".step.configuration.releaseNotes.syntax" $STEP_JSON_PATH)
-    if [ ! -z "$releaseNotesSyntax" ]; then
+    if [ ! -z "$releaseNotesSyntax" ] && [ "$releaseNotesSyntax" != "null" ]; then
       releaseNotes=$(echo $releaseNotes | jq --arg syntax $releaseNotesSyntax '. + {syntax: $syntax}')
     fi
     payload=$(echo $payload | jq --argjson json "$releaseNotes" '.release_notes = $json')
@@ -205,10 +205,10 @@ createReleaseBundle() {
   echo "[CreateReleaseBundle] Getting Artifactory service id"
   local artifactoryServiceId=$(getArtifactoryServiceId)
 
-  if [ -z "$releaseBundleName" ] && [ -z "$releaseBundleVersion" ]; then
+  if [ -z "$releaseBundleName" ] || [ -z "$releaseBundleVersion" ]; then
     releaseBundleName=$(jq -r ".step.configuration.releaseBundleName" $STEP_JSON_PATH)
     releaseBundleVersion=$(jq -r ".step.configuration.releaseBundleVersion" $STEP_JSON_PATH)
-    if [ -z "$releaseBundleName" ] && [ -z "$releaseBundleVersion" ]; then
+    if [ -z "$releaseBundleName" ] || [ -z "$releaseBundleVersion" ]; then
       echo "[CreateReleaseBundle] ERROR: Unable to find a release bundle name and version to work with."
       echo "[CreateReleaseBundle] Please use environment variables releaseBundleName and releaseBundleVersion"
       echo "[CreateReleaseBundle] or configure CreateReleaseBundle step to have releaseBundleName and releaseBundleVersion"
