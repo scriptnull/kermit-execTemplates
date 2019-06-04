@@ -205,29 +205,20 @@ createReleaseBundle() {
   echo "[CreateReleaseBundle] Getting Artifactory service id"
   local artifactoryServiceId=$(getArtifactoryServiceId)
 
-  if [ -z "$releaseBundleName" ] || [ -z "$releaseBundleVersion" ]; then
-    releaseBundleName=$(jq -r ".step.configuration.releaseBundleName" $STEP_JSON_PATH)
-    releaseBundleVersion=$(jq -r ".step.configuration.releaseBundleVersion" $STEP_JSON_PATH)
-    if [ -z "$releaseBundleName" ] || [ -z "$releaseBundleVersion" ]; then
-      echo "[CreateReleaseBundle] ERROR: Unable to find a release bundle name and version to work with."
-      echo "[CreateReleaseBundle] Please use environment variables releaseBundleName and releaseBundleVersion"
-      echo "[CreateReleaseBundle] or configure CreateReleaseBundle step to have releaseBundleName and releaseBundleVersion"
-      exit 1;
-    fi
-  fi
-
+  releaseBundleName=$(jq -r ".step.configuration.releaseBundleName" $STEP_JSON_PATH)
+  releaseBundleVersion=$(jq -r ".step.configuration.releaseBundleVersion" $STEP_JSON_PATH)
   echo "[CreateReleaseBundle] Creating payload for release bundle"
   payload=$(createPayload "$releaseBundleName" "$releaseBundleVersion" "$artifactoryServiceId")
   echo $payload | jq . > $STEP_TMP_DIR/$payloadFile
   # TODO: remove this after testing
   cat $STEP_TMP_DIR/$payloadFile
 
-  echo "[CreateReleaseBundle] Creating Release Bundle with name: "$bundleName" and version: "$bundleVersion""
+  echo "[CreateReleaseBundle] Creating Release Bundle with name: "$releaseBundleName" and version: "$releaseBundleVersion""
   postRelease $STEP_TMP_DIR/$payloadFile $artifactoryIntegrationName
 
   if [ ! -z "$outputReleaseBundleResourceName" ]; then
     echo "[CreateReleaseBundle] Updating output resource: $outputReleaseBundleResourceName"
-    write_output $outputReleaseBundleResourceName name=$releaseBundleName versions=$releaseBundleVersion isSigned=$signed
+    write_output $outputReleaseBundleResourceName name=$releaseBundleName version=$releaseBundleVersion isSigned=$signed
   fi
 }
 

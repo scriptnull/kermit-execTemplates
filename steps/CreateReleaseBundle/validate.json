@@ -64,7 +64,8 @@
           },
           "required": ["content"]
         }
-      }
+      },
+      "required": ["releaseBundleName", "releaseBundleVersion"]
     },
     "requires": {
       "type": "object",
