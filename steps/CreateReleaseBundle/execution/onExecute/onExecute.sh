@@ -109,6 +109,19 @@ constructQueryForAqlResource() {
     fi
   fi
 
+  mappings=$(jq -r ".resources."$aqlResName".resourceVersionContentPropertyBag.mappings" $step_json_path)
+  if [ ! -z "$mappings" ] && [ "$mappings" != "null" ]; then
+    local mappingKeys=$(echo $mappings | jq 'keys')
+    local mappingKeyCount=$(echo $mappingKeys | jq '. | length')
+    if [ $mappingKeyCount -ne 0 ]; then
+      for i in $(seq 1 $mappingKeyCount); do
+        local mappingKey=$(echo $mappingKeys | jq '.['"$i-1"']')
+        local mappingValue=$(echo $mappings | jq -r ".$mappingKey")
+        aqlQuery=$(echo $aqlQuery | jq --argjson json "$mappingValue" '.mappings += [ $json ]')
+      done
+    fi
+  fi
+
   echo $aqlQuery
 }
 
