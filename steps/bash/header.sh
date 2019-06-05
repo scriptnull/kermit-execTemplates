@@ -1949,7 +1949,7 @@ save_tests() {
   fi
 
   echo "Copying test reports"
-  local output_directory=$STEP_WORKSPACE_DIR/upload/tests/$step_id
+  local output_directory=$step_workspace_dir/upload/tests/$step_id
   mkdir -p $output_directory
 
   local test_reports_size_kb=$(du -s $source_file | awk '{print $1}')
@@ -1982,7 +1982,7 @@ cache_files() {
   fi
 
   echo "Copying files for cache"
-  local output_directory=$STEP_WORKSPACE_DIR/upload/cache
+  local output_directory=$step_workspace_dir/upload/cache
   if [ "${#source_files[@]}" -gt 1 ]; then
     mkdir -p "$output_directory/$cache_name"
     for filepath in "${source_files[@]}"; do
@@ -2003,7 +2003,7 @@ restore_cache() {
 
   local cache_name="$1"
   local restore_path="$2"
-  local cache_location="$STEP_WORKSPACE_DIR/download/cache/$cache_name"
+  local cache_location="$step_workspace_dir/download/cache/$cache_name"
 
   local pattern=" |'"
   if [[ $cache_name =~ $pattern ]]; then
