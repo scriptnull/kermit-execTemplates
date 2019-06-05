@@ -8,7 +8,7 @@
     },
     "type": {
       "type": "string",
-      "enum": ["CreateReleaseBundle"]
+      "enum": ["Distribute"]
     },
     "configuration": {
       "type": "object",
@@ -40,32 +40,78 @@
         },
         "dryRun": {
           "type": "boolean"
+        }
+      }
+    },
+    "setup": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "environmentVariables": {
+          "type": "object",
+          "properties": {
+            "normal": {
+              "type": "object",
+              "properties": {
+                "targetRepo": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": {
+                "type": ["string", "number"]
+              }
+            }
+          }
         },
-        "signed": {
-          "type": "boolean"
-        },
-        "storeAtSourceArtifactory": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "releaseNotes": {
+        "runtime": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "content": {
-              "type": "string"
-            },
-            "syntax": {
+            "type": {
               "type": "string",
-              "enum": ["markdown", "asciidoc", "plain_text"]
+              "enum": ["image", "host"]
+            },
+            "image": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "auto": {
+                  "type": "object",
+                  "required": ["language"],
+                  "properties": {
+                    "language": {
+                      "type": "string"
+                    },
+                    "versions": {
+                      "type": "array",
+                      "items":  {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "custom": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["name", "tag"],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "tag": {
+                      "type": "string"
+                    },
+                    "options": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
             }
           },
-          "required": ["content"]
+          "required": ["type"]
         }
-      },
-      "required": ["releaseBundleName", "releaseBundleVersion"]
+      }
     },
     "requires": {
       "type": "object",

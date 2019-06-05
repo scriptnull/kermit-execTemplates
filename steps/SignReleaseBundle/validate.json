@@ -8,7 +8,7 @@
     },
     "type": {
       "type": "string",
-      "enum": ["CreateReleaseBundle"]
+      "enum": ["SignReleaseBundle"]
     },
     "configuration": {
       "type": "object",
@@ -31,41 +31,8 @@
         },
         "chronological": {
           "type": "boolean"
-        },
-        "releaseBundleName": {
-          "type": "string"
-        },
-        "releaseBundleVersion": {
-          "type": "string"
-        },
-        "dryRun": {
-          "type": "boolean"
-        },
-        "signed": {
-          "type": "boolean"
-        },
-        "storeAtSourceArtifactory": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "releaseNotes": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "content": {
-              "type": "string"
-            },
-            "syntax": {
-              "type": "string",
-              "enum": ["markdown", "asciidoc", "plain_text"]
-            }
-          },
-          "required": ["content"]
         }
-      },
-      "required": ["releaseBundleName", "releaseBundleVersion"]
+      }
     },
     "requires": {
       "type": "object",
