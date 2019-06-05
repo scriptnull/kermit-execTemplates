@@ -1214,7 +1214,7 @@ _notify_email() {
 
   local i_id=$(eval echo "$"int_"$i_name"_id)
   local curl_auth="-H Authorization:'apiToken $BUILDER_API_TOKEN'"
-  local default_email_payload="{\"stepletId\":\"\${STEPLET_ID}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}, \"showFailingCommands\":\${opt_show_failing_commands},\"subject\":\"\${opt_subject}\",\"body\":\"\${opt_body}\",\"attachments\":"
+  local default_email_payload="{\"stepletId\":\"\${steplet_id}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}, \"showFailingCommands\":\${opt_show_failing_commands},\"subject\":\"\${opt_subject}\",\"body\":\"\${opt_body}\",\"attachments\":"
 
   local opt_payload=$STEP_TMP_DIR/payload.json
 
