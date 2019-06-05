@@ -45,7 +45,7 @@ fi
 if ! $RUNNING_IN_CONTAINER; then
   export DOCKER_IMAGE="%%context.imageName%%:%%context.imageTag%%"
   export DOCKER_CONTAINER_OPTIONS="%%context.containerOptions%%"
-  export DOCKER_CONTAINER_NAME="$STEP_DOCKER_CONTAINER_NAME"
+  export DOCKER_CONTAINER_NAME="$step_docker_container_name"
   SKIP_BEFORE_EXIT_METHODS=true
   RUNNING_IN_CONTAINER=true
   boot_container
