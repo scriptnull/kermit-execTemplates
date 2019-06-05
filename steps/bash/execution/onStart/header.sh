@@ -1,2 +1,2 @@
 start_group "onStart" "true"
-export CURRENT_SCRIPT_SECTION="onStart"
+export current_script_section="onStart"

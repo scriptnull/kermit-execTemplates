@@ -471,7 +471,7 @@ update_commit_status() {
   done
 
   if [ -z "$opt_status" ]; then
-    case "$CURRENT_SCRIPT_SECTION" in
+    case "$current_script_section" in
       onStart | onExecute )
         opt_status="processing"
         ;;
@@ -489,7 +489,7 @@ update_commit_status() {
         fi
         ;;
       *)
-        echo "Error: unable to determine status in section $CURRENT_SCRIPT_SECTION" >&2
+        echo "Error: unable to determine status in section $current_script_section" >&2
         exit 99
         ;;
     esac
@@ -762,7 +762,7 @@ send_notification() {
 
   export opt_color="$NOTIFY_COLOR"
   if [ -z "$opt_color" ]; then
-    case "$CURRENT_SCRIPT_SECTION" in
+    case "$current_script_section" in
       onStart | onExecute )
         opt_color="#5183a0"
         ;;
@@ -875,7 +875,7 @@ send_notification() {
     # set up default text
     local step_name=$(cat "$step_json_path" | jq -r ."step.name")
     local step_id=$(cat "$step_json_path" | jq -r ."step.id")
-    case "$CURRENT_SCRIPT_SECTION" in
+    case "$current_script_section" in
       onStart | onExecute )
         opt_text="${step_name} PROCESSING <${step_url}|#${step_id}>"
         ;;
@@ -1151,7 +1151,7 @@ send_notification() {
 
 _notify_email() {
   if [ -z "$opt_status" ]; then
-    case "$CURRENT_SCRIPT_SECTION" in
+    case "$current_script_section" in
       onStart | onExecute )
         opt_status="processing"
         ;;
@@ -1169,7 +1169,7 @@ _notify_email() {
         fi
         ;;
       *)
-        echo "Error: unable to determine status in section $CURRENT_SCRIPT_SECTION" >&2
+        echo "Error: unable to determine status in section $current_script_section" >&2
         exit 99
         ;;
     esac

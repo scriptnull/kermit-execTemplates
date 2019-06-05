@@ -1,3 +1,3 @@
 Function onStart() {
 start_group "onStart" $TRUE
-$env:CURRENT_SCRIPT_SECTION = "onStart"
+$env:current_script_section = "onStart"

@@ -1,2 +1,2 @@
 onComplete() {
-export CURRENT_SCRIPT_SECTION="onComplete"
+export current_script_section="onComplete"

@@ -1,2 +1,2 @@
 onSuccess() {
-export CURRENT_SCRIPT_SECTION="onSuccess"
+export current_script_section="onSuccess"
