@@ -99,11 +99,18 @@
             }
           },
           "required": ["type"],
-          "dependencies": {
-            "image": {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": ["host"]
+              }
+            }
+          },
+          "then": {
+            "not": {
               "properties": {
-                "type": {
-                  "enum": ["image"]
+                "image": {
+                  "type": "object"
                 }
               }
             }
