@@ -102,7 +102,7 @@ constructQueryForAqlResource() {
         local key=$(echo $keys | jq '.['"$i-1"']')
         local values=$(echo $addedProperties | jq '.'"$key"'')
         property='{}'
-        property=$(echo $property | jq --arg key "$key" '. + {key: $key}')
+        property=$(echo $property | jq --argjson json "$key" '.key = $json')
         property=$(echo $property | jq --argjson json "$values" '.values = [ $json ]')
         aqlQuery=$(echo $aqlQuery | jq --argjson json "$property" '.added_props += [ $json ]')
       done
