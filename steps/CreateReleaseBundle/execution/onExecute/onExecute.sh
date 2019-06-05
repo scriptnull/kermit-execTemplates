@@ -93,6 +93,22 @@ constructQueryForAqlResource() {
     --arg aqlResName "$aqlResName" \
     "$queryTemplate")
 
+  addedProperties=$(jq -r ".resources."$aqlResName".resourceVersionContentPropertyBag.addedProperties" $STEP_JSON_PATH)
+  if [ ! -z "$addedProperties" ] && [ "$addedProperties" != "null" ]; then
+    local keys=$(echo $addedProperties | jq 'keys')
+    local keyCount=$(echo $keys | jq '. | length')
+    if [ $keyCount -ne 0 ]; then
+      for i in $(seq 1 $keyCount); do
+        local key=$(echo $keys | jq '.['"$i-1"']')
+        local values=$(echo $addedProperties | jq '.'"$key"'')
+        property='{}'
+        property=$(echo $property | jq --arg key "$key" '. + {key: $key}')
+        property=$(echo $property | jq --argjson json "$values" '.values = [ $json ]')
+        aqlQuery=$(echo $aqlQuery | jq --argjson json "$property" '.added_props += [ $json ]')
+      done
+    fi
+  fi
+
   echo $aqlQuery
 }
 
@@ -217,8 +233,6 @@ createReleaseBundle() {
   echo -e "\n[CreateReleaseBundle] Creating payload for release bundle"
   payload=$(createPayload "$releaseBundleName" "$releaseBundleVersion" "$artifactoryServiceId")
   echo $payload | jq . > $STEP_TMP_DIR/$payloadFile
-  # TODO: remove this after testing
-  cat $STEP_TMP_DIR/$payloadFile
 
   echo -e "\n[CreateReleaseBundle] Creating Release Bundle with name: "$releaseBundleName" and version: "$releaseBundleVersion""
   postRelease $STEP_TMP_DIR/$payloadFile $artifactoryIntegrationName
