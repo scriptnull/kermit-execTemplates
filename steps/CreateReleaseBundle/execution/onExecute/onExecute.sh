@@ -93,7 +93,7 @@ constructQueryForAqlResource() {
     --arg aqlResName "$aqlResName" \
     "$queryTemplate")
 
-  addedProperties=$(jq -r ".resources."$aqlResName".resourceVersionContentPropertyBag.addedProperties" $STEP_JSON_PATH)
+  addedProperties=$(jq -r ".resources."$aqlResName".resourceVersionContentPropertyBag.addedProperties" $step_json_path)
   if [ ! -z "$addedProperties" ] && [ "$addedProperties" != "null" ]; then
     local keys=$(echo $addedProperties | jq 'keys')
     local keyCount=$(echo $keys | jq '. | length')
@@ -153,33 +153,33 @@ createPayload() {
     done
   fi
 
-  signed=$(jq -r ".step.configuration.signed" $STEP_JSON_PATH)
+  signed=$(jq -r ".step.configuration.signed" $step_json_path)
   if [ ! -z "$signed" ] && [ "$signed" != "null" ]; then
     payload=$(echo $payload | jq --arg sign_immediately $signed '. + {sign_immediately: $sign_immediately|test("true")}')
   fi
 
   if [ -z "$dryRun" ]; then
-    dryRun=$(jq -r ".step.configuration.dryRun" $STEP_JSON_PATH)
+    dryRun=$(jq -r ".step.configuration.dryRun" $step_json_path)
   fi
   if [ ! -z "$dryRun" ] && [ "$dryRun" != "null" ]; then
     payload=$(echo $payload | jq --arg dry_run $dryRun '. + {dry_run: $dry_run|test("true")}')
   fi
 
-  storeAtSourceArtifactory=$(jq -r ".step.configuration.storeAtSourceArtifactory" $STEP_JSON_PATH)
+  storeAtSourceArtifactory=$(jq -r ".step.configuration.storeAtSourceArtifactory" $step_json_path)
   if [ ! -z "$storeAtSourceArtifactory" ] && [ "$storeAtSourceArtifactory" != "null" ]; then
     payload=$(echo $payload | jq --arg store_at_source_artifactory $storeAtSourceArtifactory '. + {store_at_source_artifactory: $store_at_source_artifactory|test("true")}')
   fi
 
-  description=$(jq -r ".step.configuration.description" $STEP_JSON_PATH)
+  description=$(jq -r ".step.configuration.description" $step_json_path)
   if [ ! -z "$description" ] && [ "$description" != "null" ]; then
     payload=$(echo $payload | jq --arg description "$description" '. + {description: $description}')
   fi
 
-  releaseNotesContent=$(jq -r ".step.configuration.releaseNotes.content" $STEP_JSON_PATH)
+  releaseNotesContent=$(jq -r ".step.configuration.releaseNotes.content" $step_json_path)
   if [ ! -z "$releaseNotesContent" ] && [ "$releaseNotesContent" != "null" ]; then
     releaseNotes='{}'
     releaseNotes=$(echo $releaseNotes | jq --arg content "$releaseNotesContent" '. + {content: $content}')
-    releaseNotesSyntax=$(jq -r ".step.configuration.releaseNotes.syntax" $STEP_JSON_PATH)
+    releaseNotesSyntax=$(jq -r ".step.configuration.releaseNotes.syntax" $step_json_path)
     if [ ! -z "$releaseNotesSyntax" ] && [ "$releaseNotesSyntax" != "null" ]; then
       releaseNotes=$(echo $releaseNotes | jq --arg syntax "$releaseNotesSyntax" '. + {syntax: $syntax}')
     fi
@@ -228,8 +228,8 @@ createReleaseBundle() {
   echo -e "\n[CreateReleaseBundle] Getting Artifactory service id"
   local artifactoryServiceId=$(getArtifactoryServiceId)
 
-  releaseBundleName=$(jq -r ".step.configuration.releaseBundleName" $STEP_JSON_PATH)
-  releaseBundleVersion=$(jq -r ".step.configuration.releaseBundleVersion" $STEP_JSON_PATH)
+  releaseBundleName=$(jq -r ".step.configuration.releaseBundleName" $step_json_path)
+  releaseBundleVersion=$(jq -r ".step.configuration.releaseBundleVersion" $step_json_path)
   echo -e "\n[CreateReleaseBundle] Creating payload for release bundle"
   payload=$(createPayload "$releaseBundleName" "$releaseBundleVersion" "$artifactoryServiceId")
   echo $payload | jq . > $STEP_TMP_DIR/$payloadFile

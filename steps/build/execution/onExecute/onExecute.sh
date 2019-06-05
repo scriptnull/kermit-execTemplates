@@ -20,10 +20,10 @@ build() {
     fi
 
     if [ "$payloadType" == "docker" ]; then
-      dockerFileLocation=$(jq -r ".step.setup.build.dockerFileLocation" $STEP_JSON_PATH)
-      dockerFileName=$(jq -r ".step.setup.build.dockerFileName" $STEP_JSON_PATH)
-      imageName=$(jq -r ".step.setup.build.imageName" $STEP_JSON_PATH)
-      imageTag=$(jq -r ".step.setup.build.imageTag" $STEP_JSON_PATH)
+      dockerFileLocation=$(jq -r ".step.setup.build.dockerFileLocation" $step_json_path)
+      dockerFileName=$(jq -r ".step.setup.build.dockerFileName" $step_json_path)
+      imageName=$(jq -r ".step.setup.build.imageName" $step_json_path)
+      imageTag=$(jq -r ".step.setup.build.imageTag" $step_json_path)
       evalImageName=$(eval echo $imageName)
       evalImageTag=$(eval echo $imageTag)
       echo "[build] Building docker image: $evalImageName:$evalImageTag using Dockerfile: ${dockerFileName}"

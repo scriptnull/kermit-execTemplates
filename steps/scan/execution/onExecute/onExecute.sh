@@ -7,7 +7,7 @@ scan() {
 
   local buildName=""
   local buildNumber=""
-  local stepSetup=$(cat $STEP_JSON_PATH | jq .step.setup)
+  local stepSetup=$(cat $step_json_path | jq .step.setup)
   if [ ! -z "$inputBuildInfoResourceName" ]; then
     echo "[scan] Using build name and number from buildInfo resource: $inputBuildInfoResourceName"
     buildName=$(eval echo "$"res_"$inputBuildInfoResourceName"_buildName)

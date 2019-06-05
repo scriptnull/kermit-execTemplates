@@ -22,8 +22,8 @@ promote() {
     fi
   fi
 
-  targetRepo=$(jq -r ".step.setup.promote.targetRepo" $STEP_JSON_PATH)
-  includeDependencies=$(jq -r ".step.setup.promote.includeDependencies" $STEP_JSON_PATH)
+  targetRepo=$(jq -r ".step.setup.promote.targetRepo" $step_json_path)
+  includeDependencies=$(jq -r ".step.setup.promote.includeDependencies" $step_json_path)
 
   echo "[promote] Promoting build $buildName/$buildNumber to: $targetRepo"
   local promoteCmd="jfrog rt build-promote $buildName $buildNumber $targetRepo"
