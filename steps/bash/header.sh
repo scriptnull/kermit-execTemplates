@@ -2386,8 +2386,8 @@ before_exit() {
     open_group_info[${last_element}_status]=1
     stop_group
   done
-  if [ -z $SKIP_BEFORE_EXIT_METHODS ]; then
-    SKIP_BEFORE_EXIT_METHODS=false
+  if [ -z $skip_before_exit_methods ]; then
+    skip_before_exit_methods=false
   fi
 
   if [ "$is_success" == true ]; then
@@ -2397,11 +2397,11 @@ before_exit() {
     # exit 0/exit 1 in these sections not failing the build
     subshell_exit_code=0
     (
-      if [ "$(type -t onSuccess)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+      if [ "$(type -t onSuccess)" == "function" ] && ! $skip_before_exit_methods; then
         execute_command "onSuccess" || true
       fi
 
-      if [ "$(type -t onComplete)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+      if [ "$(type -t onComplete)" == "function" ] && ! $skip_before_exit_methods; then
         execute_command "onComplete" || true
       fi
     # subshell_exit_code will be set to 1 only when there is a exit 1 command in
@@ -2415,7 +2415,7 @@ before_exit() {
       stop_group
     fi
 
-    if [ "$(type -t output)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+    if [ "$(type -t output)" == "function" ] && ! $skip_before_exit_methods; then
       start_group "Processing outputs" true
       # unsetting -e flag so that the script doesn't exit on error
       set +e
@@ -2447,11 +2447,11 @@ before_exit() {
     # running onComplete and onFailure inside a subshell to handle the scenario of
     # exit 0/exit 1 in these sections not failing the build
     (
-      if [ "$(type -t onFailure)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+      if [ "$(type -t onFailure)" == "function" ] && ! $skip_before_exit_methods; then
         execute_command "onFailure" || true
       fi
 
-      if [ "$(type -t onComplete)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+      if [ "$(type -t onComplete)" == "function" ] && ! $skip_before_exit_methods; then
         execute_command "onComplete" || true
       fi
     # adding || true so that the script doesn't exit when onFailure/onComplete
@@ -2471,7 +2471,7 @@ before_exit() {
 
 trap before_exit EXIT
 
-export SKIP_BEFORE_EXIT_METHODS=false
+export skip_before_exit_methods=false
 
 if [ -z "$HOME" ]; then
   export HOME=$(echo ~)
