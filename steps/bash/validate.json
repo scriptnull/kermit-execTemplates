@@ -98,7 +98,16 @@
               }
             }
           },
-          "required": ["type"]
+          "required": ["type"],
+          "dependencies": {
+            "image": {
+              "properties": {
+                "type": {
+                  "enum": ["image"]
+                }
+              }
+            }
+          }
         }
       }
     },
