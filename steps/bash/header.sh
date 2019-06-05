@@ -524,7 +524,7 @@ update_commit_status() {
       elif [ "$opt_status" == "failure" ] ; then
         state="failure"
       fi
-      payload="{\"target_url\": \"\${STEP_URL}\",\"description\": \"\${opt_message}\", \"context\": \"\${opt_context}\", \"state\": \"$state\"}"
+      payload="{\"target_url\": \"\${step_url}\",\"description\": \"\${opt_message}\", \"context\": \"\${opt_context}\", \"state\": \"$state\"}"
       endpoint="$integration_url/repos/$full_name/statuses/$commit"
       headers="-H Authorization:'token $token' -H Accept:'application/vnd.GithubProvider.v3'"
       ;;
@@ -541,7 +541,7 @@ update_commit_status() {
         state="FAILED"
       fi
 
-      payload="{\"url\": \"\${STEP_URL}\",\"description\": \"\${opt_message}\", \"key\": \"\${opt_context}\", \"name\": \"\${step_name}\", \"state\": \"$state\"}"
+      payload="{\"url\": \"\${step_url}\",\"description\": \"\${opt_message}\", \"key\": \"\${opt_context}\", \"name\": \"\${step_name}\", \"state\": \"$state\"}"
       endpoint="$integration_url/2.0/repositories/$full_name/commit/$commit/statuses/build"
       headers="-H Authorization:'Basic $token'"
       ;;
@@ -558,7 +558,7 @@ update_commit_status() {
         state="FAILED"
       fi
 
-      payload="{\"url\": \"\${STEP_URL}\",\"description\": \"\${opt_message}\", \"key\": \"\${opt_context}\", \"name\": \"\${step_name}\", \"state\": \"$state\"}"
+      payload="{\"url\": \"\${step_url}\",\"description\": \"\${opt_message}\", \"key\": \"\${opt_context}\", \"name\": \"\${step_name}\", \"state\": \"$state\"}"
       endpoint="$integration_url/rest/build-status/1.0/commits/$commit"
       headers="-H Authorization:'Basic $token'"
       ;;
@@ -877,23 +877,23 @@ send_notification() {
     local step_id=$(cat "$STEP_JSON_PATH" | jq -r ."step.id")
     case "$CURRENT_SCRIPT_SECTION" in
       onStart | onExecute )
-        opt_text="${step_name} PROCESSING <${STEP_URL}|#${step_id}>"
+        opt_text="${step_name} PROCESSING <${step_url}|#${step_id}>"
         ;;
       onSuccess )
-        opt_text="${step_name} SUCCESS <${STEP_URL}|#${step_id}>"
+        opt_text="${step_name} SUCCESS <${step_url}|#${step_id}>"
         ;;
       onFailure )
-        opt_text="${step_name} FAILURE <${STEP_URL}|#${step_id}>"
+        opt_text="${step_name} FAILURE <${step_url}|#${step_id}>"
         ;;
       onComplete )
         if [ "$is_success" == "true" ]; then
-          opt_text="${step_name} SUCCESS <${STEP_URL}|#${step_id}>"
+          opt_text="${step_name} SUCCESS <${step_url}|#${step_id}>"
         else
-          opt_text="${step_name} FAILURE<${STEP_URL}|#${step_id}>"
+          opt_text="${step_name} FAILURE<${step_url}|#${step_id}>"
         fi
         ;;
       * )
-        opt_text="${step_name} <${STEP_URL}|#${step_id}>"
+        opt_text="${step_name} <${step_url}|#${step_id}>"
         ;;
     esac
   fi
