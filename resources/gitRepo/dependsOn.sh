@@ -30,7 +30,7 @@ git_sync() {
     echo "$privateKey" > $privateKeyPath
     chmod 600 $privateKeyPath
     git config --global credential.helper store
-    if [ "$NO_VERIFY_SSL" == "true" ]; then
+    if [ "$no_verify_ssl" == "true" ]; then
       git config --global http.sslVerify false
     fi
 
