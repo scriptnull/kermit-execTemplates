@@ -30,7 +30,7 @@ boot_container() {
   local docker_run_cmd="docker run $DOCKER_CONTAINER_OPTIONS $default_docker_options \
     -e RUNNING_IN_CONTAINER=$RUNNING_IN_CONTAINER \
     $DOCKER_IMAGE \
-    bash -c \"$REQEXEC_BIN_PATH $steplet_script_path $status_dir/step.env\""
+    bash -c \"$reqexec_bin_path $steplet_script_path $status_dir/step.env\""
 
   execute_command "$docker_run_cmd"
 
