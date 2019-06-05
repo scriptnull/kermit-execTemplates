@@ -35,7 +35,7 @@ get_file() {
 
       jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
       if [ ! -z "$fileLocation" ] && [ ! -z "$fileName" ]; then
-        jfrog rt dl --build-name=$pipeline_name --build-number=$RUN_NUMBER "$fileLocation/$fileName" "$resourcePath/$fileName"
+        jfrog rt dl --build-name=$pipeline_name --build-number=$run_number "$fileLocation/$fileName" "$resourcePath/$fileName"
       else
         local pattern=$(eval echo "$"res_"$resourceName"_pattern)
         local aql=$(eval echo "$"res_"$resourceName"_aql)
@@ -107,7 +107,7 @@ get_file() {
         fileSpecs=$(echo $fileSpecs | jq --argjson json "$specs" '.files += [ $json ]')
         echo $fileSpecs | jq . > $step_tmp_dir/fileSpecs.json
         pushd $resourcePath
-        jfrog rt dl --build-name=$pipeline_name --build-number=$RUN_NUMBER --spec $step_tmp_dir/fileSpecs.json
+        jfrog rt dl --build-name=$pipeline_name --build-number=$run_number --spec $step_tmp_dir/fileSpecs.json
         popd
       fi
     elif [ "$intMasterName" == "fileServer" ]; then

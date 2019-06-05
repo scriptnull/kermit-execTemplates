@@ -136,7 +136,7 @@ git_sync() {
     fi
     rm $privateKeyPath
     if type jfrog &> /dev/null; then
-      jfrog rt bag $pipeline_name $RUN_NUMBER
+      jfrog rt bag $pipeline_name $run_number
     fi
   popd
 }

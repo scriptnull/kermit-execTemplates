@@ -7,7 +7,7 @@ build() {
 
   payloadType=$step_payloadType
   buildName=$pipeline_name
-  buildNumber=$RUN_NUMBER
+  buildNumber=$run_number
 
   buildDir=$(eval echo "$"res_"$inputGitRepoResourceName"_resourcePath)/$dockerFileLocation
   echo "[build] Changing directory: $buildDir"
