@@ -210,24 +210,24 @@ postRelease() {
   local rtApiKey=$(eval echo "$"int_"$integrationName"_apikey)
 
   if [ ! -z "$SIGNING_KEY_PASSPHRASE" ]; then
-    STATUS=$(curl -o >(cat > $STEP_TMP_DIR/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
+    STATUS=$(curl -o >(cat > $step_tmp_dir/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
       -H "Content-Type: application/json" \
       -H "X-GPG-PASSPHRASE: $SIGNING_KEY_PASSPHRASE" \
       "$distUrl/api/v1/release_bundle" -T $payloadPath)
   else
-    STATUS=$(curl -o >(cat > $STEP_TMP_DIR/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
+    STATUS=$(curl -o >(cat > $step_tmp_dir/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
       -H "Content-Type: application/json" \
       "$distUrl/api/v1/release_bundle" -T $payloadPath)
   fi
 
-  jq . $STEP_TMP_DIR/curl_res_body > $STEP_TMP_DIR/"$step_name"_response.json
-  save_run_state $STEP_TMP_DIR/"$step_name"_response.json .
+  jq . $step_tmp_dir/curl_res_body > $step_tmp_dir/"$step_name"_response.json
+  save_run_state $step_tmp_dir/"$step_name"_response.json .
   if [ $STATUS -ge 200 ] && [ $STATUS -lt 300 ]; then
     echo -e "\n[CreateReleaseBundle] Successfully created release bundle."
     echo -e "\n[CreateReleaseBundle] Download run state and check "$step_name"_response.json to check the complete response."
   else
     echo -e "\n[CreateReleaseBundle] Failed to create release bundle with error: "
-    cat $STEP_TMP_DIR/"$step_name"_response.json
+    cat $step_tmp_dir/"$step_name"_response.json
     exit 1
   fi
 }
@@ -245,10 +245,10 @@ createReleaseBundle() {
   releaseBundleVersion=$(jq -r ".step.configuration.releaseBundleVersion" $step_json_path)
   echo -e "\n[CreateReleaseBundle] Creating payload for release bundle"
   payload=$(createPayload "$releaseBundleName" "$releaseBundleVersion" "$artifactoryServiceId")
-  echo $payload | jq . > $STEP_TMP_DIR/$payloadFile
+  echo $payload | jq . > $step_tmp_dir/$payloadFile
 
   echo -e "\n[CreateReleaseBundle] Creating Release Bundle with name: "$releaseBundleName" and version: "$releaseBundleVersion""
-  postRelease $STEP_TMP_DIR/$payloadFile $artifactoryIntegrationName
+  postRelease $step_tmp_dir/$payloadFile $artifactoryIntegrationName
 
   if [ ! -z "$outputReleaseBundleResourceName" ]; then
     echo -e "\n[CreateReleaseBundle] Updating output resource: $outputReleaseBundleResourceName"

@@ -7,24 +7,24 @@ signReleaseBundle() {
 
   echo "[SignReleaseBundle] Signing Release Bundle with name: "$releaseBundleName" and version: "$releaseBundleVersion""
   if [ ! -z "$SIGNING_KEY_PASSPHRASE" ]; then
-    STATUS=$(curl -o >(cat > $STEP_TMP_DIR/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
+    STATUS=$(curl -o >(cat > $step_tmp_dir/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
       -H "Content-Type: application/json" \
       -H "X-GPG-PASSPHRASE: $SIGNING_KEY_PASSPHRASE" \
       "$distUrl/api/v1/release_bundle/$releaseBundleName/$releaseBundleVersion/sign")
   else
-    STATUS=$(curl -o >(cat > $STEP_TMP_DIR/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
+    STATUS=$(curl -o >(cat > $step_tmp_dir/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
       -H "Content-Type: application/json" \
       "$distUrl/api/v1/release_bundle/$releaseBundleName/$releaseBundleVersion/sign")
   fi
 
-  jq . $STEP_TMP_DIR/curl_res_body > $STEP_TMP_DIR/"$step_name"_response.json
-  save_run_state $STEP_TMP_DIR/"$step_name"_response.json .
+  jq . $step_tmp_dir/curl_res_body > $step_tmp_dir/"$step_name"_response.json
+  save_run_state $step_tmp_dir/"$step_name"_response.json .
   if [ $STATUS -ge 200 ] && [ $STATUS -lt 300 ]; then
     echo -e "\n[SignReleaseBundle] Successfully signed release bundle."
     echo -e "\n[SignReleaseBundle] Download run state and check the content of "$step_name"_response.json to check the complete response."
   else
     echo -e "\n[SignReleaseBundle] Failed to sign release bundle with error: "
-    cat $STEP_TMP_DIR/"$step_name"_response.json
+    cat $step_tmp_dir/"$step_name"_response.json
     exit 1
   fi
 

@@ -1181,7 +1181,7 @@ _notify_email() {
   fi
   export json_recipients=$(printf '%s\n' "${opt_recipients[@]}" | jq -R . | jq -s .)
 
-  local tmp_attachments=$STEP_TMP_DIR/attachments.json
+  local tmp_attachments=$step_tmp_dir/attachments.json
   echo -n "[]" > $tmp_attachments
   if [ ${#opt_attachments[@]} -gt 0 ]; then
     local totalSizeInBytes=0
@@ -1216,7 +1216,7 @@ _notify_email() {
   local curl_auth="-H Authorization:'apiToken $BUILDER_API_TOKEN'"
   local default_email_payload="{\"stepletId\":\"\${steplet_id}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}, \"showFailingCommands\":\${opt_show_failing_commands},\"subject\":\"\${opt_subject}\",\"body\":\"\${opt_body}\",\"attachments\":"
 
-  local opt_payload=$STEP_TMP_DIR/payload.json
+  local opt_payload=$step_tmp_dir/payload.json
 
   echo $default_email_payload > $opt_payload
   replace_envs $opt_payload
