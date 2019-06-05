@@ -1,4 +1,4 @@
-distribute() {
+distributeReleaseBundle() {
   local curlResponseFile=$step_tmp_dir/response
 
   local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
@@ -135,4 +135,4 @@ distribute() {
   fi
 }
 
-execute_command distribute
+execute_command distributeReleaseBundle
