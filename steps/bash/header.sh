@@ -1949,7 +1949,7 @@ save_tests() {
   fi
 
   echo "Copying test reports"
-  local output_directory=$STEP_WORKSPACE_DIR/upload/tests/$STEP_ID
+  local output_directory=$STEP_WORKSPACE_DIR/upload/tests/$step_id
   mkdir -p $output_directory
 
   local test_reports_size_kb=$(du -s $source_file | awk '{print $1}')
