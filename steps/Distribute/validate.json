@@ -36,7 +36,7 @@
           "type": "string"
         },
         "releaseBundleVersion": {
-          "type": "string"
+          "type": ["string", "number"]
         },
         "dryRun": {
           "type": "boolean"
