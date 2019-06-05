@@ -7,7 +7,7 @@ promote() {
 
   if [ -z "$buildName" ] && [ -z "$buildNumber" ]; then
     if [ ! -z "$inputBuildInfoResourceName" ]; then
-      echo "[promote] Using build name and number from buildInfo resource: $inputBuildInfoResourceName"
+      echo "[promote] Using build name and number from BuildInfo resource: $inputBuildInfoResourceName"
       buildName=$(eval echo "$"res_"$inputBuildInfoResourceName"_buildName)
       buildNumber=$(eval echo "$"res_"$inputBuildInfoResourceName"_buildNumber)
     elif [ ! -z "$buildStepName" ]; then
@@ -15,7 +15,7 @@ promote() {
       buildNumber=$(eval echo "$""$buildStepName"_buildNumber)
     else
       echo "[promote] ERROR: Unable to find a build name and number to work with."
-      echo "[promote] Please use environment variables, an input buildInfo resource"
+      echo "[promote] Please use environment variables, an input BuildInfo resource"
       echo "[promote] or configure promote to run in an affinity group that also"
       echo "[promote] runs a build step."
       exit 1;

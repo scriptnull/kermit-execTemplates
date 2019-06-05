@@ -9,7 +9,7 @@ scan() {
   local buildNumber=""
   local stepSetup=$(cat $step_json_path | jq .step.setup)
   if [ ! -z "$inputBuildInfoResourceName" ]; then
-    echo "[scan] Using build name and number from buildInfo resource: $inputBuildInfoResourceName"
+    echo "[scan] Using build name and number from BuildInfo resource: $inputBuildInfoResourceName"
     buildName=$(eval echo "$"res_"$inputBuildInfoResourceName"_buildName)
     buildNumber=$(eval echo "$"res_"$inputBuildInfoResourceName"_buildNumber)
   elif [ ! -z "$buildStepName" ]; then
@@ -28,7 +28,7 @@ scan() {
 
   if [ -z "$buildName" ] && [ -z "$buildNumber" ]; then
     echo "[scan] ERROR: Unable to find a build name and number to work with."
-    echo "[scan] Please use environment variables, an input buildInfo resource"
+    echo "[scan] Please use environment variables, an input BuildInfo resource"
     echo "[scan] or configure scan to run in an affinity group that also"
     echo "[scan] runs a build step."
     exit 1;

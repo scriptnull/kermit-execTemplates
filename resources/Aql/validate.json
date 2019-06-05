@@ -8,19 +8,28 @@
     },
     "type": {
       "type": "string",
-      "enum": ["buildInfo"]
+      "enum": ["Aql"]
     },
     "version": {
       "type": "object",
       "properties": {
-        "buildNumber": {
-          "type": "integer"
-        },
-        "buildName": {
+        "query": {
           "type": "string"
+        },
+        "addedProperties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "number"]
+          }
+        },
+        "mappings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["object"]
+          }
         }
       },
-      "required": ["buildNumber", "buildName"]
+      "required": ["query"]
     }
   },
   "required": ["name", "type", "version"]

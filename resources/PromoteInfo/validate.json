@@ -8,28 +8,19 @@
     },
     "type": {
       "type": "string",
-      "enum": ["aql"]
+      "enum": ["PromoteInfo"]
     },
     "version": {
       "type": "object",
       "properties": {
-        "query": {
+        "buildNumber": {
+          "type": "integer"
+        },
+        "buildName": {
           "type": "string"
-        },
-        "addedProperties": {
-          "type": "object",
-          "additionalProperties": {
-            "type": ["string", "number"]
-          }
-        },
-        "mappings": {
-          "type": "object",
-          "additionalProperties": {
-            "type": ["object"]
-          }
         }
       },
-      "required": ["query"]
+      "required": ["buildNumber", "buildName"]
     }
   },
   "required": ["name", "type", "version"]
