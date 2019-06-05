@@ -1213,7 +1213,7 @@ _notify_email() {
   fi
 
   local i_id=$(eval echo "$"int_"$i_name"_id)
-  local curl_auth="-H Authorization:'apiToken $BUILDER_API_TOKEN'"
+  local curl_auth="-H Authorization:'apiToken $builder_api_token'"
   local default_email_payload="{\"stepletId\":\"\${steplet_id}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}, \"showFailingCommands\":\${opt_show_failing_commands},\"subject\":\"\${opt_subject}\",\"body\":\"\${opt_body}\",\"attachments\":"
 
   local opt_payload=$step_tmp_dir/payload.json
@@ -1223,7 +1223,7 @@ _notify_email() {
   cat $tmp_attachments >> $opt_payload
   echo -n "}" >> $opt_payload
 
-  full_url="${SHIPPABLE_API_URL}/projectIntegrations/${i_id}/sendEmail"
+  full_url="${shippable_api_url}/projectIntegrations/${i_id}/sendEmail"
   _post_curl "$opt_payload" "$curl_auth" "$full_url"
 }
 
