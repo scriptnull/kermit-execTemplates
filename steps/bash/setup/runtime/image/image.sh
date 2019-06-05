@@ -23,14 +23,14 @@ boot_container() {
   local default_docker_options="-v /opt/docker/docker:/usr/bin/docker \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v $run_dir:$run_dir \
-    -v $PIPELINE_WORKSPACE_DIR:$PIPELINE_WORKSPACE_DIR \
-    -v $STATUS_DIR:$STATUS_DIR \
+    -v $pipeline_workspace_dir:$pipeline_workspace_dir \
+    -v $status_dir:$status_dir \
     -v $REQEXEC_DIR:$REQEXEC_DIR \
     -w $(pwd) -d --init --rm --privileged --name $DOCKER_CONTAINER_NAME"
   local docker_run_cmd="docker run $DOCKER_CONTAINER_OPTIONS $default_docker_options \
     -e RUNNING_IN_CONTAINER=$RUNNING_IN_CONTAINER \
     $DOCKER_IMAGE \
-    bash -c \"$REQEXEC_BIN_PATH $steplet_script_path $STATUS_DIR/step.env\""
+    bash -c \"$reqexec_bin_path $steplet_script_path $status_dir/step.env\""
 
   execute_command "$docker_run_cmd"
 

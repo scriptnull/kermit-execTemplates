@@ -105,9 +105,9 @@ get_file() {
 
         fileSpecs='{"files": []}'
         fileSpecs=$(echo $fileSpecs | jq --argjson json "$specs" '.files += [ $json ]')
-        echo $fileSpecs | jq . > $STEP_TMP_DIR/fileSpecs.json
+        echo $fileSpecs | jq . > $step_tmp_dir/fileSpecs.json
         pushd $resourcePath
-        jfrog rt dl --build-name=$PIPELINE_NAME --build-number=$RUN_NUMBER --spec $STEP_TMP_DIR/fileSpecs.json
+        jfrog rt dl --build-name=$PIPELINE_NAME --build-number=$RUN_NUMBER --spec $step_tmp_dir/fileSpecs.json
         popd
       fi
     elif [ "$intMasterName" == "fileServer" ]; then

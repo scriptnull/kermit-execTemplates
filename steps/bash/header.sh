@@ -1181,7 +1181,7 @@ _notify_email() {
   fi
   export json_recipients=$(printf '%s\n' "${opt_recipients[@]}" | jq -R . | jq -s .)
 
-  local tmp_attachments=$STEP_TMP_DIR/attachments.json
+  local tmp_attachments=$step_tmp_dir/attachments.json
   echo -n "[]" > $tmp_attachments
   if [ ${#opt_attachments[@]} -gt 0 ]; then
     local totalSizeInBytes=0
@@ -1214,9 +1214,9 @@ _notify_email() {
 
   local i_id=$(eval echo "$"int_"$i_name"_id)
   local curl_auth="-H Authorization:'apiToken $BUILDER_API_TOKEN'"
-  local default_email_payload="{\"stepletId\":\"\${STEPLET_ID}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}, \"showFailingCommands\":\${opt_show_failing_commands},\"subject\":\"\${opt_subject}\",\"body\":\"\${opt_body}\",\"attachments\":"
+  local default_email_payload="{\"stepletId\":\"\${steplet_id}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}, \"showFailingCommands\":\${opt_show_failing_commands},\"subject\":\"\${opt_subject}\",\"body\":\"\${opt_body}\",\"attachments\":"
 
-  local opt_payload=$STEP_TMP_DIR/payload.json
+  local opt_payload=$step_tmp_dir/payload.json
 
   echo $default_email_payload > $opt_payload
   replace_envs $opt_payload
@@ -2058,7 +2058,7 @@ add_pipeline_variable() {
     exit 1
   fi
 
-  local env_file_path="$PIPELINE_WORKSPACE_DIR/pipeline.env"
+  local env_file_path="$pipeline_workspace_dir/pipeline.env"
 
   if [ ! -f "$env_file_path" ]; then
     echo "Creating .env file $env_file_path"
@@ -2084,8 +2084,8 @@ export_run_variables() {
 }
 
 export_pipeline_variables() {
-  if [ -f $PIPELINE_WORKSPACE_DIR/pipeline.env ]; then
-    source $PIPELINE_WORKSPACE_DIR/pipeline.env
+  if [ -f $pipeline_workspace_dir/pipeline.env ]; then
+    source $pipeline_workspace_dir/pipeline.env
   fi
 }
 
@@ -2179,7 +2179,7 @@ save_pipeline_state() {
   fi
 
   echo "Copying files to state"
-  local output_directory=$PIPELINE_WORKSPACE_DIR
+  local output_directory=$pipeline_workspace_dir
   if [ "${#source_files[@]}" -gt 1 ]; then
     mkdir -p "$output_directory/$cache_name"
     for filepath in "${source_files[@]}"; do
@@ -2200,7 +2200,7 @@ restore_pipeline_state() {
 
   local cache_name="$1"
   local restore_path="$2"
-  local cache_location="$PIPELINE_WORKSPACE_DIR/$cache_name"
+  local cache_location="$pipeline_workspace_dir/$cache_name"
 
   local pattern=" |'"
   if [[ $cache_name =~ $pattern ]]; then

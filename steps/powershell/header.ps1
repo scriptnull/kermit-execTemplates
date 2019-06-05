@@ -109,7 +109,7 @@ Function export_run_variables() {
 }
 
 Function export_pipeline_variables() {
-  if (Test-Path -Path $env:PIPELINE_WORKSPACE_DIR/pipeline.env) {
-    & $env:PIPELINE_WORKSPACE_DIR/pipeline.env
+  if (Test-Path -Path $env:pipeline_workspace_dir/pipeline.env) {
+    & $env:pipeline_workspace_dir/pipeline.env
   }
 }
