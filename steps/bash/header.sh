@@ -443,7 +443,7 @@ update_commit_status() {
 
   export opt_context=""
   if [ -z "$opt_context" ]; then
-    opt_context="${PIPELINE_NAME}_${STEP_NAME}"
+    opt_context="${PIPELINE_NAME}_${step_name}"
   fi
 
   while [ $# -gt 0 ]; do
@@ -541,7 +541,7 @@ update_commit_status() {
         state="FAILED"
       fi
 
-      payload="{\"url\": \"\${STEP_URL}\",\"description\": \"\${opt_message}\", \"key\": \"\${opt_context}\", \"name\": \"\${STEP_NAME}\", \"state\": \"$state\"}"
+      payload="{\"url\": \"\${STEP_URL}\",\"description\": \"\${opt_message}\", \"key\": \"\${opt_context}\", \"name\": \"\${step_name}\", \"state\": \"$state\"}"
       endpoint="$integration_url/2.0/repositories/$full_name/commit/$commit/statuses/build"
       headers="-H Authorization:'Basic $token'"
       ;;
@@ -558,7 +558,7 @@ update_commit_status() {
         state="FAILED"
       fi
 
-      payload="{\"url\": \"\${STEP_URL}\",\"description\": \"\${opt_message}\", \"key\": \"\${opt_context}\", \"name\": \"\${STEP_NAME}\", \"state\": \"$state\"}"
+      payload="{\"url\": \"\${STEP_URL}\",\"description\": \"\${opt_message}\", \"key\": \"\${opt_context}\", \"name\": \"\${step_name}\", \"state\": \"$state\"}"
       endpoint="$integration_url/rest/build-status/1.0/commits/$commit"
       headers="-H Authorization:'Basic $token'"
       ;;

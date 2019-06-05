@@ -30,13 +30,13 @@ build() {
       docker build -t $evalImageName:$evalImageTag -f ${buildDir}/${dockerFileName} .
 
       echo "[build] Adding build information to pipeline state"
-      add_pipeline_variable buildStepName=${STEP_NAME}
-      add_pipeline_variable ${STEP_NAME}_payloadType=${payloadType}
-      add_pipeline_variable ${STEP_NAME}_buildNumber=${buildNumber}
-      add_pipeline_variable ${STEP_NAME}_buildName=${buildName}
-      add_pipeline_variable ${STEP_NAME}_isPromoted=false
-      add_pipeline_variable ${STEP_NAME}_imageName=${evalImageName}
-      add_pipeline_variable ${STEP_NAME}_imageTag=${evalImageTag}
+      add_pipeline_variable buildStepName=${step_name}
+      add_pipeline_variable ${step_name}_payloadType=${payloadType}
+      add_pipeline_variable ${step_name}_buildNumber=${buildNumber}
+      add_pipeline_variable ${step_name}_buildName=${buildName}
+      add_pipeline_variable ${step_name}_isPromoted=false
+      add_pipeline_variable ${step_name}_imageName=${evalImageName}
+      add_pipeline_variable ${step_name}_imageTag=${evalImageTag}
 
     else
       echo "[build] Unsupported payloadType: $payloadType"
