@@ -1,2 +1,2 @@
 onFailure() {
-export CURRENT_SCRIPT_SECTION="onFailure"
+export current_script_section="onFailure"

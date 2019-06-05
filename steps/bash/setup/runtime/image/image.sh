@@ -25,10 +25,10 @@ boot_container() {
     -v $run_dir:$run_dir \
     -v $pipeline_workspace_dir:$pipeline_workspace_dir \
     -v $status_dir:$status_dir \
-    -v $REQEXEC_DIR:$REQEXEC_DIR \
+    -v $reqexec_dir:$reqexec_dir \
     -w $(pwd) -d --init --rm --privileged --name $DOCKER_CONTAINER_NAME"
   local docker_run_cmd="docker run $DOCKER_CONTAINER_OPTIONS $default_docker_options \
-    -e RUNNING_IN_CONTAINER=$RUNNING_IN_CONTAINER \
+    -e running_in_container=$running_in_container \
     $DOCKER_IMAGE \
     bash -c \"$reqexec_bin_path $steplet_script_path $status_dir/step.env\""
 
@@ -39,14 +39,14 @@ boot_container() {
   wait_for_exit
 }
 
-if [ -z $RUNNING_IN_CONTAINER ]; then
-  export RUNNING_IN_CONTAINER=false;
+if [ -z $running_in_container ]; then
+  export running_in_container=false;
 fi
-if ! $RUNNING_IN_CONTAINER; then
+if ! $running_in_container; then
   export DOCKER_IMAGE="%%context.imageName%%:%%context.imageTag%%"
   export DOCKER_CONTAINER_OPTIONS="%%context.containerOptions%%"
-  export DOCKER_CONTAINER_NAME="$STEP_DOCKER_CONTAINER_NAME"
-  SKIP_BEFORE_EXIT_METHODS=true
-  RUNNING_IN_CONTAINER=true
+  export DOCKER_CONTAINER_NAME="$step_docker_container_name"
+  skip_before_exit_methods=true
+  running_in_container=true
   boot_container
 fi

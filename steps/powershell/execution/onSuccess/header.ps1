@@ -1,2 +1,2 @@
 Function onSuccess() {
-$env:CURRENT_SCRIPT_SECTION = "onSuccess"
+$env:current_script_section = "onSuccess"

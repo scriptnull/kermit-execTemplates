@@ -30,7 +30,7 @@ git_sync() {
     echo "$privateKey" > $privateKeyPath
     chmod 600 $privateKeyPath
     git config --global credential.helper store
-    if [ "$NO_VERIFY_SSL" == "true" ]; then
+    if [ "$no_verify_ssl" == "true" ]; then
       git config --global http.sslVerify false
     fi
 
@@ -136,7 +136,7 @@ git_sync() {
     fi
     rm $privateKeyPath
     if type jfrog &> /dev/null; then
-      jfrog rt bag $PIPELINE_NAME $RUN_NUMBER
+      jfrog rt bag $pipeline_name $run_number
     fi
   popd
 }

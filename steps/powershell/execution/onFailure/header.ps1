@@ -1,2 +1,2 @@
 Function onFailure() {
-$env:CURRENT_SCRIPT_SECTION = "onFailure"
+$env:current_script_section = "onFailure"

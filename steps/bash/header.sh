@@ -443,7 +443,7 @@ update_commit_status() {
 
   export opt_context=""
   if [ -z "$opt_context" ]; then
-    opt_context="${PIPELINE_NAME}_${step_name}"
+    opt_context="${pipeline_name}_${step_name}"
   fi
 
   while [ $# -gt 0 ]; do
@@ -471,7 +471,7 @@ update_commit_status() {
   done
 
   if [ -z "$opt_status" ]; then
-    case "$CURRENT_SCRIPT_SECTION" in
+    case "$current_script_section" in
       onStart | onExecute )
         opt_status="processing"
         ;;
@@ -489,7 +489,7 @@ update_commit_status() {
         fi
         ;;
       *)
-        echo "Error: unable to determine status in section $CURRENT_SCRIPT_SECTION" >&2
+        echo "Error: unable to determine status in section $current_script_section" >&2
         exit 99
         ;;
     esac
@@ -501,7 +501,7 @@ update_commit_status() {
   fi
 
   if [ -z "$opt_message" ]; then
-    opt_message="Step $opt_status in pipeline $PIPELINE_NAME"
+    opt_message="Step $opt_status in pipeline $pipeline_name"
   fi
 
   local payload=""
@@ -762,7 +762,7 @@ send_notification() {
 
   export opt_color="$NOTIFY_COLOR"
   if [ -z "$opt_color" ]; then
-    case "$CURRENT_SCRIPT_SECTION" in
+    case "$current_script_section" in
       onStart | onExecute )
         opt_color="#5183a0"
         ;;
@@ -875,7 +875,7 @@ send_notification() {
     # set up default text
     local step_name=$(cat "$step_json_path" | jq -r ."step.name")
     local step_id=$(cat "$step_json_path" | jq -r ."step.id")
-    case "$CURRENT_SCRIPT_SECTION" in
+    case "$current_script_section" in
       onStart | onExecute )
         opt_text="${step_name} PROCESSING <${step_url}|#${step_id}>"
         ;;
@@ -1151,7 +1151,7 @@ send_notification() {
 
 _notify_email() {
   if [ -z "$opt_status" ]; then
-    case "$CURRENT_SCRIPT_SECTION" in
+    case "$current_script_section" in
       onStart | onExecute )
         opt_status="processing"
         ;;
@@ -1169,7 +1169,7 @@ _notify_email() {
         fi
         ;;
       *)
-        echo "Error: unable to determine status in section $CURRENT_SCRIPT_SECTION" >&2
+        echo "Error: unable to determine status in section $current_script_section" >&2
         exit 99
         ;;
     esac
@@ -1213,7 +1213,7 @@ _notify_email() {
   fi
 
   local i_id=$(eval echo "$"int_"$i_name"_id)
-  local curl_auth="-H Authorization:'apiToken $BUILDER_API_TOKEN'"
+  local curl_auth="-H Authorization:'apiToken $builder_api_token'"
   local default_email_payload="{\"stepletId\":\"\${steplet_id}\",\"status\":\"\${opt_status}\",\"recipients\":\${json_recipients},\"attachLogs\":\${opt_attach_logs}, \"showFailingCommands\":\${opt_show_failing_commands},\"subject\":\"\${opt_subject}\",\"body\":\"\${opt_body}\",\"attachments\":"
 
   local opt_payload=$step_tmp_dir/payload.json
@@ -1223,7 +1223,7 @@ _notify_email() {
   cat $tmp_attachments >> $opt_payload
   echo -n "}" >> $opt_payload
 
-  full_url="${SHIPPABLE_API_URL}/projectIntegrations/${i_id}/sendEmail"
+  full_url="${shippable_api_url}/projectIntegrations/${i_id}/sendEmail"
   _post_curl "$opt_payload" "$curl_auth" "$full_url"
 }
 
@@ -2386,8 +2386,8 @@ before_exit() {
     open_group_info[${last_element}_status]=1
     stop_group
   done
-  if [ -z $SKIP_BEFORE_EXIT_METHODS ]; then
-    SKIP_BEFORE_EXIT_METHODS=false
+  if [ -z $skip_before_exit_methods ]; then
+    skip_before_exit_methods=false
   fi
 
   if [ "$is_success" == true ]; then
@@ -2397,11 +2397,11 @@ before_exit() {
     # exit 0/exit 1 in these sections not failing the build
     subshell_exit_code=0
     (
-      if [ "$(type -t onSuccess)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+      if [ "$(type -t onSuccess)" == "function" ] && ! $skip_before_exit_methods; then
         execute_command "onSuccess" || true
       fi
 
-      if [ "$(type -t onComplete)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+      if [ "$(type -t onComplete)" == "function" ] && ! $skip_before_exit_methods; then
         execute_command "onComplete" || true
       fi
     # subshell_exit_code will be set to 1 only when there is a exit 1 command in
@@ -2415,7 +2415,7 @@ before_exit() {
       stop_group
     fi
 
-    if [ "$(type -t output)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+    if [ "$(type -t output)" == "function" ] && ! $skip_before_exit_methods; then
       start_group "Processing outputs" true
       # unsetting -e flag so that the script doesn't exit on error
       set +e
@@ -2447,11 +2447,11 @@ before_exit() {
     # running onComplete and onFailure inside a subshell to handle the scenario of
     # exit 0/exit 1 in these sections not failing the build
     (
-      if [ "$(type -t onFailure)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+      if [ "$(type -t onFailure)" == "function" ] && ! $skip_before_exit_methods; then
         execute_command "onFailure" || true
       fi
 
-      if [ "$(type -t onComplete)" == "function" ] && ! $SKIP_BEFORE_EXIT_METHODS; then
+      if [ "$(type -t onComplete)" == "function" ] && ! $skip_before_exit_methods; then
         execute_command "onComplete" || true
       fi
     # adding || true so that the script doesn't exit when onFailure/onComplete
@@ -2471,7 +2471,7 @@ before_exit() {
 
 trap before_exit EXIT
 
-export SKIP_BEFORE_EXIT_METHODS=false
+export skip_before_exit_methods=false
 
 if [ -z "$HOME" ]; then
   export HOME=$(echo ~)
