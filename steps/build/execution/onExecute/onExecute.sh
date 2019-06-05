@@ -6,7 +6,7 @@ build() {
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 
   payloadType=$step_payloadType
-  buildName=$PIPELINE_NAME
+  buildName=$pipeline_name
   buildNumber=$RUN_NUMBER
 
   buildDir=$(eval echo "$"res_"$inputGitRepoResourceName"_resourcePath)/$dockerFileLocation

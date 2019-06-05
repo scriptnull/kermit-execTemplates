@@ -443,7 +443,7 @@ update_commit_status() {
 
   export opt_context=""
   if [ -z "$opt_context" ]; then
-    opt_context="${PIPELINE_NAME}_${step_name}"
+    opt_context="${pipeline_name}_${step_name}"
   fi
 
   while [ $# -gt 0 ]; do
@@ -501,7 +501,7 @@ update_commit_status() {
   fi
 
   if [ -z "$opt_message" ]; then
-    opt_message="Step $opt_status in pipeline $PIPELINE_NAME"
+    opt_message="Step $opt_status in pipeline $pipeline_name"
   fi
 
   local payload=""
