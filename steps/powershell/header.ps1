@@ -103,8 +103,8 @@ Function execute_command([string]$cmd) {
 }
 
 Function export_run_variables() {
-  if (Test-Path -Path $env:RUN_DIR/workspace/run.env) {
-    & $env:RUN_DIR/workspace/run.env
+  if (Test-Path -Path $env:run_dir/workspace/run.env) {
+    & $env:run_dir/workspace/run.env
   }
 }
 
