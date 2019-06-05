@@ -22,7 +22,7 @@ boot_container() {
   start_group "Booting Container"
   local default_docker_options="-v /opt/docker/docker:/usr/bin/docker \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v $RUN_DIR:$RUN_DIR \
+    -v $run_dir:$run_dir \
     -v $PIPELINE_WORKSPACE_DIR:$PIPELINE_WORKSPACE_DIR \
     -v $STATUS_DIR:$STATUS_DIR \
     -v $REQEXEC_DIR:$REQEXEC_DIR \

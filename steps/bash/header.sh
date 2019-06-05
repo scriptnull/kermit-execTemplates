@@ -2033,7 +2033,7 @@ add_run_variable() {
     exit 1
   fi
 
-  local env_file_path="$RUN_DIR/workspace/run.env"
+  local env_file_path="$run_dir/workspace/run.env"
 
   if [ ! -f "$env_file_path" ]; then
     echo "Creating .env file $env_file_path"
@@ -2078,8 +2078,8 @@ add_pipeline_variable() {
 }
 
 export_run_variables() {
-  if [ -f $RUN_DIR/workspace/run.env ]; then
-    source $RUN_DIR/workspace/run.env
+  if [ -f $run_dir/workspace/run.env ]; then
+    source $run_dir/workspace/run.env
   fi
 }
 
@@ -2111,7 +2111,7 @@ save_run_state() {
   fi
 
   echo "Copying files to state"
-  local output_directory=$RUN_DIR/workspace
+  local output_directory=$run_dir/workspace
   if [ "${#source_files[@]}" -gt 1 ]; then
     mkdir -p "$output_directory/$cache_name"
     for filepath in "${source_files[@]}"; do
@@ -2132,7 +2132,7 @@ restore_run_state() {
 
   local cache_name="$1"
   local restore_path="$2"
-  local cache_location="$RUN_DIR/workspace/$cache_name"
+  local cache_location="$run_dir/workspace/$cache_name"
 
   local pattern=" |'"
   if [[ $cache_name =~ $pattern ]]; then
