@@ -8,14 +8,14 @@ push() {
   restore_run_state jfrog /tmp/jfrog
 
   local step_payloadType=$(eval echo "$""$buildStepName"_payloadType)
-  local stepSetup=$(cat $STEP_JSON_PATH | jq .step.setup)
+  local stepSetup=$(cat $step_json_path | jq .step.setup)
   if [ ! -z "$stepSetup" ] && [ "$stepSetup" != "null" ]; then
     local push=$(echo $stepSetup | jq .push)
   fi
   if [ "$step_payloadType" == "docker" ]; then
     local imageName=$(eval echo "$""$buildStepName"_imageName)
     local imageTag=$(eval echo "$""$buildStepName"_imageTag)
-    local targetRepo=$(jq -r ".step.setup.push.targetRepo" $STEP_JSON_PATH)
+    local targetRepo=$(jq -r ".step.setup.push.targetRepo" $step_json_path)
     local buildName=$(eval echo "$""$buildStepName"_buildName)
     local buildNumber=$(eval echo "$""$buildStepName"_buildNumber)
     jfrog rt docker-push $imageName:$imageTag $targetRepo --build-name=$buildName --build-number=$buildNumber

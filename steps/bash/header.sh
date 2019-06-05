@@ -357,8 +357,8 @@ compare_git() {
   # set file path of git repository
   local git_repo_path="$opt_path"
   if [[ "$git_repo_path" == "" ]]; then
-    local dependency_type=$(cat "$STEP_JSON_PATH" | jq -r '.'"$2")
-    local resource_directory=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourcePath")
+    local dependency_type=$(cat "$step_json_path" | jq -r '.'"$2")
+    local resource_directory=$(cat "$step_json_path" | jq -r ."resources.$opt_resource.resourcePath")
     git_repo_path="$resource_directory"
   fi
 
@@ -374,15 +374,15 @@ compare_git() {
   # for runSh with IN: gitRepo
   if [[ "$opt_resource" != "" ]]; then
     # for runSh with IN: gitRepo commits
-    local current_commit_sha=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.commitSha")
-    local before_commit_sha=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.beforeCommitSha")
+    local current_commit_sha=$(cat "$step_json_path" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.commitSha")
+    local before_commit_sha=$(cat "$step_json_path" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.beforeCommitSha")
     commit_range="$before_commit_sha..$current_commit_sha"
 
     # for runSh with IN: gitRepo pull requests
-    local is_pull_request=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.isPullRequest")
+    local is_pull_request=$(cat "$step_json_path" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.isPullRequest")
     if [[ "$is_pull_request" == "true" ]]; then
-      local current_commit_sha=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.commitSha")
-      local base_branch=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.pullRequestBaseBranch")
+      local current_commit_sha=$(cat "$step_json_path" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.commitSha")
+      local base_branch=$(cat "$step_json_path" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.pullRequestBaseBranch")
       commit_range="origin/$base_branch...$current_commit_sha"
     fi
   fi
@@ -591,8 +591,8 @@ replicate_resource() {
   local resFrom=$1
   local resTo=$2
 
-  local typeFrom=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceTypeCode")
-  local typeTo=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resTo.resourceTypeCode")
+  local typeFrom=$(cat "$step_json_path" | jq -r ."resources.$resFrom.resourceTypeCode")
+  local typeTo=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceTypeCode")
 
   # declare options
   local opt_webhook_data_only=""
@@ -631,21 +631,21 @@ replicate_resource() {
 
   if [ -n "$opt_match_settings" ]; then
     opt_webhook_data_only="true"
-    local fromShaData=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData")
+    local fromShaData=$(cat "$step_json_path" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData")
     local shouldReplicate="true"
     if [ -z "$fromShaData" ]; then
       echo "Error: FROM resource does not contain shaData." >&2
       exit 99
     fi
     # check for tag-based types.
-    local isGitTag=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.isGitTag")
-    local isRelease=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.isRelease")
+    local isGitTag=$(cat "$step_json_path" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.isGitTag")
+    local isRelease=$(cat "$step_json_path" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.isRelease")
 
     if [ "$isGitTag" == "true" ]; then
-      local gitTagName=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.gitTagName")
+      local gitTagName=$(cat "$step_json_path" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.gitTagName")
       # check if TO has a tags only/except section. Will be empty string otherwise.
-      local toTagsOnly=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resTo.resourceConfigPropertyBag.tags.only")
-      local toTagsExcept=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resTo.resourceConfigPropertyBag.tags.except")
+      local toTagsOnly=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceConfigPropertyBag.tags.only")
+      local toTagsExcept=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceConfigPropertyBag.tags.except")
 
       if [ -n "$toTagsOnly" ]; then
         local matchedTag=""
@@ -671,13 +671,13 @@ replicate_resource() {
       fi
     elif [ "$isRelease" != "true" ]; then
       # if it's not a tag, and it's not a release, treat it as a branch.
-      local branchName=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.branchName")
+      local branchName=$(cat "$step_json_path" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.branchName")
       if [ -z "$branchName" ]; then
         echo "Error: no branch name in FROM resource shaData. Cannot replicate."
         return 0
       fi
-      local toBranchesOnly=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resTo.resourceConfigPropertyBag.branches.only")
-      local toBranchesExcept=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resTo.resourceConfigPropertyBag.branches.except")
+      local toBranchesOnly=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceConfigPropertyBag.branches.only")
+      local toBranchesExcept=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceConfigPropertyBag.branches.except")
 
       # check the only/except sections
       if [ -n "$toBranchesOnly" ]; then
@@ -711,22 +711,22 @@ replicate_resource() {
   fi
 
   # copy values
-  local resource_directory=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourcePath")
+  local resource_directory=$(cat "$step_json_path" | jq -r ."resources.$resFrom.resourcePath")
   local mdFilePathTo="$resource_directory/replicate.json"
 
   if [ ! -f "$mdFilePathTo" ]; then
-    jq ".resources.$resFrom" $STEP_JSON_PATH > $mdFilePathTo
+    jq ".resources.$resFrom" $step_json_path > $mdFilePathTo
   fi
 
   if [ -z "$opt_webhook_data_only" ]; then
-    local fromVersion=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag")
+    local fromVersion=$(cat "$step_json_path" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag")
     local tmpFilePath="$resource_directory/copyTmp.json"
     cp $mdFilePathTo  $tmpFilePath
     jq ".resourceVersionContentPropertyBag = $fromVersion" $tmpFilePath > $mdFilePathTo
     rm $tmpFilePath
   else
     # update only the shaData
-    local fromShaData=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData")
+    local fromShaData=$(cat "$step_json_path" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData")
     local tmpFilePath="$resource_directory/copyTmp.json"
 
     if [ "$fromShaData" != "null" ]; then
@@ -750,13 +750,13 @@ send_notification() {
   local i_name="$1"
   shift
 
-  local integration_name=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.name")
+  local integration_name=$(cat "$step_json_path" | jq -r ."integrations.$i_name.name")
   if [ -z "$integration_name" ]; then
     echo "Error: integration data not found for $i_name" >&2
     exit 99
   fi
 
-  local i_mastername=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.masterName")
+  local i_mastername=$(cat "$step_json_path" | jq -r ."integrations.$i_name.masterName")
 
   # declare options and defaults, and parse arguments
 
@@ -873,8 +873,8 @@ send_notification() {
   export opt_text="$NOTIFY_TEXT"
   if [ -z "$opt_text" ]; then
     # set up default text
-    local step_name=$(cat "$STEP_JSON_PATH" | jq -r ."step.name")
-    local step_id=$(cat "$STEP_JSON_PATH" | jq -r ."step.id")
+    local step_name=$(cat "$step_json_path" | jq -r ."step.name")
+    local step_id=$(cat "$step_json_path" | jq -r ."step.id")
     case "$CURRENT_SCRIPT_SECTION" in
       onStart | onExecute )
         opt_text="${step_name} PROCESSING <${step_url}|#${step_id}>"
@@ -1098,12 +1098,12 @@ send_notification() {
     # set up type-unique options
     case "$i_mastername" in
       "slackKey" )
-        i_endpoint=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.url")
+        i_endpoint=$(cat "$step_json_path" | jq -r ."integrations.$i_name.url")
         default_payload="$default_slack_payload"
         ;;
       "outgoingWebhook" )
-        i_endpoint=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.webhookURL")
-        local i_authorization=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.authorization")
+        i_endpoint=$(cat "$step_json_path" | jq -r ."integrations.$i_name.webhookURL")
+        local i_authorization=$(cat "$step_json_path" | jq -r ."integrations.$i_name.authorization")
         if [ -n "$i_authorization" ]; then
           curl_auth="-H authorization:'$i_authorization'"
         fi
@@ -1235,13 +1235,13 @@ _notify_newrelic() {
   local default_get_appid_payload="--data-urlencode 'filter[name]=$opt_appName' -d 'exclude_links=true'"
   local default_get_payload=""
   local default_post_payload=""
-  local i_authorization=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.token")
+  local i_authorization=$(cat "$step_json_path" | jq -r ."integrations.$i_name.token")
 
   if [ -n "$i_authorization" ]; then
     curl_auth="-H X-Api-Key:'$i_authorization'"
   fi
 
-  local i_url=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.url")
+  local i_url=$(cat "$step_json_path" | jq -r ."integrations.$i_name.url")
 
   if [ -z "$i_url" ]; then
     echo "Error: no url found in resource $i_name" >&2
@@ -1323,8 +1323,8 @@ _notify_airbrake() {
   local curl_auth=""
   local obj_type=""
   local project_id="${opt_project_id}"
-  local i_endpoint=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.url")
-  local i_token=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.token")
+  local i_endpoint=$(cat "$step_json_path" | jq -r ."integrations.$i_name.url")
+  local i_token=$(cat "$step_json_path" | jq -r ."integrations.$i_name.token")
 
   local default_airbrake_payload="{\"environment\":\"\${opt_environment}\",\"username\":\"\${opt_username}\",\"email\":\"\${opt_email}\",\"repository\":\"\${opt_repository}\",\"revision\":\"\${opt_revision}\",\"version\":\"\${opt_version}\"}"
 
@@ -1370,9 +1370,9 @@ _notify_airbrake() {
 }
 
 _notify_jira() {
-  local i_username=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.username")
-  local i_endpoint=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.url")
-  local i_token=$(cat "$STEP_JSON_PATH" | jq -r ."integrations.$i_name.token")
+  local i_username=$(cat "$step_json_path" | jq -r ."integrations.$i_name.username")
+  local i_endpoint=$(cat "$step_json_path" | jq -r ."integrations.$i_name.url")
+  local i_token=$(cat "$step_json_path" | jq -r ."integrations.$i_name.token")
   local default_v2_payload="{\"fields\":{\"project\":{\"key\":\"\${opt_project_id}\"},\"summary\":\"\${opt_summary}\",\"description\":\"\${opt_description}\",\"issuetype\":{\"name\":\"\${opt_type}\"}}}"
   local default_v3_payload="{\"fields\":{\"project\":{\"id\":\"\${project_key_id}\"},\"summary\":\"\${opt_summary}\",\"description\":{\"type\":\"doc\",\"version\":1,\"content\":[{\"type\":\"paragraph\",\"content\":[{\"text\":\"\${opt_description}\",\"type\":\"text\"}]}]},\"issuetype\":{\"id\":\"\${type_id}\"}}}"
 
@@ -1514,7 +1514,7 @@ write_output() {
   local resource_name=$1
   shift
 
-  local resource_directory=$(cat "$STEP_JSON_PATH" | jq -r ."resources.$resource_name.resourcePath")
+  local resource_directory=$(cat "$step_json_path" | jq -r ."resources.$resource_name.resourcePath")
 
   if [ -z "$resource_directory" ]; then
     echo "Error: resource data not found for $resource_name" >&2

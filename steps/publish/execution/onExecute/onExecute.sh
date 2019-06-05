@@ -23,7 +23,7 @@ publish() {
   local scan=false
   local publishCmd="jfrog rt bp $buildName $buildNumber"
 
-  local stepSetup=$(cat $STEP_JSON_PATH | jq .step.setup)
+  local stepSetup=$(cat $step_json_path | jq .step.setup)
   if [ ! -z "$stepSetup" ] && [ "$stepSetup" != "null" ]; then
     local publish=$(echo $stepSetup | jq .publish)
     if [ ! -z "$publish" ] && [ "$publish" != "null" ]; then
