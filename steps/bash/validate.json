@@ -108,7 +108,9 @@
           },
           "then": {
             "not": {
-              "required": ["image"]
+              "properties": {
+                "image": {"type": "object"}
+              }
             }
           }
         }
