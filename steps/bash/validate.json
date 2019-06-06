@@ -98,7 +98,15 @@
               }
             }
           },
-          "required": ["type"]
+          "required": ["type"],
+          "allOf": [
+            {
+              "properties": {
+                "type": { "const": "image" }
+              },
+              "required": ["image"]
+            }
+          ]
         }
       }
     },
