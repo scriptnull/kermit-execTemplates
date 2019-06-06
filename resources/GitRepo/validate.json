@@ -86,5 +86,5 @@
       "required": ["gitProvider", "path"]
     }
   },
-  "required": ["name", "type", "repoPath", "configuration"]
+  "required": ["name", "type", "configuration"]
 }
