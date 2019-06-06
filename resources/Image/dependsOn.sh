@@ -2,20 +2,21 @@
 
 get_image() {
   local resourceName="$1"
+  local integrationAlias=$(eval echo "$"res_"$resourceName"_integrationAlias)
   local resourceId=$(eval echo "$"res_"$resourceName"_resourceId)
-  local intMasterName=$(eval echo "$"res_"$resourceName"_int_masterName)
+  local intMasterName=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_masterName)
 
   if [ "$intMasterName" == "dockerRegistryLogin" ]; then
-    local userName=$(eval echo "$"res_"$resourceName"_int_username)
-    local password=$(eval echo "$"res_"$resourceName"_int_password)
-    local url=$(eval echo "$"res_"$resourceName"_int_url)
+    local userName=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_username)
+    local password=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_password)
+    local url=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_url)
 
     retry_command docker login -u "$userName" -p "$password" "$url"
     echo "Docker login for resource $resourceName was successful"
   elif [ "$intMasterName" == "amazonKeys" ]; then
 
-    local accessKeyId=$(eval echo "$"res_"$resourceName"_int_accessKeyId)
-    local secretAccessKey=$(eval echo "$"res_"$resourceName"_int_secretAccessKey)
+    local accessKeyId=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_accessKeyId)
+    local secretAccessKey=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_secretAccessKey)
     local region=$(eval echo "$"res_"$resourceName"_region)
 
     aws configure set aws_access_key_id "$accessKeyId"
@@ -24,7 +25,7 @@ get_image() {
 
     retry_command $(aws ecr get-login --no-include-email)
   elif [ "$intMasterName" == "gcloudKey" ]; then
-    local jsonKey=$(eval echo "$"res_"$resourceName"_int_jsonKey)
+    local jsonKey=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_jsonKey)
     local projectId="$( echo "$jsonKey" | jq -r '.project_id' )"
 
     touch key.json
@@ -33,9 +34,9 @@ get_image() {
     gcloud config set project "$projectId"
     gcloud docker -a
   elif [ "$intMasterName" == "artifactory" ]; then
-    local url=$(eval echo "$"res_"$resourceName"_int_url)
-    local user=$(eval echo "$"res_"$resourceName"_int_user)
-    local apiKey=$(eval echo "$"res_"$resourceName"_int_apikey)
+    local url=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_url)
+    local user=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_user)
+    local apiKey=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_apikey)
     jfrog rt config default-server --url "$url" --user "$user" \
       --apikey "$apiKey" --interactive=false
     jfrog rt use default-server
