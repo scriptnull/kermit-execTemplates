@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://jfrog.com/cicd/steps/step.schema.json",
+  "$id": "http://jfrog.com/cicd/resources/GitRepo.schema.json",
   "type": "object",
   "properties": {
     "name": {
@@ -10,23 +10,23 @@
       "type": "string",
       "enum": ["GitRepo"]
     },
-    "repoPath": {
-      "type": "string"
-    },
     "configuration": {
       "type": "object",
       "properties": {
-        "integrationName": {
+        "gitProvider": {
+          "type": "string"
+        },
+        "path": {
           "type": "string"
         },
         "files": {
           "type": "object",
           "properties": {
-            "except": {
+            "include": {
               "type": "string",
               "format": "regex"
             },
-            "only": {
+            "exclude": {
               "type": "string",
               "format": "regex"
             }
@@ -35,11 +35,11 @@
         "branches": {
           "type": "object",
           "properties": {
-            "except": {
+            "include": {
               "type": "string",
               "format": "regex"
             },
-            "only": {
+            "exclude": {
               "type": "string",
               "format": "regex"
             }
@@ -48,11 +48,11 @@
         "tags": {
           "type": "object",
           "properties": {
-            "except": {
+            "include": {
               "type": "string",
               "format": "regex"
             },
-            "only": {
+            "exclude": {
               "type": "string",
               "format": "regex"
             }
@@ -64,16 +64,16 @@
             "commit": {
               "type": "boolean"
             },
-            "pullRequest": {
+            "pullRequestCreate": {
               "type": "boolean"
             },
             "pullRequestClose": {
               "type": "boolean"
             },
-            "release": {
+            "releaseCreate": {
               "type": "boolean"
             },
-            "tagPush": {
+            "tagCreate": {
               "type": "boolean"
             }
           }
@@ -81,25 +81,10 @@
         "shallowDepth": {
           "type": "integer",
           "minimum": 1
-        },
-        "gitConfig": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       },
-      "required": ["integrationName"]
-    },
-    "version": {
-      "type": "object",
-      "properties": {
-        "sha": {
-          "type": "string"
-        }
-      },
-      "required": ["sha"]
+      "required": ["gitProvider", "path"]
     }
   },
-  "required": ["name", "type", "repoPath", "configuration", "version"]
+  "required": ["name", "type", "repoPath", "configuration"]
 }
