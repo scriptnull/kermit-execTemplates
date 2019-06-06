@@ -371,14 +371,14 @@ compare_git() {
   # for CI
   local commit_range
 
-  # for runSh with IN: gitRepo
+  # for runSh with IN: GitRepo
   if [[ "$opt_resource" != "" ]]; then
-    # for runSh with IN: gitRepo commits
+    # for runSh with IN: GitRepo commits
     local current_commit_sha=$(cat "$step_json_path" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.commitSha")
     local before_commit_sha=$(cat "$step_json_path" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.beforeCommitSha")
     commit_range="$before_commit_sha..$current_commit_sha"
 
-    # for runSh with IN: gitRepo pull requests
+    # for runSh with IN: GitRepo pull requests
     local is_pull_request=$(cat "$step_json_path" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.isPullRequest")
     if [[ "$is_pull_request" == "true" ]]; then
       local current_commit_sha=$(cat "$step_json_path" | jq -r ."resources.$opt_resource.resourceVersionContentPropertyBag.shaData.commitSha")
