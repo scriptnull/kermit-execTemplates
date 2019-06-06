@@ -10,9 +10,12 @@
       "type": "string",
       "enum": ["DistributionRule"]
     },
-    "version": {
+    "configuration": {
       "type": "object",
       "properties": {
+        "sourceArtifactory": {
+          "type": "string"
+        },
         "serviceName": {
           "type": "string"
         },
@@ -23,20 +26,19 @@
           "type": "string"
         },
         "countryCodes": {
-          "type": "object",
-          "patternProperties": {
-            "^countryCode": {
-              "type": ["string", "number"]
-            }
+          "type": "array",
+          "items": {
+            "type": "string"
           },
-          "additionalProperties": false,
-          "minProperties": 1
+          "minItems": 1
         }
       },
-      "required": ["serviceName", "cityName", "siteName", "countryCodes"],
+      "required": ["serviceName", "cityName", "siteName", "countryCodes",
+        "sourceArtifactory"
+      ],
       "additionalProperties": false
     }
   },
-  "required": ["name", "type", "version"],
+  "required": ["name", "type", "configuration"],
   "additionalProperties": false
 }
