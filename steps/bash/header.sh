@@ -643,14 +643,14 @@ replicate_resource() {
 
     if [ "$isGitTag" == "true" ]; then
       local gitTagName=$(cat "$step_json_path" | jq -r ."resources.$resFrom.resourceVersionContentPropertyBag.shaData.gitTagName")
-      # check if TO has a tags only/except section. Will be empty string otherwise.
-      local toTagsOnly=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceConfigPropertyBag.tags.only")
-      local toTagsExcept=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceConfigPropertyBag.tags.except")
+      # check if TO has a tags include/exclude section. Will be empty string otherwise.
+      local toTagsInclude=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceConfigPropertyBag.tags.include")
+      local toTagsExclude=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceConfigPropertyBag.tags.exclude")
 
-      if [ -n "$toTagsOnly" ]; then
+      if [ -n "$toTagsInclude" ]; then
         local matchedTag=""
 
-        if [[ $gitTagName =~ $toTagsOnly ]]; then
+        if [[ $gitTagName =~ $toTagsInclude ]]; then
           matchedTag="true"
         fi
 
@@ -658,10 +658,10 @@ replicate_resource() {
           shouldReplicate=""
         fi
       fi
-      if [ -n "$toTagsExcept" ]; then
+      if [ -n "$toTagsExclude" ]; then
         local matchedTag=""
 
-        if [[ $gitTagName =~ $toTagsExcept ]]; then
+        if [[ $gitTagName =~ $toTagsExclude ]]; then
           matchedTag="true"
         fi
 
@@ -676,14 +676,14 @@ replicate_resource() {
         echo "Error: no branch name in FROM resource shaData. Cannot replicate."
         return 0
       fi
-      local toBranchesOnly=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceConfigPropertyBag.branches.only")
-      local toBranchesExcept=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceConfigPropertyBag.branches.except")
+      local toBranchesInclude=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceConfigPropertyBag.branches.include")
+      local toBranchesExclude=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourceConfigPropertyBag.branches.exclude")
 
-      # check the only/except sections
-      if [ -n "$toBranchesOnly" ]; then
+      # check the include/exclude sections
+      if [ -n "$toBranchesInclude" ]; then
         local matchedBranch=""
 
-        if [[ $branchName =~ $toBranchesOnly ]]; then
+        if [[ $branchName =~ $toBranchesInclude ]]; then
           matchedBranch="true"
         fi
 
@@ -691,10 +691,10 @@ replicate_resource() {
           shouldReplicate=""
         fi
       fi
-      if [ -n "$toBranchesExcept" ]; then
+      if [ -n "$toBranchesExclude" ]; then
         local matchedBranch=""
 
-        if [[ $branchName =~ $toBranchesExcept ]]; then
+        if [[ $branchName =~ $toBranchesExclude ]]; then
           matchedBranch="true"
         fi
 
