@@ -99,12 +99,17 @@
             }
           },
           "required": ["type"],
-          "allOf": [
+          "anyOf": [
             {
               "properties": {
-                "type": { "const": "image" }
+                "type": { "enum": ["image"] }
               },
               "required": ["image"]
+            },
+            {
+              "properties": {
+                "type": { "enum": ["host"] }
+              }
             }
           ]
         }
