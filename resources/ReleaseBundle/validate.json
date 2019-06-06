@@ -10,9 +10,12 @@
       "type": "string",
       "enum": ["ReleaseBundle"]
     },
-    "version": {
+    "configuration": {
       "type": "object",
       "properties": {
+        "sourceArtifactory": {
+          "type": "string"
+        },
         "name": {
           "type": "string"
         },
@@ -23,8 +26,8 @@
           "type": "boolean"
         }
       },
-      "required": ["name", "version"]
+      "required": ["name", "version", "sourceArtifactory"]
     }
   },
-  "required": ["name", "type", "version"]
+  "required": ["name", "type", "configuration"]
 }
