@@ -109,6 +109,9 @@
             {
               "properties": {
                 "type": { "enum": ["host"] }
+              },
+              "not": {
+                "required": ["image"]
               }
             }
           ]
