@@ -99,7 +99,7 @@
             }
           },
           "required": ["type"],
-          "anyOf": [
+          "oneOf": [
             {
               "properties": {
                 "type": { "enum": ["image"] }
