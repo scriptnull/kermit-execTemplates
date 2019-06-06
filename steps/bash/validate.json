@@ -56,7 +56,15 @@
             "type": {
               "type": "string",
               "enum": ["image", "host"]
-            },
+            }
+          },
+          "required": ["type"],
+          "if": {
+            "properties": {
+              "type": { "enum": ["image"] }
+            }
+          },
+          "then": {
             "image": {
               "type": "object",
               "additionalProperties": false,
@@ -97,24 +105,7 @@
                 }
               }
             }
-          },
-          "required": ["type"],
-          "oneOf": [
-            {
-              "properties": {
-                "type": { "enum": ["image"] }
-              },
-              "required": ["image"]
-            },
-            {
-              "properties": {
-                "type": { "enum": ["host"] }
-              },
-              "not": {
-                "required": ["image"]
-              }
-            }
-          ]
+          }
         }
       }
     },
