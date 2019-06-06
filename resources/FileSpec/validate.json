@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://jfrog.com/pipelines/resources/FileSpec.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["FileSpec"]
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sourceArtifactory": {
+          "type": "string"
+        },
+        "pattern": {
+          "type": "string"
+        },
+        "aql": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "props": {
+          "type": "string"
+        },
+        "recursive": {
+          "type": "string"
+        },
+        "flat": {
+          "type": "string"
+        },
+        "excludePatterns": {
+          "type": "string"
+        },
+        "archiveEntries": {
+          "type": "string"
+        },
+        "buildName": {
+          "type": "string"
+        },
+        "buildNumber": {
+          "type": "string"
+        },
+        "sortBy": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "string"
+        }
+      },
+      "required": ["sourceArtifactory"]
+    }
+  },
+  "required": ["name", "type", "configuration"]
+}
