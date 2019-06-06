@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://jfrog.com/pipelines/resources/BuildInfo.schema.json",
+  "$id": "http://jfrog.com/pipelines/resources/VmCluster.schema.json",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -9,23 +9,23 @@
     },
     "type": {
       "type": "string",
-      "enum": ["BuildInfo"]
+      "enum": ["VmCluster"]
     },
     "configuration": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "sourceArtifactory": {
+        "sshKey": {
           "type": "string"
         },
-        "buildNumber": {
-          "type": "integer"
-        },
-        "buildName": {
-          "type": "string"
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
-      "required": ["buildNumber", "buildName"]
+      "required": ["sshKey", "targets"]
     }
   },
   "required": ["name", "type", "configuration"]
