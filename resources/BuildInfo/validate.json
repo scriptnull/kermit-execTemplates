@@ -10,9 +10,12 @@
       "type": "string",
       "enum": ["BuildInfo"]
     },
-    "version": {
+    "configuration": {
       "type": "object",
       "properties": {
+        "sourceArtifactory": {
+          "type": "string"
+        },
         "buildNumber": {
           "type": "integer"
         },
@@ -23,5 +26,5 @@
       "required": ["buildNumber", "buildName"]
     }
   },
-  "required": ["name", "type", "version"]
+  "required": ["name", "type", "configuration"]
 }
