@@ -2,8 +2,9 @@
 
 get_file() {
   local resourceName="$1"
+  local integrationAlias=$(eval echo "$"res_"$resourceName"_integrationAlias)
   local resourcePath=$(eval echo "$"res_"$resourceName"_resourcePath)
-  local intMasterName=$(eval echo "$"res_"$resourceName"_int_masterName)
+  local intMasterName=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_masterName)
   local fileLocation=$(eval echo "$"res_"$resourceName"_fileLocation)
   local fileName=$(eval echo "$"res_"$resourceName"_fileName)
   local autoPull=$(eval echo "$"res_"$resourceName"_autoPull)
@@ -11,15 +12,15 @@ get_file() {
   if [ -z "$autoPull" ] || "$autoPull" == "true" ; then
 
     if [ "$intMasterName" == "amazonKeys" ]; then
-      local accessKeyId=$(eval echo "$"res_"$resourceName"_int_accessKeyId)
-      local secretAccessKey=$(eval echo "$"res_"$resourceName"_int_secretAccessKey)
+      local accessKeyId=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_accessKeyId)
+      local secretAccessKey=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_secretAccessKey)
 
       aws configure set aws_access_key_id "$accessKeyId"
       aws configure set aws_secret_access_key "$secretAccessKey"
 
       aws s3 cp "$fileLocation/$fileName" "$resourcePath"
     elif [ "$intMasterName" == "gcloudKey" ]; then
-      local jsonKey=$(eval echo "$"res_"$resourceName"_int_jsonKey)
+      local jsonKey=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_jsonKey)
       local projectId="$( echo "$jsonKey" | jq -r '.project_id' )"
 
       touch key.json
@@ -29,9 +30,9 @@ get_file() {
 
       gsutil cp $fileLocation/$fileName $resourcePath
     elif [ "$intMasterName" == "artifactory" ]; then
-      local rtUrl=$(eval echo "$"res_"$resourceName"_int_url)
-      local rtUser=$(eval echo "$"res_"$resourceName"_int_user)
-      local rtApiKey=$(eval echo "$"res_"$resourceName"_int_apikey)
+      local rtUrl=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_url)
+      local rtUser=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_user)
+      local rtApiKey=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_apikey)
 
       jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
       if [ ! -z "$fileLocation" ] && [ ! -z "$fileName" ]; then
@@ -111,10 +112,10 @@ get_file() {
         popd
       fi
     elif [ "$intMasterName" == "fileServer" ]; then
-      local fsProtocol=$(eval echo "$"res_"$resourceName"_int_protocol)
-      local fsUrl=$(eval echo "$"res_"$resourceName"_int_url)
-      local fsUsername=$(eval echo "$"res_"$resourceName"_int_username)
-      local fsPassword=$(eval echo "$"res_"$resourceName"_int_password)
+      local fsProtocol=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_protocol)
+      local fsUrl=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_url)
+      local fsUsername=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_username)
+      local fsPassword=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_password)
 
       if [ "$fsProtocol" == "FTP" ]; then
         local ftpScriptFileName="ftp_get_file.txt"

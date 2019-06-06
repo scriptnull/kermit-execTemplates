@@ -428,14 +428,14 @@ update_commit_status() {
     echo "Error: resource not found for $resourceName" >&2
     exit 99
   fi
-
-  local integration_name=$(eval echo "$"res_"$resourceName"_int_name)
+  local integrationAlias=$(eval echo "$"res_"$resourceName"_integrationAlias)
+  local integration_name=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_name)
   if [ -z "$integration_name" ]; then
     echo "Error: integration data not found for $resourceName" >&2
     exit 99
   fi
 
-  local i_mastername=$(eval echo "$"res_"$resourceName"_int_masterName)
+  local i_mastername=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_masterName)
 
   # declare options and defaults, and parse arguments
   export opt_status=""
@@ -510,12 +510,12 @@ update_commit_status() {
 
   local commit=$(eval echo "$"res_"$resourceName"_commitSha)
   local full_name=$(eval echo "$"res_"$resourceName"_gitRepoFullName)
-  local integration_url=$(eval echo "$"res_"$resourceName"_int_url)
+  local integration_url=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_url)
 
   # set up type-unique options
   case "$i_mastername" in
     github | githubEnterprise )
-      local token=$(eval echo "$"res_"$resourceName"_int_token)
+      local token=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_token)
       local state=""
       if [ "$opt_status" == "processing" ] ; then
         state="pending"
@@ -529,8 +529,8 @@ update_commit_status() {
       headers="-H Authorization:'token $token' -H Accept:'application/vnd.GithubProvider.v3'"
       ;;
     bitbucket )
-      local username=$(eval echo "$"res_"$resourceName"_int_username)
-      local app_password=$(eval echo "$"res_"$resourceName"_int_token)
+      local username=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_username)
+      local app_password=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_token)
       local token=$( echo -n "$username:$app_password" | base64 )
       local state=""
       if [ "$opt_status" == "processing" ] ; then
@@ -546,8 +546,8 @@ update_commit_status() {
       headers="-H Authorization:'Basic $token'"
       ;;
     bitbucketServerBasic )
-      local username=$(eval echo "$"res_"$resourceName"_int_username)
-      local password=$(eval echo "$"res_"$resourceName"_int_password)
+      local username=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_username)
+      local password=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_password)
       local token=$( echo -n "$username:$password" | base64 )
       local state=""
       if [ "$opt_status" == "processing" ] ; then
@@ -1086,34 +1086,14 @@ send_notification() {
   elif [ "$i_mastername" == "smtpCreds" ]; then
     _notify_email
   else
+    if [ "$i_mastername" != "slackKey" ]; then
+      echo "Error: unsupported notification type: $i_mastername" >&2
+      exit 99
+    fi
+
     local curl_auth=""
-
-    # set up the default payloads once options have been parsed
-    local default_slack_payload="{\"username\":\"\${opt_username}\",\"attachments\":[{\"pretext\":\"\${opt_pretext}\",\"text\":\"\${opt_text}\",\"color\":\"\${opt_color}\"}],\"channel\":\"\${opt_recipient}\",\"icon_url\":\"\${opt_icon_url}\"}"
-    local default_webhook_payload="{}"
-    local default_payload=""
-
-    local i_endpoint=""
-
-    # set up type-unique options
-    case "$i_mastername" in
-      "slackKey" )
-        i_endpoint=$(cat "$step_json_path" | jq -r ."integrations.$i_name.url")
-        default_payload="$default_slack_payload"
-        ;;
-      "outgoingWebhook" )
-        i_endpoint=$(cat "$step_json_path" | jq -r ."integrations.$i_name.webhookURL")
-        local i_authorization=$(cat "$step_json_path" | jq -r ."integrations.$i_name.authorization")
-        if [ -n "$i_authorization" ]; then
-          curl_auth="-H authorization:'$i_authorization'"
-        fi
-        default_payload="$default_webhook_payload"
-        ;;
-      *)
-        echo "Error: unsupported notification type: $i_mastername" >&2
-        exit 99
-        ;;
-    esac
+    local default_payload="{\"username\":\"\${opt_username}\",\"attachments\":[{\"pretext\":\"\${opt_pretext}\",\"text\":\"\${opt_text}\",\"color\":\"\${opt_color}\"}],\"channel\":\"\${opt_recipient}\",\"icon_url\":\"\${opt_icon_url}\"}"
+    local i_endpoint=$(cat "$step_json_path" | jq -r ."integrations.$i_name.url")
 
     if [ -z "$i_endpoint" ]; then
       echo "Error: no URL found in resource $i_name" >&2

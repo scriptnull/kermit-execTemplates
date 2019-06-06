@@ -2,11 +2,12 @@
 
 get_cluster() {
   local resourceName="$1"
+  local integrationAlias=$(eval echo "$"res_"$resourceName"_integrationAlias)
   local resourcePath=$(eval echo "$"res_"$resourceName"_resourcePath)
-  local intMasterName=$(eval echo "$"res_"$resourceName"_int_masterName)
+  local intMasterName=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_masterName)
 
   if [ "$intMasterName" == "kubernetesConfig" ]; then
-    local kubeconfig=$(eval echo "$"res_"$resourceName"_int_kubeconfig)
+    local kubeconfig=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_kubeconfig)
 
     mkdir -p ~/.kube
     echo "$kubeconfig" > ~/.kube/config
