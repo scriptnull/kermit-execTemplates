@@ -8,7 +8,7 @@
     },
     "type": {
       "type": "string",
-      "enum": ["bash"]
+      "enum": ["PromoteBuild"]
     },
     "configuration": {
       "type": "object",
@@ -38,83 +38,83 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "promote": {
+          "properties": {
+            "targetRepo": {
+              "type": "string"
+            },
+            "includeDependencies": {
+              "type": "boolean"
+            }
+          },
+          "required": ["targetRepo"],
+          "additionalProperties": false
+        },
         "environmentVariables": {
           "type": "object",
           "properties": {
             "normal": {
               "type": "object",
+              "properties": {
+                "targetRepo": {
+                  "type": "string"
+                }
+              },
               "additionalProperties": {
                 "type": ["string", "number"]
-              }
+              },
+              "required": ["targetRepo"]
             }
-          }
+          },
+          "required": ["normal"]
         },
         "runtime": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "type": {
               "type": "string",
               "enum": ["image", "host"]
-            }
-          },
-          "required": ["type"],
-          "if": {
-            "properties": {
-              "type": { "enum": ["image"] }
-            }
-          },
-          "then": {
-            "properties": {
-              "type": { "enum": ["image"] },
-              "image": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "auto": {
-                    "type": "object",
-                    "required": ["language"],
-                    "properties": {
-                      "language": {
+            },
+            "image": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "auto": {
+                  "type": "object",
+                  "required": ["language"],
+                  "properties": {
+                    "language": {
+                      "type": "string"
+                    },
+                    "versions": {
+                      "type": "array",
+                      "items":  {
                         "type": "string"
-                      },
-                      "versions": {
-                        "type": "array",
-                        "items":  {
-                          "type": "string"
-                        }
                       }
                     }
-                  },
-                  "custom": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": ["name", "tag"],
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      },
-                      "tag": {
-                        "type": "string"
-                      },
-                      "options": {
-                        "type": "string"
-                      },
-                      "autoPull": {
-                        "type": "boolean"
-                      }
+                  }
+                },
+                "custom": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["name", "tag"],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "tag": {
+                      "type": "string"
+                    },
+                    "options": {
+                      "type": "string"
                     }
                   }
                 }
               }
-            },
-            "additionalProperties": false
+            }
           },
-          "else": {
-            "properties": {
-              "type": { "enum": ["host"] }
-            },
-            "additionalProperties": false
-          }
+          "required": ["type"]
         }
       }
     },
@@ -138,9 +138,11 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "minItems": 1
         }
-      }
+      },
+      "required": ["integrations"]
     },
     "triggeredBy": {
       "type": "object",
@@ -165,12 +167,6 @@
       "additionalProperties": false,
       "properties": {
         "onStart": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "onExecute": {
           "type": "array",
           "items": {
             "type": "string"
@@ -212,7 +208,8 @@
   "required": [
     "name",
     "type",
-    "execution"
+    "requires",
+    "setup"
   ],
   "additionalProperties": false
 }

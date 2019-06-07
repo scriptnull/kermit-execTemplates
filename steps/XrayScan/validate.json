@@ -8,7 +8,7 @@
     },
     "type": {
       "type": "string",
-      "enum": ["promote"]
+      "enum": ["XrayScan"]
     },
     "configuration": {
       "type": "object",
@@ -38,16 +38,16 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "promote": {
+        "scan": {
+          "type": "object",
           "properties": {
-            "targetRepo": {
+            "buildName": {
               "type": "string"
             },
-            "includeDependencies": {
-              "type": "boolean"
+            "buildNumber": {
+              "type": "string"
             }
           },
-          "required": ["targetRepo"],
           "additionalProperties": false
         },
         "environmentVariables": {
@@ -62,11 +62,15 @@
               },
               "additionalProperties": {
                 "type": ["string", "number"]
-              },
-              "required": ["targetRepo"]
+              }
+            },
+            "encrypted": {
+              "type": "object",
+              "additionalProperties": {
+                "type": ["string", "number"]
+              }
             }
-          },
-          "required": ["normal"]
+          }
         },
         "runtime": {
           "type": "object",
@@ -208,8 +212,7 @@
   "required": [
     "name",
     "type",
-    "requires",
-    "setup"
+    "requires"
   ],
   "additionalProperties": false
 }
