@@ -42,12 +42,6 @@
         "archiveEntries": {
           "type": "string"
         },
-        "buildName": {
-          "type": "string"
-        },
-        "buildNumber": {
-          "type": "integer"
-        },
         "sortBy": {
           "type": "string"
         },
