@@ -124,6 +124,7 @@
                 "type": "string"
               }
             },
+            "required": ["name"],
             "additionalProperties": false
           }
         },
@@ -137,6 +138,7 @@
                 "type": "string"
               }
             },
+            "required": ["name"],
             "additionalProperties": false
           }
         },
@@ -153,6 +155,7 @@
                 "type": "boolean"
               }
             },
+            "required": ["name"],
             "additionalProperties": false
           }
         },
@@ -166,6 +169,7 @@
                 "type": "string"
               }
             },
+            "required": ["name"],
             "additionalProperties": false
           }
         }
