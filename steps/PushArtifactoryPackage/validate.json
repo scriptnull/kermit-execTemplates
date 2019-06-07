@@ -189,7 +189,7 @@
           }
         }
       },
-      "required": ["targetRepo"]
+      "required": ["targetRepo", "integrations", "inputSteps"]
     },
     "execution": {
       "type": "object",
@@ -230,7 +230,8 @@
   },
   "required": [
     "name",
-    "type"
+    "type",
+    "configuration"
   ],
   "additionalProperties": false
 }
