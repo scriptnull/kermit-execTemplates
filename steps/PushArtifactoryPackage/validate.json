@@ -115,48 +115,6 @@
         }
       }
     },
-    "requires": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "resources": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "steps": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "integrations": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "triggeredBy": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "resources": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "steps": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "execution": {
       "type": "object",
       "additionalProperties": false,
@@ -191,12 +149,6 @@
             "type": "string"
           }
         }
-      }
-    },
-    "outputResources": {
-      "type": "array",
-      "items": {
-        "type": "string"
       }
     }
   },
