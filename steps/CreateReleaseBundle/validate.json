@@ -62,7 +62,7 @@
               "enum": ["markdown", "asciidoc", "plain_text"]
             }
           },
-          "required": ["syntax"]
+          "required": ["content"]
         },
         "integrations": {
           "type": "array",
@@ -125,7 +125,7 @@
         }
       },
       "required": ["releaseBundleName", "releaseBundleVersion",
-        "inputResources"]
+        "inputResources", "integrations"]
     },
     "execution": {
       "type": "object",
