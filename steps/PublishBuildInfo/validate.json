@@ -13,6 +13,11 @@
     "configuration": {
       "type": "object",
       "additionalProperties": false,
+      "required": [
+        "integrations",
+        "inputSteps",
+        "outputResources"
+      ],
       "properties": {
         "affinityGroup": {
           "type": "string"
@@ -215,7 +220,7 @@
   "required": [
     "name",
     "type",
-    "execution"
+    "configuration"
   ],
   "additionalProperties": false
 }
