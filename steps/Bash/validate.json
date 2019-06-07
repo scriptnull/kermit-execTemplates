@@ -8,7 +8,7 @@
     },
     "type": {
       "type": "string",
-      "enum": ["scan"]
+      "enum": ["Bash"]
     },
     "configuration": {
       "type": "object",
@@ -38,33 +38,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "scan": {
-          "type": "object",
-          "properties": {
-            "buildName": {
-              "type": "string"
-            },
-            "buildNumber": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
         "environmentVariables": {
           "type": "object",
           "properties": {
             "normal": {
-              "type": "object",
-              "properties": {
-                "targetRepo": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": {
-                "type": ["string", "number"]
-              }
-            },
-            "encrypted": {
               "type": "object",
               "additionalProperties": {
                 "type": ["string", "number"]
@@ -74,51 +51,70 @@
         },
         "runtime": {
           "type": "object",
-          "additionalProperties": false,
           "properties": {
             "type": {
               "type": "string",
               "enum": ["image", "host"]
-            },
-            "image": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "auto": {
-                  "type": "object",
-                  "required": ["language"],
-                  "properties": {
-                    "language": {
-                      "type": "string"
-                    },
-                    "versions": {
-                      "type": "array",
-                      "items":  {
+            }
+          },
+          "required": ["type"],
+          "if": {
+            "properties": {
+              "type": { "enum": ["image"] }
+            }
+          },
+          "then": {
+            "properties": {
+              "type": { "enum": ["image"] },
+              "image": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "auto": {
+                    "type": "object",
+                    "required": ["language"],
+                    "properties": {
+                      "language": {
                         "type": "string"
+                      },
+                      "versions": {
+                        "type": "array",
+                        "items":  {
+                          "type": "string"
+                        }
                       }
                     }
-                  }
-                },
-                "custom": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": ["name", "tag"],
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "tag": {
-                      "type": "string"
-                    },
-                    "options": {
-                      "type": "string"
+                  },
+                  "custom": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["name", "tag"],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "options": {
+                        "type": "string"
+                      },
+                      "autoPull": {
+                        "type": "boolean"
+                      }
                     }
                   }
                 }
               }
-            }
+            },
+            "additionalProperties": false
           },
-          "required": ["type"]
+          "else": {
+            "properties": {
+              "type": { "enum": ["host"] }
+            },
+            "additionalProperties": false
+          }
         }
       }
     },
@@ -142,11 +138,9 @@
           "type": "array",
           "items": {
             "type": "string"
-          },
-          "minItems": 1
+          }
         }
-      },
-      "required": ["integrations"]
+      }
     },
     "triggeredBy": {
       "type": "object",
@@ -171,6 +165,12 @@
       "additionalProperties": false,
       "properties": {
         "onStart": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "onExecute": {
           "type": "array",
           "items": {
             "type": "string"
@@ -212,7 +212,7 @@
   "required": [
     "name",
     "type",
-    "requires"
+    "execution"
   ],
   "additionalProperties": false
 }

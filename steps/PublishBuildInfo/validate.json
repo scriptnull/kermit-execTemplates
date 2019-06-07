@@ -8,7 +8,7 @@
     },
     "type": {
       "type": "string",
-      "enum": ["push"]
+      "enum": ["PublishBuildInfo"]
     },
     "configuration": {
       "type": "object",
@@ -38,27 +38,31 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "push": {
+        "publish": {
           "type": "object",
           "properties": {
-            "targetRepo": {
+            "envInclude": {
               "type": "string"
             },
-            "publish": {
-              "type": "boolean"
+            "envExclude": {
+              "type": "string"
             },
             "scan": {
               "type": "boolean"
             }
           },
-          "additionalProperties": false,
-          "required": []
+          "additionalProperties": false
         },
         "environmentVariables": {
           "type": "object",
           "properties": {
             "normal": {
               "type": "object",
+              "properties": {
+                "targetRepo": {
+                  "type": "string"
+                }
+              },
               "additionalProperties": {
                 "type": ["string", "number"]
               }
@@ -135,9 +139,11 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "minItems": 1
         }
-      }
+      },
+      "required": ["integrations"]
     },
     "triggeredBy": {
       "type": "object",
@@ -202,7 +208,8 @@
   },
   "required": [
     "name",
-    "type"
+    "type",
+    "requires"
   ],
   "additionalProperties": false
 }
