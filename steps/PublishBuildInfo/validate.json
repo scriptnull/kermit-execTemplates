@@ -13,6 +13,11 @@
     "configuration": {
       "type": "object",
       "additionalProperties": false,
+      "required": [
+        "integrations",
+        "inputSteps",
+        "outputResources"
+      ],
       "properties": {
         "affinityGroup": {
           "type": "string"
@@ -124,6 +129,7 @@
                 "type": "string"
               }
             },
+            "required": ["name"],
             "additionalProperties": false
           }
         },
@@ -137,6 +143,7 @@
                 "type": "string"
               }
             },
+            "required": ["name"],
             "additionalProperties": false
           }
         },
@@ -153,6 +160,7 @@
                 "type": "boolean"
               }
             },
+            "required": ["name"],
             "additionalProperties": false
           }
         },
@@ -166,6 +174,7 @@
                 "type": "string"
               }
             },
+            "required": ["name"],
             "additionalProperties": false
           }
         }
@@ -211,7 +220,7 @@
   "required": [
     "name",
     "type",
-    "execution"
+    "configuration"
   ],
   "additionalProperties": false
 }
