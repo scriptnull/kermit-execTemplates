@@ -32,6 +32,30 @@
         "chronological": {
           "type": "boolean"
         },
+        "targetRepo": {
+          "type": "string"
+        },
+        "forceXrayScan": {
+          "type": "boolean"
+        },
+        "autoPublishBuildInfo": {
+          "type": "boolean"
+        },
+        "npmArgs": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "recursive": {
+          "type": "boolean"
+        },
+        "self": {
+          "type": "boolean"
+        },
+        "deps": {
+          "type": "boolean"
+        },
         "integrations": {
           "type": "array",
           "minItems": 1,
@@ -87,7 +111,8 @@
             "additionalProperties": false
           }
         }
-      }
+      },
+      "required": ["targetRepo"]
     },
     "setup": {
       "type": "object",
