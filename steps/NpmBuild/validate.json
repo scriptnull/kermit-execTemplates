@@ -39,7 +39,7 @@
           "type": "string"
         },
         "repositoryName": {
-          "type": "boolean"
+          "type": "string"
         }
       },
       "required": ["sourceLocation", "repositoryName"]
