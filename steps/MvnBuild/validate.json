@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://jfrog.com/cicd/steps/NpmBuild.schema.json",
+  "$id": "http://jfrog.com/pipelines/steps/MvnBuild.schema.json",
   "type": "object",
   "properties": {
     "name": {
@@ -8,7 +8,7 @@
     },
     "type": {
       "type": "string",
-      "enum": ["NpmBuild"]
+      "enum": ["MvnBuild"]
     },
     "configuration": {
       "type": "object",
@@ -32,14 +32,11 @@
         "chronological": {
           "type": "boolean"
         },
-        "sourceLocation": {
-          "type": "string"
-        },
-        "npmArgs": {
-          "type": "string"
-        },
-        "repositoryName": {
-          "type": "string"
+        "environmentVariables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "number"]
+          }
         },
         "runtime": {
           "type": "object",
@@ -162,15 +159,34 @@
             },
             "additionalProperties": false
           }
+        },
+        "sourceLocation": {
+          "type": "string"
+        },
+        "mvnCommand": {
+          "type": "string"
+        },
+        "configFileLocation": {
+          "type": "string"
+        },
+        "configFileName": {
+          "type": "string"
         }
       },
-      "required": ["sourceLocation", "repositoryName", "integrations", "inputResources"]
+      "required": ["inputResources", "integrations", "mvnCommand",
+        "configFileLocation", "configFileName", "sourceLocation"]
     },
     "execution": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "onStart": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "onExecute": {
           "type": "array",
           "items": {
             "type": "string"
@@ -204,9 +220,9 @@
     }
   },
   "required": [
-    "configuration",
     "name",
-    "type"
+    "type",
+    "configuration"
   ],
   "additionalProperties": false
 }

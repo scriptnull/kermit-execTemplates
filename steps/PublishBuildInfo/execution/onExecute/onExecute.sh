@@ -1,5 +1,5 @@
-publish() {
-  echo "[publish] Authenticating with integration: $artifactoryIntegrationName"
+PublishBuildInfo() {
+  echo "[PublishBuildInfo] Authenticating with integration: $artifactoryIntegrationName"
   local rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
   local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
   local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
@@ -17,32 +17,32 @@ publish() {
     fi
   fi
 
-  local publish=""
+  local PublishBuildInfo=""
   local envInclude=""
   local envExclude=""
   local scan=false
-  local publishCmd="jfrog rt bp $buildName $buildNumber"
+  local PublishBuildInfoCmd="jfrog rt bp $buildName $buildNumber"
 
   local stepSetup=$(cat $step_json_path | jq .step.setup)
   if [ ! -z "$stepSetup" ] && [ "$stepSetup" != "null" ]; then
-    local publish=$(echo $stepSetup | jq .publish)
-    if [ ! -z "$publish" ] && [ "$publish" != "null" ]; then
-      envInclude=$(echo $publish | jq -r .envInclude)
-      envExclude=$(echo $publish | jq -r .envExclude)
-      scan=$(echo $publish | jq -r .scan)
+    local PublishBuildInfo=$(echo $stepSetup | jq .PublishBuildInfo)
+    if [ ! -z "$PublishBuildInfo" ] && [ "$PublishBuildInfo" != "null" ]; then
+      envInclude=$(echo $PublishBuildInfo | jq -r .envInclude)
+      envExclude=$(echo $PublishBuildInfo | jq -r .envExclude)
+      scan=$(echo $PublishBuildInfo | jq -r .scan)
     fi
   fi
 
   if [ ! -z "$envInclude" ] && [ "$envInclude" != "null" ]; then
-    publishCmd="$publishCmd --env-include $envInclude"
+    PublishBuildInfoCmd="$PublishBuildInfoCmd --env-include $envInclude"
   fi
 
   if [ ! -z "$envExclude" ] && [ "$envExclude" != "null" ]; then
-    publishCmd="$publishCmd --env-exclude $envExclude"
+    PublishBuildInfoCmd="$PublishBuildInfoCmd --env-exclude $envExclude"
   fi
 
-  echo "[publish] Publishing build info $buildName/$buildNumber"
-  retry_command $publishCmd
+  echo "[PublishBuildInfo] Publishing build info $buildName/$buildNumber"
+  retry_command $PublishBuildInfoCmd
 
   if [ "$scan" == "true" ]; then
     echo "[push] Scanning build $buildName/$buildNumber"
@@ -50,11 +50,11 @@ publish() {
   fi
 
   if [ ! -z "$outputBuildInfoResourceName" ]; then
-    echo "[publish] Updating output resource: $outputBuildInfoResourceName"
+    echo "[PublishBuildInfo] Updating output resource: $outputBuildInfoResourceName"
     write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber
   fi
 
   save_run_state /tmp/jfrog/. jfrog
 }
 
-execute_command publish
+execute_command PublishBuildInfo
