@@ -31,10 +31,10 @@
           "type": "string"
         },
         "recursive": {
-          "type": "string"
+          "type": "boolean"
         },
         "flat": {
-          "type": "string"
+          "type": "boolean"
         },
         "excludePatterns": {
           "type": "string"
@@ -46,7 +46,7 @@
           "type": "string"
         },
         "buildNumber": {
-          "type": "string"
+          "type": "integer"
         },
         "sortBy": {
           "type": "string"
@@ -55,10 +55,10 @@
           "type": "string"
         },
         "limit": {
-          "type": "string"
+          "type": "integer"
         },
         "offset": {
-          "type": "string"
+          "type": "integer"
         }
       },
       "required": ["sourceArtifactory"]
