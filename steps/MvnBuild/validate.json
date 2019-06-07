@@ -174,7 +174,7 @@
         }
       },
       "required": ["inputResources", "integrations", "mvnCommand",
-        "configFileLocation", "configFileName"]
+        "configFileLocation", "configFileName", "sourceLocation"]
     },
     "execution": {
       "type": "object",
