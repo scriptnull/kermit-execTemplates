@@ -31,134 +31,142 @@
         },
         "chronological": {
           "type": "boolean"
-        }
-      }
-    },
-    "setup": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "publish": {
-          "type": "object",
-          "properties": {
-            "envInclude": {
-              "type": "string"
-            },
-            "envExclude": {
-              "type": "string"
-            },
-            "scan": {
-              "type": "boolean"
-            }
-          },
-          "additionalProperties": false
         },
-        "environmentVariables": {
-          "type": "object",
-          "properties": {
-            "normal": {
-              "type": "object",
-              "properties": {
-                "targetRepo": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": {
-                "type": ["string", "number"]
-              }
-            }
-          }
+        "envInclude": {
+          "type": "string"
+        },
+        "envExclude": {
+          "type": "string"
+        },
+        "forceXrayScan": {
+          "type": "boolean"
         },
         "runtime": {
           "type": "object",
-          "additionalProperties": false,
           "properties": {
             "type": {
               "type": "string",
               "enum": ["image", "host"]
-            },
-            "image": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "auto": {
-                  "type": "object",
-                  "required": ["language"],
-                  "properties": {
-                    "language": {
-                      "type": "string"
-                    },
-                    "versions": {
-                      "type": "array",
-                      "items":  {
+            }
+          },
+          "required": ["type"],
+          "if": {
+            "properties": {
+              "type": { "enum": ["image"] }
+            }
+          },
+          "then": {
+            "properties": {
+              "type": { "enum": ["image"] },
+              "image": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "auto": {
+                    "type": "object",
+                    "required": ["language"],
+                    "properties": {
+                      "language": {
                         "type": "string"
+                      },
+                      "versions": {
+                        "type": "array",
+                        "items":  {
+                          "type": "string"
+                        }
                       }
                     }
-                  }
-                },
-                "custom": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": ["name", "tag"],
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "tag": {
-                      "type": "string"
-                    },
-                    "options": {
-                      "type": "string"
+                  },
+                  "custom": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["name", "tag"],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "options": {
+                        "type": "string"
+                      },
+                      "autoPull": {
+                        "type": "boolean"
+                      }
                     }
                   }
                 }
               }
-            }
+            },
+            "additionalProperties": false
           },
-          "required": ["type"]
-        }
-      }
-    },
-    "requires": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "resources": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "else": {
+            "properties": {
+              "type": { "enum": ["host"] }
+            },
+            "additionalProperties": false
           }
         },
-        "steps": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "environmentVariables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "number"]
           }
         },
         "integrations": {
           "type": "array",
+          "minItems": 1,
           "items": {
-            "type": "string"
-          },
-          "minItems": 1
-        }
-      },
-      "required": ["integrations"]
-    },
-    "triggeredBy": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "resources": {
-          "type": "array",
-          "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           }
         },
-        "steps": {
+        "inputSteps": {
           "type": "array",
+          "minItems": 1,
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "inputResources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "trigger": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "outputResources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           }
         }
       }
@@ -198,18 +206,12 @@
           }
         }
       }
-    },
-    "outputResources": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
     }
   },
   "required": [
     "name",
     "type",
-    "requires"
+    "execution"
   ],
   "additionalProperties": false
 }
