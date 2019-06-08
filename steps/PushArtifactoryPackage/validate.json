@@ -41,21 +41,6 @@
         "autoPublishBuildInfo": {
           "type": "boolean"
         },
-        "npmArgs": {
-          "type": "string"
-        },
-        "version": {
-          "type": "string"
-        },
-        "recursive": {
-          "type": "boolean"
-        },
-        "self": {
-          "type": "boolean"
-        },
-        "deps": {
-          "type": "boolean"
-        },
         "environmentVariables": {
           "type": "object",
           "additionalProperties": {

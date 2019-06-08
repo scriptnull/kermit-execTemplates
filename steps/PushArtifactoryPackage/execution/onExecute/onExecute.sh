@@ -1,5 +1,5 @@
-push() {
-  echo "[push] Authenticating with integration: $artifactoryIntegrationName"
+PushArtifactoryPackage() {
+  echo "[PushArtifactoryPackage] Authenticating with integration: $artifactoryIntegrationName"
   local rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
   local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
   local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
@@ -8,43 +8,46 @@ push() {
   restore_run_state jfrog /tmp/jfrog
 
   local step_payloadType=$(eval echo "$""$buildStepName"_payloadType)
-  local stepSetup=$(cat $step_json_path | jq .step.setup)
-  if [ ! -z "$stepSetup" ] && [ "$stepSetup" != "null" ]; then
-    local push=$(echo $stepSetup | jq .push)
-  fi
+  local buildName=$(eval echo "$""$buildStepName"_buildName)
+  local buildNumber=$(eval echo "$""$buildStepName"_buildNumber)
+  local targetRepo=$(jq -r ".step.configuration.targetRepo" $step_json_path)
+
   if [ "$step_payloadType" == "docker" ]; then
-    local imageName=$(eval echo "$""$buildStepName"_imageName)
-    local imageTag=$(eval echo "$""$buildStepName"_imageTag)
-    local targetRepo=$(jq -r ".step.setup.push.targetRepo" $step_json_path)
-    local buildName=$(eval echo "$""$buildStepName"_buildName)
-    local buildNumber=$(eval echo "$""$buildStepName"_buildNumber)
-    jfrog rt docker-push $imageName:$imageTag $targetRepo --build-name=$buildName --build-number=$buildNumber
+    local dockerImageName=$(eval echo "$""$buildStepName"_dockerImageName)
+    local dockerImageTag=$(eval echo "$""$buildStepName"_dockerImageTag)
+    jfrog rt docker-push $dockerImageName:$dockerImageTag $targetRepo --build-name=$buildName --build-number=$buildNumber
+  elif [ "$step_payloadType" == "go" ]; then
+    local outputStateName=$(eval echo "$""$buildStepName"_outputStateName)
+    local tempStateLocation="$step_tmp_dir/goOutput"
+    restore_run_state $outputStateName $tempStateLocation
+    jfrog rt u "$tempStateLocation/*" $targetRepo --build-name=$buildName --build-number=$buildNumber
+  else
+    echo "[PushArtifactoryPackage] Unsupported payload type: $step_payloadType"
+    exit 1;
   fi
 
   local publish=false
   local scan=false
-  if [ ! -z "$push" ] && [ "$push" != "null" ]; then
-    local publishVal=$(echo $push | jq -r .publish)
-    local scanVal=$(echo $push | jq -r .scan)
+    local publishVal=$(echo $configuration | jq -r .step.configuration.autoPublishBuildInfo)
+    local scanVal=$(echo $configuration | jq -r .step.configuration.forceXrayScan)
     if [ "$publishVal" == "true" ]; then
       publish=true
     fi
     if [ "$scanVal" == "true" ]; then
       scan=true
     fi
-  fi
 
   if $publish; then
-    echo "[push] Publishing build $buildName/$buildNumber"
+    echo "[PushArtifactoryPackage] Publishing build $buildName/$buildNumber"
     jfrog rt bp $buildName $buildNumber
   fi
 
   if $scan; then
-    echo "[push] Scanning build $buildName/$buildNumber"
+    echo "[PushArtifactoryPackage] Scanning build $buildName/$buildNumber"
     jfrog rt bs $buildName $buildNumber
   fi
 
   save_run_state /tmp/jfrog/. jfrog
 }
 
-execute_command push
+execute_command PushArtifactoryPackage
