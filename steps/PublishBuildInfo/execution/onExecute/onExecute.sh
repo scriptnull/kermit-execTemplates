@@ -11,26 +11,22 @@ PublishBuildInfo() {
   local buildNumber="$buildNumber"
   if [ -z "$buildName" ] && [ -z "$buildNumber" ]; then
     if [ ! -z "$buildStepName" ]; then
-      echo "[push] Using build name and number from build step: $buildStepName"
+      echo "[PublishBuildInfo] Using build name and number from build step: $buildStepName"
       buildName=$(eval echo "$""$buildStepName"_buildName)
       buildNumber=$(eval echo "$""$buildStepName"_buildNumber)
     fi
   fi
 
-  local PublishBuildInfo=""
   local envInclude=""
   local envExclude=""
-  local scan=false
+  local forceXrayScan=false
   local PublishBuildInfoCmd="jfrog rt bp $buildName $buildNumber"
 
   local stepConfiguration=$(cat $step_json_path | jq .step.configuration)
   if [ ! -z "$stepConfiguration" ] && [ "$stepConfiguration" != "null" ]; then
-    local PublishBuildInfo=$(echo $stepConfiguration | jq .PublishBuildInfo)
-    if [ ! -z "$PublishBuildInfo" ] && [ "$PublishBuildInfo" != "null" ]; then
-      envInclude=$(echo $PublishBuildInfo | jq -r .envInclude)
-      envExclude=$(echo $PublishBuildInfo | jq -r .envExclude)
-      scan=$(echo $PublishBuildInfo | jq -r .scan)
-    fi
+    envInclude=$(echo $stepConfiguration | jq -r .envInclude)
+    envExclude=$(echo $stepConfiguration | jq -r .envExclude)
+    forceXrayScan=$(echo $stepConfiguration | jq -r .forceXrayScan)
   fi
 
   if [ ! -z "$envInclude" ] && [ "$envInclude" != "null" ]; then
@@ -44,8 +40,8 @@ PublishBuildInfo() {
   echo "[PublishBuildInfo] Publishing build info $buildName/$buildNumber"
   retry_command $PublishBuildInfoCmd
 
-  if [ "$scan" == "true" ]; then
-    echo "[push] Scanning build $buildName/$buildNumber"
+  if [ "$forceXrayScan" == "true" ]; then
+    echo "[PublishBuildInfo] Scanning build $buildName/$buildNumber"
     jfrog rt bs $buildName $buildNumber
   fi
 
