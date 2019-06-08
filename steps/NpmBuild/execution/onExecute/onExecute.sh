@@ -18,7 +18,7 @@ build() {
     if [ "$npmArgs" == "" ]; then
       echo -e "\n[NpmBuild] Installing npm packages"
     else
-      echo -e "\n[NpmBuild] Installing npm packages with arguments: $npmArgs"
+      echo -e "\n[NpmBuild] Installing npm packages with npmArgs: $npmArgs"
     fi
     jfrog rt npm-install $repositoryName --build-name=$buildName --build-number=$buildNumber --npm-args="$npmArgs"
     echo -e "\n[NpmBuild] Adding build information to run state"
