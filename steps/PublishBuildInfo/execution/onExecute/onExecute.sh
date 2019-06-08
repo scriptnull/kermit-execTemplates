@@ -23,9 +23,9 @@ PublishBuildInfo() {
   local scan=false
   local PublishBuildInfoCmd="jfrog rt bp $buildName $buildNumber"
 
-  local stepSetup=$(cat $step_json_path | jq .step.configuration)
-  if [ ! -z "$stepSetup" ] && [ "$stepSetup" != "null" ]; then
-    local PublishBuildInfo=$(echo $stepSetup | jq .PublishBuildInfo)
+  local stepConfiguration=$(cat $step_json_path | jq .step.configuration)
+  if [ ! -z "$stepConfiguration" ] && [ "$stepConfiguration" != "null" ]; then
+    local PublishBuildInfo=$(echo $stepConfiguration | jq .PublishBuildInfo)
     if [ ! -z "$PublishBuildInfo" ] && [ "$PublishBuildInfo" != "null" ]; then
       envInclude=$(echo $PublishBuildInfo | jq -r .envInclude)
       envExclude=$(echo $PublishBuildInfo | jq -r .envExclude)
