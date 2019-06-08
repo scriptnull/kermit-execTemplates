@@ -7,7 +7,7 @@ scan() {
 
   local buildName=""
   local buildNumber=""
-  local stepSetup=$(cat $step_json_path | jq .step.setup)
+  local stepConfiguration=$(cat $step_json_path | jq .step.configuration)
   if [ ! -z "$inputBuildInfoResourceName" ]; then
     echo "[scan] Using build name and number from BuildInfo resource: $inputBuildInfoResourceName"
     buildName=$(eval echo "$"res_"$inputBuildInfoResourceName"_buildName)
@@ -15,15 +15,12 @@ scan() {
   elif [ ! -z "$buildStepName" ]; then
     buildName=$(eval echo "$""$buildStepName"_buildName)
     buildNumber=$(eval echo "$""$buildStepName"_buildNumber)
-  elif [ ! -z "$stepSetup" ] && [ "$stepSetup" != "null" ]; then
-    local scan=$(echo $stepSetup | jq .scan)
-    if [ ! -z "$scan" ] && [ "$scan" != "null" ]; then
-      # TODO: fix this when setup section gets exported as envs
-      buildNameVar=$(echo $scan | jq -r .buildName)
-      buildNumberVar=$(echo $scan | jq -r .buildNumber)
-      buildName=$(eval echo $buildNameVar)
-      buildNumber=$(eval echo $buildNumberVar)
-    fi
+  elif [ ! -z "$stepConfiguration" ] && [ "$stepConfiguration" != "null" ]; then
+    # TODO: fix this when setup section gets exported as envs
+    buildNameVar=$(echo $stepConfiguration | jq -r .buildName)
+    buildNumberVar=$(echo $stepConfiguration | jq -r .buildNumber)
+    buildName=$(eval echo $buildNameVar)
+    buildNumber=$(eval echo $buildNumberVar)
   fi
 
   if [ -z "$buildName" ] && [ -z "$buildNumber" ]; then
