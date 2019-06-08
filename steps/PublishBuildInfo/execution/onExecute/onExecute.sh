@@ -23,7 +23,7 @@ PublishBuildInfo() {
   local scan=false
   local PublishBuildInfoCmd="jfrog rt bp $buildName $buildNumber"
 
-  local stepSetup=$(cat $step_json_path | jq .step.setup)
+  local stepSetup=$(cat $step_json_path | jq .step.configuration)
   if [ ! -z "$stepSetup" ] && [ "$stepSetup" != "null" ]; then
     local PublishBuildInfo=$(echo $stepSetup | jq .PublishBuildInfo)
     if [ ! -z "$PublishBuildInfo" ] && [ "$PublishBuildInfo" != "null" ]; then
