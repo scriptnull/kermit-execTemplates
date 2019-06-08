@@ -1,4 +1,4 @@
-build() {
+NpmBuild() {
   echo "[NpmBuild] Authenticating with integration: $artifactoryIntegrationName"
   local rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
   local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
@@ -30,8 +30,10 @@ build() {
     add_run_variable ${step_name}_sourceStateName="npmBuildInputGitRepo"
     add_run_variable ${step_name}_sourceLocation=${sourceLocation}
   popd
+
   jfrog rt bce $buildName $buildNumber
+  save_run_state /tmp/jfrog/. jfrog
   save_run_state $inputGitRepoResourcePath/. npmBuildInputGitRepo
 }
 
-execute_command build
+execute_command NpmBuild

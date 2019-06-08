@@ -1,4 +1,4 @@
-publish() {
+NpmPublish() {
   echo "[NpmPublish] Authenticating with integration: $artifactoryIntegrationName"
   local rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
   local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
@@ -23,4 +23,4 @@ publish() {
   rm -rf $run_dir/workspace/$sourceStateName
 }
 
-execute_command publish
+execute_command NpmPublish
