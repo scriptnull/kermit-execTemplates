@@ -109,15 +109,16 @@ constructQueryForAqlResource() {
     fi
   fi
 
-  mappings=$(jq -r ".resources."$aqlResName".resourceVersionContentPropertyBag.mappings" $step_json_path)
-  if [ ! -z "$mappings" ] && [ "$mappings" != "null" ]; then
-    local mappingCount=$(echo $mappings | jq '. | length')
-    if [ $mappingCount -ne 0 ]; then
-      for i in $(seq 1 $mappingCount); do
-        local mappingValue=$(echo $mappings | jq '.['"$i-1"'] | del(.name)')
-        aqlQuery=$(echo $aqlQuery | jq --argjson json "$mappingValue" '.mappings += [ $json ]')
-      done
-    fi
+  mappingsLen=$(eval echo "$"res_"$aqlResName"_mappings_len)
+  if [ ! -z "$mappingsLen" ]; then
+    for i in $(seq 0 $(( mappingsLen -  1 ))); do
+      local mappingValue='{"input": "", "output": ""}'
+      local mappingInput=$(eval echo "$"res_"$aqlResName"_mappings_"$i"_input)
+      mappingValue=$(echo $mappingValue | jq '.input = "'$mappingInput'"')
+      local mappingOutput=$(eval echo "$"res_"$aqlResName"_mappings_"$i"_output)
+      mappingValue=$(echo $mappingValue | jq '.output = "'$mappingOutput'"')
+      aqlQuery=$(echo $aqlQuery | jq --argjson json "$mappingValue" '.mappings += [ $json ]')
+    done
   fi
 
   echo $aqlQuery
@@ -164,9 +165,9 @@ createPayload() {
     done
   fi
 
-  signed=$(jq -r ".step.configuration.signed" $step_json_path)
-  if [ ! -z "$signed" ] && [ "$signed" != "null" ]; then
-    payload=$(echo $payload | jq --arg sign_immediately $signed '. + {sign_immediately: $sign_immediately|test("true")}')
+  sign=$(jq -r ".step.configuration.sign" $step_json_path)
+  if [ ! -z "$sign" ] && [ "$sign" != "null" ]; then
+    payload=$(echo $payload | jq --arg sign_immediately $sign '. + {sign_immediately: $sign_immediately|test("true")}')
   fi
 
   if [ -z "$dryRun" ]; then
@@ -230,7 +231,7 @@ postRelease() {
   fi
 }
 
-createReleaseBundle() {
+CreateReleaseBundle() {
   local payloadFile="createReleaseBundlePayload.json"
 
   echo "[CreateReleaseBundle] Authenticating with integration: $artifactoryIntegrationName"
@@ -250,8 +251,8 @@ createReleaseBundle() {
 
   if [ ! -z "$outputReleaseBundleResourceName" ]; then
     echo -e "\n[CreateReleaseBundle] Updating output resource: $outputReleaseBundleResourceName"
-    write_output $outputReleaseBundleResourceName name=$releaseBundleName version=$releaseBundleVersion isSigned=$signed
+    write_output $outputReleaseBundleResourceName name=$releaseBundleName version=$releaseBundleVersion isSigned=$sign
   fi
 }
 
-execute_command createReleaseBundle
+execute_command CreateReleaseBundle

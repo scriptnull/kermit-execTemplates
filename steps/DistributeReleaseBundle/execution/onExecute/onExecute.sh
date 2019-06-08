@@ -60,11 +60,13 @@ DistributeReleaseBundle() {
     local siteName=$(echo "${!siteNameVar}")
     local distributionRuleResourceObject="{\"service_name\": \"$serviceName\", \"site_name\": \"$siteName\", \"city_name\": \"$cityName\", \"country_codes\": []}"
     local countryCodesLen=$(eval echo "$"res_"$distributionRuleResourceName"_countryCodes_len)
-    for i in $(seq 0 $countryCodesLen); do
-      local countryCodeVar="res_"$distributionRuleResourceName"_countryCodes_"$i
-      local code=$(echo "${!countryCodeVar}")
-      distributionRuleResourceObject=$(echo $distributionRuleResourceObject | jq --arg code "$code" '.country_codes += [ $code ]')
-    done
+    if [ ! -z "$countryCodesLen" ] && [ $countryCodesLen -gt 0 ]; then
+      for i in $(seq 0 $(( countryCodesLen - 1 ))); do
+        local countryCodeVar="res_"$distributionRuleResourceName"_countryCodes_"$i
+        local code=$(echo "${!countryCodeVar}")
+        distributionRuleResourceObject=$(echo $distributionRuleResourceObject | jq --arg code "$code" '.country_codes += [ $code ]')
+      done
+    fi
     body=$(echo $body | jq --argjson json "$distributionRuleResourceObject" '.distribution_rules += [ $json ]')
   done
 
