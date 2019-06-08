@@ -5,18 +5,21 @@ build() {
   local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 
-  buildName=$PIPELINE_NAME
-  buildNumber=$RUN_NUMBER
+  buildName=$pipeline_name
+  buildNumber=$run_number
 
-  sourceLocation=$(jq -r ".step.configuration.sourceLocation" $STEP_JSON_PATH)
-  repository=$(jq -r ".step.configuration.repository" $STEP_JSON_PATH)
-  version=$(jq -r ".step.configuration.version" $STEP_JSON_PATH)
+  sourceLocation=$(jq -r ".step.configuration.sourceLocation" $step_json_path)
+  repository=$(jq -r ".step.configuration.repository" $step_json_path)
+  version=$(jq -r ".step.configuration.version" $step_json_path)
   version=$(eval echo $version)
   buildDir=$(eval echo "$"res_"$inputGitRepoResourceName"_resourcePath)/$sourceLocation
-  outputLocation=$(jq -r ".step.configuration.outputLocation" $STEP_JSON_PATH)
+  outputLocation=$(jq -r ".step.configuration.outputLocation" $step_json_path)
   outputLocation=$(eval echo $outputLocation)
-  outputFile=$(jq -r ".step.configuration.outputFile" $STEP_JSON_PATH)
+  outputFile=$(jq -r ".step.configuration.outputFile" $step_json_path)
   outputFile=$(eval echo $outputFile)
+
+  noRegistry=$(jq -r ".step.configuration.noRegistry" $step_json_path)
+  publishDeps=$(jq -r ".step.configuration.publishDeps" $step_json_path)
   echo "[GoBuild] Changing directory: $buildDir"
   pushd $buildDir
     if [ ! -z "$inputFileResourceName" ]; then
@@ -26,13 +29,24 @@ build() {
       cp -vr $filePath .
     fi
 
-    goCommand=$(jq -r ".step.configuration.goCommand" $STEP_JSON_PATH)
+    goCommand=$(jq -r ".step.configuration.goCommand" $step_json_path)
     goCommand=$(eval echo $goCommand)
     if [ -z "$goCommand" ] || [ "$goCommand" == "null" ]; then
       goCommand="build -o $outputLocation/$outputFile"
     fi
+    mkdir -p "$outputLocation"
+
+    options=""
+    if [ ! -z "$noRegistry" ] && [ "$noRegistry" != 'null' ]; then
+      options+=" --no-registry $noRegistry"
+    fi
+
+    if [ ! -z "$publishDeps" ] && [ "$publishDeps" != 'null' ]; then
+      options+=" --publish-deps $publishDeps"
+    fi
+
     echo "[GoBuild] Building module with goCommand: $goCommand"
-    jfrog rt go "$goCommand" $repository --build-name $buildName --build-number $buildNumber
+    jfrog rt go "$goCommand" $repository $options --build-name $buildName --build-number $buildNumber
 
     echo "[GoBuild] Adding build information to run state"
     add_run_variable buildStepName=${step_name}
@@ -41,7 +55,8 @@ build() {
     add_run_variable ${step_name}_buildNumber=${buildNumber}
     add_run_variable ${step_name}_buildName=${buildName}
     add_run_variable ${step_name}_isPromoted=false
-    save_run_state $outputLocation/$outputFile output/$outputFile
+    add_run_variable ${step_name}_outputStateName=output
+    save_run_state $outputLocation/. output
   popd
 
   jfrog rt bce $buildName $buildNumber

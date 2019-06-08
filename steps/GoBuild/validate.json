@@ -32,6 +32,132 @@
         "chronological": {
           "type": "boolean"
         },
+        "runtime": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["image", "host"]
+            }
+          },
+          "required": ["type"],
+          "if": {
+            "properties": {
+              "type": { "enum": ["image"] }
+            }
+          },
+          "then": {
+            "properties": {
+              "type": { "enum": ["image"] },
+              "image": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "auto": {
+                    "type": "object",
+                    "required": ["language"],
+                    "properties": {
+                      "language": {
+                        "type": "string"
+                      },
+                      "versions": {
+                        "type": "array",
+                        "items":  {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "custom": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["name", "tag"],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "options": {
+                        "type": "string"
+                      },
+                      "autoPull": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "else": {
+            "properties": {
+              "type": { "enum": ["host"] }
+            },
+            "additionalProperties": false
+          }
+        },
+        "integrations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": ["name"],
+            "additionalProperties": false
+          }
+        },
+        "inputSteps": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": ["name"],
+            "additionalProperties": false
+          }
+        },
+        "inputResources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "trigger": {
+                "type": "boolean"
+              }
+            },
+            "required": ["name"],
+            "additionalProperties": false
+          }
+        },
+        "outputResources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": ["name"],
+            "additionalProperties": false
+          }
+        },
         "sourceLocation": {
           "type": "string"
         },
@@ -54,127 +180,8 @@
           "type": "string"
         }
       },
-      "required": ["sourceLocation", "repository", "outputLocation", "outputFile"]
-    },
-    "setup": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "environmentVariables": {
-          "type": "object",
-          "properties": {
-            "normal": {
-              "type": "object",
-              "properties": {
-                "targetRepo": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": {
-                "type": ["string", "number"]
-              }
-            },
-            "encrypted": {
-              "type": "object",
-              "additionalProperties": {
-                "type": ["string", "number"]
-              }
-            }
-          }
-        },
-        "runtime": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": ["image", "host"]
-            },
-            "image": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "auto": {
-                  "type": "object",
-                  "required": ["language"],
-                  "properties": {
-                    "language": {
-                      "type": "string"
-                    },
-                    "versions": {
-                      "type": "array",
-                      "items":  {
-                        "type": "string"
-                      }
-                    }
-                  }
-                },
-                "custom": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": ["name", "tag"],
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "tag": {
-                      "type": "string"
-                    },
-                    "options": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "required": ["type"]
-        }
-      }
-    },
-    "requires": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "resources": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "steps": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "integrations": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1
-        }
-      },
-      "required": ["integrations"]
-    },
-    "triggeredBy": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "resources": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "steps": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
+      "required": ["sourceLocation", "repository", "outputLocation",
+        "outputFile", "inputResources", "integrations"]
     },
     "execution": {
       "type": "object",
@@ -211,19 +218,12 @@
           }
         }
       }
-    },
-    "outputResources": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
     }
   },
   "required": [
-    "configuration",
     "name",
     "type",
-    "requires"
+    "configuration"
   ],
   "additionalProperties": false
 }
