@@ -16,12 +16,10 @@ publish() {
   echo -e "\n[NpmPublish] Changing directory: /tmp/jfrog/$sourceStateName/$sourceLocation"
   pushd /tmp/jfrog/$sourceStateName/$sourceLocation
     jfrog rt npm-publish $repositoryName --build-name=$buildName --build-number=$buildNumber
-    echo -e "\n[NpmPublish] Adding publish information to run state"
-    add_run_variable buildStepName=${step_name}
-    add_run_variable ${step_name}_payloadType=npm
-    add_run_variable ${step_name}_buildNumber=${buildNumber}
-    add_run_variable ${step_name}_buildName=${buildName}
   popd
+
+  # remove gitRepo from run state
+  rm -rf $run_dir/workspace/$sourceStateName
 }
 
 execute_command publish
