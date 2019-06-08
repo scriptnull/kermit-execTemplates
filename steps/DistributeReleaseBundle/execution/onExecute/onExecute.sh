@@ -1,4 +1,4 @@
-distributeReleaseBundle() {
+DistributeReleaseBundle() {
   local curlResponseFile=$step_tmp_dir/response
 
   local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
@@ -59,10 +59,10 @@ distributeReleaseBundle() {
     local siteNameVar="res_"$distributionRuleResourceName"_siteName"
     local siteName=$(echo "${!siteNameVar}")
     local distributionRuleResourceObject="{\"service_name\": \"$serviceName\", \"site_name\": \"$siteName\", \"city_name\": \"$cityName\", \"country_codes\": []}"
-    local countryCodes=$(eval echo "$"res_"$distributionRuleResourceName"_countryCodes)
-    local countryCodeCount=$(echo $countryCodes | jq '. | length')
-    for i in $(seq 1 $countryCodeCount); do
-      code=$(echo $countryCodes | jq '.['"$i-1"']')
+    local countryCodesLen=$(eval echo "$"res_"$distributionRuleResourceName"_countryCodes_len)
+    for i in $(seq 0 $countryCodesLen); do
+      local countryCodeVar="res_"$distributionRuleResourceName"_countryCodes_"$i
+      local code=$(echo "${!countryCodeVar}")
       distributionRuleResourceObject=$(echo $distributionRuleResourceObject | jq --arg code "$code" '.country_codes += [ $code ]')
     done
     body=$(echo $body | jq --argjson json "$distributionRuleResourceObject" '.distribution_rules += [ $json ]')
@@ -131,4 +131,4 @@ distributeReleaseBundle() {
   fi
 }
 
-execute_command distributeReleaseBundle
+execute_command DistributeReleaseBundle
