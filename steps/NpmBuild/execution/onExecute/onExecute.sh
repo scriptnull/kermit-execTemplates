@@ -28,6 +28,7 @@ build() {
     add_run_variable ${step_name}_buildName=${buildName}
     add_run_variable ${step_name}_isPromoted=false
     add_run_variable ${step_name}_sourceStateName="npmBuildInputGitRepo"
+    add_run_variable ${step_name}_sourceLocation=${sourceLocation}
   popd
   jfrog rt bce $buildName $buildNumber
   save_run_state $inputGitRepoResourcePath/. npmBuildInputGitRepo
