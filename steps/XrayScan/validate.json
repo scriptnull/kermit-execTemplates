@@ -40,7 +40,7 @@
           "type": "string"
         },
         "buildNumber": {
-          "type": "string"
+          "type": "integer"
         },
         "environmentVariables": {
           "type": "object",
