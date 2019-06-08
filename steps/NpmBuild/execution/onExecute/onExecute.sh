@@ -15,7 +15,11 @@ build() {
   fi
   echo -e "\n[NpmBuild] Changing directory: $inputGitRepoResourcePath/$sourceLocation"
   pushd $inputGitRepoResourcePath/$sourceLocation
-    echo -e "\n[NpmBuild] Installing npm packages"
+    if [ "$npmArgs" == "" ]; then
+      echo -e "\n[NpmBuild] Installing npm packages"
+    else
+      echo -e "\n[NpmBuild] Installing npm packages with arguments: $npmArgs"
+    fi
     jfrog rt npm-install $repositoryName --build-name=$buildName --build-number=$buildNumber --npm-args="$npmArgs"
     echo -e "\n[NpmBuild] Adding build information to run state"
     add_run_variable buildStepName=${step_name}
@@ -23,9 +27,10 @@ build() {
     add_run_variable ${step_name}_buildNumber=${buildNumber}
     add_run_variable ${step_name}_buildName=${buildName}
     add_run_variable ${step_name}_isPromoted=false
+    add_run_variable ${step_name}_sourceStateName="npmBuildInputGitRepo"
   popd
   jfrog rt bce $buildName $buildNumber
-  save_run_state $inputGitRepoResourcePath/$sourceLocation/. npmBuildInputGitRepo
+  save_run_state $inputGitRepoResourcePath/. npmBuildInputGitRepo
 }
 
 execute_command build
