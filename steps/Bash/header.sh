@@ -873,8 +873,6 @@ send_notification() {
   export opt_text="$NOTIFY_TEXT"
   if [ -z "$opt_text" ]; then
     # set up default text
-    local step_name=$(cat "$step_json_path" | jq -r ."step.name")
-    local step_id=$(cat "$step_json_path" | jq -r ."step.id")
     case "$current_script_section" in
       onStart | onExecute )
         opt_text="${step_name} PROCESSING <${step_url}|#${step_id}>"
