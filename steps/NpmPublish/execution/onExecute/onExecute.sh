@@ -5,6 +5,8 @@ NpmPublish() {
   local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 
+  restore_run_state jfrog /tmp/jfrog
+
   local sourceStateName=$(eval echo "$""$inputNpmBuildStepName"_sourceStateName)
   local tempStateLocation="$step_tmp_dir/npmSourceState"
   restore_run_state $sourceStateName $tempStateLocation
@@ -19,6 +21,8 @@ NpmPublish() {
     jfrog rt npm-publish $repositoryName --build-name=$buildName --build-number=$buildNumber
   popd
 
+  jfrog rt bce $buildName $buildNumber
+  save_run_state /tmp/jfrog/. jfrog
   # remove gitRepo from run state
   rm -rf $run_dir/workspace/$sourceStateName
 }

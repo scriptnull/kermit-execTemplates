@@ -15,6 +15,13 @@ NpmBuild() {
   fi
   echo -e "\n[NpmBuild] Changing directory: $inputGitRepoResourcePath/$sourceLocation"
   pushd $inputGitRepoResourcePath/$sourceLocation
+    if [ ! -z "$inputFileResourceName" ]; then
+      filePath=$(eval echo "$"res_"$inputFileResourceName"_resourcePath)/*
+      echo "[NpmBuild] Copying files from: $filePath to: $(pwd)"
+      # todo: remove -v
+      cp -vr "$filePath" .
+    fi
+
     if [ "$npmArgs" == "" ]; then
       echo -e "\n[NpmBuild] Installing npm packages"
     else
