@@ -1,0 +1,223 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://jfrog.com/cicd/steps/GoPublish.schema.json",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["GoPublish"]
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "affinityGroup": {
+          "type": "string"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "nodePool": {
+          "type": "string"
+        },
+        "chronological": {
+          "type": "boolean"
+        },
+        "runtime": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["image", "host"]
+            }
+          },
+          "required": ["type"],
+          "if": {
+            "properties": {
+              "type": { "enum": ["image"] }
+            }
+          },
+          "then": {
+            "properties": {
+              "type": { "enum": ["image"] },
+              "image": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "auto": {
+                    "type": "object",
+                    "required": ["language"],
+                    "properties": {
+                      "language": {
+                        "type": "string"
+                      },
+                      "versions": {
+                        "type": "array",
+                        "items":  {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "custom": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["name", "tag"],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "options": {
+                        "type": "string"
+                      },
+                      "autoPull": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "else": {
+            "properties": {
+              "type": { "enum": ["host"] }
+            },
+            "additionalProperties": false
+          }
+        },
+        "integrations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": ["name"],
+            "additionalProperties": false
+          }
+        },
+        "inputSteps": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": ["name"],
+            "additionalProperties": false
+          }
+        },
+        "inputResources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "trigger": {
+                "type": "boolean"
+              }
+            },
+            "required": ["name"],
+            "additionalProperties": false
+          }
+        },
+        "outputResources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": ["name"],
+            "additionalProperties": false
+          }
+        },
+        "sourceLocation": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "self": {
+          "type": "boolean"
+        },
+        "deps": {
+          "type": "string"
+        },
+        "targetRepository": {
+          "type": "string"
+        }
+      },
+      "required": ["sourceLocation", "version", "targetRepository",
+        "inputResources", "integrations"]
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "onStart": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "onSuccess": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "onFailure": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "onComplete": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "onCancel": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "configuration"
+  ],
+  "additionalProperties": false
+}
