@@ -21,7 +21,6 @@ NpmPublish() {
     jfrog rt npm-publish $repositoryName --build-name=$buildName --build-number=$buildNumber
   popd
 
-  jfrog rt bce $buildName $buildNumber
   save_run_state /tmp/jfrog/. jfrog
   # remove gitRepo from run state
   rm -rf $run_dir/workspace/$sourceStateName
