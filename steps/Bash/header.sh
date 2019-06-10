@@ -711,7 +711,7 @@ replicate_resource() {
   fi
 
   # copy values
-  local resource_directory=$(cat "$step_json_path" | jq -r ."resources.$resFrom.resourcePath")
+  local resource_directory=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourcePath")
   local mdFilePathTo="$resource_directory/replicate.json"
 
   if [ ! -f "$mdFilePathTo" ]; then
