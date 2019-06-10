@@ -19,7 +19,7 @@ NpmBuild() {
       filePath=$(eval echo "$"res_"$inputFileResourceName"_resourcePath)/*
       echo "[NpmBuild] Copying files from: $filePath to: $(pwd)"
       # todo: remove -v
-      cp -vr "$filePath" .
+      cp -vr $filePath .
     fi
 
     if [ "$npmArgs" == "" ]; then

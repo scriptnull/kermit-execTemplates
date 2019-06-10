@@ -20,7 +20,7 @@ MvnBuild() {
       filePath=$(eval echo "$"res_"$inputFileResourceName"_resourcePath)/*
       echo "[MvnBuild] Copying files from: $filePath to: $(pwd)"
       # todo: remove -v
-      cp -vr "$filePath" .
+      cp -vr $filePath .
     fi
 
     mvnCommand=$(jq -r ".step.configuration.mvnCommand" $step_json_path)
