@@ -767,20 +767,20 @@ send_notification() {
         opt_color="#5183a0"
         ;;
       onSuccess )
-        opt_color="#65cea7"
+        opt_color="#40be46"
         ;;
       onFailure )
         opt_color="#fc8675"
         ;;
       onComplete )
         if [ "$is_success" == "true" ]; then
-          opt_color="#65cea7"
+          opt_color="#40be46"
         else
           opt_color="#fc8675"
         fi
         ;;
       * )
-        opt_color="#65cea7"
+        opt_color="#40be46"
         ;;
     esac
   fi
