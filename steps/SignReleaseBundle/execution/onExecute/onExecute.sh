@@ -1,7 +1,8 @@
 signReleaseBundle() {
-  local distUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_distributionUrl)
-  local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
-  local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
+  local integrationAlias=$(eval echo "$"res_"$inputReleaseBundleResourceName"_integrationAlias)
+  local distUrl=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_distributionUrl)
+  local rtUser=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_user)
+  local rtApiKey=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_apikey)
   local releaseBundleName=$(eval echo "$"res_"$inputReleaseBundleResourceName"_name)
   local releaseBundleVersion=$(eval echo "$"res_"$inputReleaseBundleResourceName"_version)
 
