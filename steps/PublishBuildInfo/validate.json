@@ -14,7 +14,6 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "integrations",
         "inputSteps",
         "outputResources"
       ],
@@ -136,28 +135,12 @@
         "inputSteps": {
           "type": "array",
           "minItems": 1,
+          "maxItems": 1,
           "items": {
             "type": "object",
             "properties": {
               "name": {
                 "type": "string"
-              }
-            },
-            "required": ["name"],
-            "additionalProperties": false
-          }
-        },
-        "inputResources": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "trigger": {
-                "type": "boolean"
               }
             },
             "required": ["name"],
@@ -167,6 +150,7 @@
         "outputResources": {
           "type": "array",
           "minItems": 1,
+          "maxItems": 1,
           "items": {
             "type": "object",
             "properties": {
