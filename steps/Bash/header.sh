@@ -1642,7 +1642,7 @@ _set_jdk() {
     _set_javac_path "/usr/lib/jvm/java-7-openjdk-amd64/bin/javac" "$jdk_version";
   elif [ "$jdk_version" == "openjdk8" ]; then
     _export_java_path "/usr/lib/jvm/java-8-openjdk-amd64" "$jdk_version";
-    _set_java_path "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java" "$jdk_version";
+    _set_java_path "/usr/lib/jvm/java-8-openjdk-amd64/bin/java" "$jdk_version";
     _set_javac_path "/usr/lib/jvm/java-8-openjdk-amd64/bin/javac" "$jdk_version";
   elif [ "$jdk_version" == "openjdk9" ]; then
     _export_java_path "/usr/lib/jvm/java-9-openjdk-amd64" "$jdk_version";
