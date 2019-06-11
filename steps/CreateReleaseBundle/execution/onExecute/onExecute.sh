@@ -264,8 +264,11 @@ CreateReleaseBundle() {
   echo -e "\n[CreateReleaseBundle] Getting Artifactory service id"
   local artifactoryServiceId=$(getArtifactoryServiceId)
 
-  releaseBundleName=$(jq -r ".step.configuration.releaseBundleName" $step_json_path)
-  releaseBundleVersion=$(jq -r ".step.configuration.releaseBundleVersion" $step_json_path)
+  # TODO: fix this when setup section gets exported as envs
+  releaseBundleNameVar=$(jq -r ".step.configuration.releaseBundleName" $step_json_path)
+  releaseBundleNumberVar=$(jq -r ".step.configuration.releaseBundleVersion" $step_json_path)
+  releaseBundleName=$(eval echo $releaseBundleNameVar)
+  releaseBundleNumber=$(eval echo $releaseBundleNumberVar)
   echo -e "\n[CreateReleaseBundle] Creating payload for release bundle"
   payload=$(createPayload "$releaseBundleName" "$releaseBundleVersion" "$artifactoryServiceId")
   echo $payload | jq . > $step_tmp_dir/$payloadFile
