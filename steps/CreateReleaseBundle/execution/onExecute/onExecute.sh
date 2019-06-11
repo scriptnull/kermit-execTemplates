@@ -1,8 +1,10 @@
 authenticate() {
-  integrationName=$1
-  local rtUrl=$(eval echo "$"int_"$integrationName"_url)
-  local rtUser=$(eval echo "$"int_"$integrationName"_user)
-  local rtApiKey=$(eval echo "$"int_"$integrationName"_apikey)
+  resourceName=$1
+  local integrationAlias=$(eval echo "$"res_"$resourceName"_integrationAlias)
+  local rtUrl=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_url)
+  local rtUser=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_user)
+  local rtApiKey=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_apikey)
+
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 }
 
@@ -227,10 +229,11 @@ createPayload() {
 
 postRelease() {
   payloadPath=$1
-  integrationName=$2
-  local distUrl=$(eval echo "$"int_"$integrationName"_distributionUrl)
-  local rtUser=$(eval echo "$"int_"$integrationName"_user)
-  local rtApiKey=$(eval echo "$"int_"$integrationName"_apikey)
+  resourceName=$2
+  local integrationAlias=$(eval echo "$"res_"$resourceName"_integrationAlias)
+  local distUrl=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_distributionUrl)
+  local rtUser=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_user)
+  local rtApiKey=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_apikey)
 
   if [ ! -z "$SIGNING_KEY_PASSPHRASE" ]; then
     STATUS=$(curl -o >(cat > $step_tmp_dir/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
@@ -258,8 +261,11 @@ postRelease() {
 CreateReleaseBundle() {
   local payloadFile="createReleaseBundlePayload.json"
 
-  echo "[CreateReleaseBundle] Authenticating with integration: $artifactoryIntegrationName"
-  authenticate $artifactoryIntegrationName
+  local integrationAlias=$(eval echo "$"res_"$outputReleaseBundleResourceName"_integrationAlias)
+  local integrationName=$(eval echo "$"res_"$outputReleaseBundleResourceName"_"$integrationAlias"_name)
+
+  echo "[CreateReleaseBundle] Authenticating with integration: $integrationName"
+  authenticate $outputReleaseBundleResourceName
 
   echo -e "\n[CreateReleaseBundle] Getting Artifactory service id"
   local artifactoryServiceId=$(getArtifactoryServiceId)
@@ -274,7 +280,7 @@ CreateReleaseBundle() {
   echo $payload | jq . > $step_tmp_dir/$payloadFile
 
   echo -e "\n[CreateReleaseBundle] Creating Release Bundle with name: "$releaseBundleName" and version: "$releaseBundleVersion""
-  postRelease $step_tmp_dir/$payloadFile $artifactoryIntegrationName
+  postRelease $step_tmp_dir/$payloadFile $outputReleaseBundleResourceName
 
   if [ ! -z "$outputReleaseBundleResourceName" ]; then
     echo -e "\n[CreateReleaseBundle] Updating output resource: $outputReleaseBundleResourceName"
