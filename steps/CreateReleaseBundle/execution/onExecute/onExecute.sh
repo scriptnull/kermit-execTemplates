@@ -14,20 +14,21 @@ getArtifactoryServiceId() {
 constructQueryForBuildInfoResources() {
   local aqlWrapperTemplate='items.find(QUERY).include("sha256","updated","modified_by","created","id","original_md5","depth","actual_sha1","property.value","modified","property.key","actual_md5","created_by","type","name","repo","original_sha1","size","path")'
   local aqlTemplate='{
-    "$and": [
-      {
-        "$or": [
-          REPO_FRAGMENTS
-        ]
-      },
-      {
-        "$or": [
-          BUILD_FRAGMENTS
-        ]
-      }
-    ]
+    "$and": AQL_QUERY
   }
   '
+
+  local repoFragmentsTemplate='{
+    "$or": [
+      REPO_FRAGMENTS
+    ]
+  }'
+
+  local buildFragmentsTemplate='{
+    "$or": [
+      BUILD_FRAGMENTS
+    ]
+  }'
 
   local repoFragmentTemplate='{
     "repo": { "$eq": "REPO_NAME" }
@@ -51,6 +52,8 @@ constructQueryForBuildInfoResources() {
 
   local buildFragments=""
   local repoFragments=""
+  local buildFragmentsForAql=""
+  local repoFragmentsForAql=""
   for ((i=0; i<$buildInfoCount; i++))
   do
     local resName=$(eval echo "$"buildInfo$i)
@@ -61,17 +64,38 @@ constructQueryForBuildInfoResources() {
     local buildFragment=$(echo "${buildFragmentTemplate/BUILD_NAME/$buildName}")
     local buildFragment=$(echo "${buildFragment/BUILD_NUMBER/$buildNumber}")
 
-    if [ $i -gt 0 ]; then
+    # TODO: add logic to add buildFragments only if buildName & buildNumber are
+    # present, when required.
+    if [ ! -z "$buildFragments" ]; then
       buildFragments+=', '
     fi
     buildFragments+="$buildFragment"
 
-    repoFragment=$(echo "${repoFragmentTemplate/REPO_NAME/$targetRepo}")
-    repoFragments+="$repoFragment"
+    if [ ! -z "$targetRepo" ]; then
+      if [ ! -z "$repoFragments" ]; then
+        repoFragments+=', '
+      fi
+      repoFragment=$(echo "${repoFragmentTemplate/REPO_NAME/$targetRepo}")
+      repoFragments+="$repoFragment"
+    fi
   done
 
-  aqlQuery=$(echo "${aqlTemplate/BUILD_FRAGMENTS/$buildFragments}")
-  aqlQuery=$(echo "${aqlQuery/REPO_FRAGMENTS/$repoFragments}")
+  if [ ! -z "$buildFragments" ]; then
+    buildFragmentsForAql=$(echo "${buildFragmentsTemplate/BUILD_FRAGMENTS/$buildFragments}")
+  fi
+  if [ ! -z "$repoFragments" ]; then
+    repoFragmentsForAql=$(echo "${repoFragmentsTemplate/REPO_FRAGMENTS/$repoFragments}")
+  fi
+
+  local aqlQuery='[]'
+  if [ ! -z "$buildFragmentsForAql" ]; then
+    aqlQuery=$(echo $aqlQuery | jq --argjson json "$buildFragmentsForAql" '. += [ $json ]')
+  fi
+  if [ ! -z "$repoFragmentsForAql" ]; then
+    aqlQuery=$(echo $aqlQuery | jq --argjson json "$repoFragmentsForAql" '. += [ $json ]')
+  fi
+
+  aqlQuery=$(echo "${aqlTemplate/AQL_QUERY/$aqlQuery}")
 
   aql=$(echo "${aqlWrapperTemplate/QUERY/$aqlQuery}")
   echo $aql
