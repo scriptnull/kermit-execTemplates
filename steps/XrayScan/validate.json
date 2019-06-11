@@ -13,7 +13,7 @@
     "configuration": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["integrations"],
+      "required": ["inputResources"],
       "properties": {
         "affinityGroup": {
           "type": "string"
@@ -35,12 +35,6 @@
         },
         "chronological": {
           "type": "boolean"
-        },
-        "buildName": {
-          "type": "string"
-        },
-        "buildNumber": {
-          "type": "integer"
         },
         "environmentVariables": {
           "type": "object",
@@ -79,6 +73,7 @@
         "inputResources": {
           "type": "array",
           "minItems": 1,
+          "maxItems": 1,
           "items": {
             "type": "object",
             "properties": {
@@ -96,6 +91,7 @@
         "outputResources": {
           "type": "array",
           "minItems": 1,
+          "maxItems": 1,
           "items": {
             "type": "object",
             "properties": {
