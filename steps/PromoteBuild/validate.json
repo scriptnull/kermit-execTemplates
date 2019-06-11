@@ -13,9 +13,7 @@
     "configuration": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "inputSteps"
-      ],
+      "required": [],
       "properties": {
         "affinityGroup": {
           "type": "string"
