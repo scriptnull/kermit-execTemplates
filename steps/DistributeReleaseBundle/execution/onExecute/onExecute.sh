@@ -1,9 +1,10 @@
 DistributeReleaseBundle() {
   local curlResponseFile=$step_tmp_dir/response
 
-  local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
-  local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
-  local distributionUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_distributionUrl)
+  local integrationAlias=$(eval echo "$"res_"$inputReleaseBundleResourceName"_integrationAlias)
+  local rtUser=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_user)
+  local rtApiKey=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_apikey)
+  local distributionUrl=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_distributionUrl)
 
   if [ -z "$distributionUrl" ]; then
     echo "[DistributeReleaseBundle] ERROR: The integration specified doesn't have Distribution"
@@ -13,39 +14,22 @@ DistributeReleaseBundle() {
   fi
 
   # get releaseBundleName, releaseBundleVersion
-  local releaseBundleName=""
-  local releaseBundleVersion=""
+  local releaseBundleName=$(eval echo "$"res_"$inputReleaseBundleResourceName"_name)
+  local releaseBundleVersion=$(eval echo "$"res_"$inputReleaseBundleResourceName"_version)
+  if [ -z "$releaseBundleName" ] || [ -z "$releaseBundleVersion" ]; then
+    echo "[DistributeReleaseBundle] ERROR: Unable to find a release bundle name and"
+    echo "[DistributeReleaseBundle] release bundle version to work with. Please add"
+    echo "[DistributeReleaseBundle] name & version to the input ReleaseBundle resource."
+    exit 1;
+  fi
+
+  # get dryRun value
   local dryRun=true
   local stepConfiguration=$(cat $step_json_path | jq .step.configuration)
   if [ ! -z "$stepConfiguration" ] && [ "$stepConfiguration" != "null" ]; then
-    local configBundleName=$(echo $stepConfiguration | jq -r .releaseBundleName)
-    local configBundleVersion=$(echo $stepConfiguration | jq -r .releaseBundleVersion)
-    if [ "$configBundleName" != "null" ] && [ ! -z "$configBundleName" ]; then
-      releaseBundleName="$configBundleName"
-    fi
-    if [ "$configBundleVersion" != "null" ] && [ ! -z "$configBundleVersion" ]; then
-      releaseBundleVersion="$configBundleVersion"
-    fi
     if [ $(echo $stepConfiguration | jq -r .dryRun) == "false" ]; then
       dryRun=false
     fi
-  fi
-  if [ -z "$releaseBundleName" ]; then
-    if [ ! -z "$inputReleaseBundleResourceName" ]; then
-       releaseBundleName=$(eval echo "$"res_"$inputReleaseBundleResourceName"_name)
-    fi
-  fi
-  if [ -z "$releaseBundleVersion" ]; then
-    if [ ! -z "$inputReleaseBundleResourceName" ]; then
-      releaseBundleVersion=$(eval echo "$"res_"$inputReleaseBundleResourceName"_version)
-    fi
-  fi
-  if [ -z "$releaseBundleName" ] || [ -z "$releaseBundleVersion" ]; then
-    echo "[DistributeReleaseBundle] ERROR: Unable to find a bundle name and bundle number to"
-    echo "[DistributeReleaseBundle] work with. Please use a input ReleaseBundle resource or"
-    echo "[DistributeReleaseBundle] specify releaseBundleName and releaseBundleVersion in configuration"
-    echo "[DistributeReleaseBundle] step of $step_name DistributeReleaseBundle step."
-    exit 1;
   fi
 
   # create the payload to be POSTed
@@ -84,6 +68,7 @@ DistributeReleaseBundle() {
     elif [ $status -eq 400 ]; then
       echo "[DistributeReleaseBundle] Release bundle version $releaseBundleVersion must be signed before distribution"
     fi
+    echo $response
     exit 1
   elif [ $status -eq 200 ]; then
     echo "[DistributeReleaseBundle] Dry run for bundle $releaseBundleName/$releaseBundleVersion finished successfully"

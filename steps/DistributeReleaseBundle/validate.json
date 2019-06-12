@@ -32,12 +32,6 @@
         "chronological": {
           "type": "boolean"
         },
-        "releaseBundleName": {
-          "type": "string"
-        },
-        "releaseBundleVersion": {
-          "type": ["string", "number"]
-        },
         "dryRun": {
           "type": "boolean"
         },
@@ -144,7 +138,7 @@
         },
         "inputResources": {
           "type": "array",
-          "minItems": 1,
+          "minItems": 2,
           "items": {
             "type": "object",
             "properties": {
@@ -174,7 +168,7 @@
           }
         }
       },
-      "required": ["inputResources", "integrations"]
+      "required": ["inputResources"]
     },
     "execution": {
       "type": "object",
