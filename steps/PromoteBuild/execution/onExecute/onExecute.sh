@@ -1,8 +1,11 @@
 PromoteBuild() {
-  echo "[PromoteBuild] Authenticating with integration: $artifactoryIntegrationName"
-  local rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
-  local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
-  local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
+  local integrationName=$(eval echo "$"res_"$inputBuildInfoResourceName"_integrationName)
+  echo "[PromoteBuild] Authenticating with integration: $integrationName"
+  local integrationAlias=$(eval echo "$"res_"$inputBuildInfoResourceName"_integrationAlias)
+  local rtUrl=$(eval echo "$"res_"$inputBuildInfoResourceName"_"$integrationAlias"_url)
+  local rtUser=$(eval echo "$"res_"$inputBuildInfoResourceName"_"$integrationAlias"_user)
+  local rtApiKey=$(eval echo "$"res_"$inputBuildInfoResourceName"_"$integrationAlias"_apikey)
+
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 
   if [ -z "$buildName" ] && [ -z "$buildNumber" ]; then
@@ -22,7 +25,7 @@ PromoteBuild() {
     fi
   fi
 
-  targetRepo=$(jq -r ".step.configuration.targetRepo" $step_json_path)
+  targetRepo=$(jq -r ".step.configuration.targetRepository" $step_json_path)
   includeDependencies=$(jq -r ".step.configuration.includeDependencies" $step_json_path)
 
   echo "[PromoteBuild] Promoting build $buildName/$buildNumber to: $targetRepo"
