@@ -11,6 +11,8 @@ MvnBuild() {
   sourceLocation=$(jq -r ".step.configuration.sourceLocation" $step_json_path)
   configFileLocation=$(jq -r ".step.configuration.configFileLocation" $step_json_path)
   configFileName=$(jq -r ".step.configuration.configFileName" $step_json_path)
+  scan=$(jq -r ".step.configuration.forceXrayScan" $step_json_path)
+  publish=$(jq -r ".step.configuration.autoPublishBuildInfo" $step_json_path)
 
   buildDir=$(eval echo "$"res_"$inputGitRepoResourceName"_resourcePath)/$sourceLocation
 
@@ -36,6 +38,20 @@ MvnBuild() {
     add_run_variable "$step_name"_buildName="$buildName"
     add_run_variable "$step_name"_isPromoted=false
   popd
+
+  if [ "$publish" == "true" ]; then
+    echo "[MvnBuild] Publishing build $buildName/$buildNumber"
+    jfrog rt bp $buildName $buildNumber
+    if [ ! -z "$outputBuildInfoResourceName" ]; then
+      echo "[MvnBuild] Updating output resource: $outputBuildInfoResourceName"
+      write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber
+    fi
+  fi
+
+  if [ "$scan" == "true" ]; then
+    echo "[MvnBuild] Scanning build $buildName/$buildNumber"
+    jfrog rt bs $buildName $buildNumber
+  fi
 
   jfrog rt bce "$buildName" "$buildNumber"
   save_run_state /tmp/jfrog/. jfrog
