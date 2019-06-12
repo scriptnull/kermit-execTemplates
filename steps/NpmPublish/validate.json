@@ -38,6 +38,9 @@
         "forceXrayScan": {
           "type": "boolean"
         },
+        "autoPublishBuildInfo": {
+          "type": "boolean"
+        },
         "runtime": {
           "type": "object",
           "properties": {
