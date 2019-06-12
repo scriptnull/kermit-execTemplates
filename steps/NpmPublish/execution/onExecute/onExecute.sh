@@ -27,6 +27,16 @@ NpmPublish() {
     jfrog rt bs $buildName $buildNumber
   fi
 
+  local autoPublishBuildInfo=$(jq -r .step.configuration.autoPublishBuildInfo $step_json_path)
+  if [ "$autoPublishBuildInfo" == "true" ]; then
+    echo "[NpmPublish] Publishing build $buildName/$buildNumber"
+    jfrog rt bp $buildName $buildNumber
+    if [ ! -z "$outputBuildInfoResourceName" ]; then
+      echo "[NpmPublish] Updating output resource: $outputBuildInfoResourceName"
+      write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber
+    fi
+  fi
+
   save_run_state /tmp/jfrog/. jfrog
   # remove gitRepo from run state
   rm -rf $run_dir/workspace/$sourceStateName
