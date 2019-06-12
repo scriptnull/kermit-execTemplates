@@ -1201,7 +1201,7 @@ _notify_email() {
   cat $tmp_attachments >> $opt_payload
   echo -n "}" >> $opt_payload
 
-  full_url="${shippable_api_url}/projectIntegrations/${i_id}/sendEmail"
+  full_url="${pipelines_api_url}/projectIntegrations/${i_id}/sendEmail"
   _post_curl "$opt_payload" "$curl_auth" "$full_url"
 }
 
