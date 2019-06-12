@@ -13,7 +13,7 @@
     "configuration": {
       "type": "object",
       "additionalProperties": false,
-      "required": [],
+      "required": ["targetRepository", "inputResources", "outputResources"],
       "properties": {
         "affinityGroup": {
           "type": "string"
@@ -33,18 +33,11 @@
         "chronological": {
           "type": "boolean"
         },
-        "targetRepo": {
+        "targetRepository": {
           "type": "string"
         },
         "includeDependencies": {
           "type": "boolean"
-        },
-        "buildNumber": {
-          "type": "integer",
-          "exclusiveMinimum": 0
-        },
-        "buildName": {
-          "type": "string"
         },
         "environmentVariables": {
           "type": "object",
