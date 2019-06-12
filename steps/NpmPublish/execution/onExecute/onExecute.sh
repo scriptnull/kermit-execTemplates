@@ -21,6 +21,12 @@ NpmPublish() {
     jfrog rt npm-publish $repositoryName --build-name=$buildName --build-number=$buildNumber
   popd
 
+  local forceXrayScan=$(jq -r .step.configuration.forceXrayScan $step_json_path)
+  if [ "$forceXrayScan" == "true" ]; then
+    echo "[NpmPublish] Scanning build $buildName/$buildNumber"
+    jfrog rt bs $buildName $buildNumber
+  fi
+
   save_run_state /tmp/jfrog/. jfrog
   # remove gitRepo from run state
   rm -rf $run_dir/workspace/$sourceStateName

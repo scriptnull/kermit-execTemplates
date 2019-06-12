@@ -35,6 +35,9 @@
         "repositoryName": {
           "type": "string"
         },
+        "forceXrayScan": {
+          "type": "boolean"
+        },
         "runtime": {
           "type": "object",
           "properties": {
