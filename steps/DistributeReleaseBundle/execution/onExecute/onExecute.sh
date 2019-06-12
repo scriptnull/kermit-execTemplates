@@ -17,8 +17,9 @@ DistributeReleaseBundle() {
   local releaseBundleName=$(eval echo "$"res_"$inputReleaseBundleResourceName"_name)
   local releaseBundleVersion=$(eval echo "$"res_"$inputReleaseBundleResourceName"_version)
   if [ -z "$releaseBundleName" ] || [ -z "$releaseBundleVersion" ]; then
-    echo "[DistributeReleaseBundle] ERROR: Unable to find a bundle name and bundle number to"
-    echo "[DistributeReleaseBundle] work with. Please use a input ReleaseBundle resource."
+    echo "[DistributeReleaseBundle] ERROR: Unable to find a release bundle name and"
+    echo "[DistributeReleaseBundle] release bundle version to work with. Please add"
+    echo "[DistributeReleaseBundle] name & version to the input ReleaseBundle resource."
     exit 1;
   fi
 
