@@ -1,8 +1,16 @@
 NpmBuild() {
-  echo "[NpmBuild] Authenticating with integration: $artifactoryIntegrationName"
-  local rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
-  local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
-  local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
+  if [ ! -z "$inputFileResourceName" ]; then
+    echo "[NpmBuild] Authenticating with integration from resource: $inputFileResourceName"
+    local integrationAlias=$(eval echo "$"res_"$inputFileResourceName"_integrationAlias)
+    local rtUrl=$(eval echo "$"res_"$inputFileResourceName"_"$integrationAlias"_url)
+    local rtUser=$(eval echo "$"res_"$inputFileResourceName"_"$integrationAlias"_user)
+    local rtApiKey=$(eval echo "$"res_"$inputFileResourceName"_"$integrationAlias"_apikey)
+  else
+    echo "[NpmBuild] Authenticating with integration: $artifactoryIntegrationName"
+    local rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
+    local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
+    local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
+  fi
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
   buildName=$pipeline_name
   buildNumber=$run_number
