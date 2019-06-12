@@ -55,6 +55,10 @@ build() {
   if [ "$publish" == "true" ]; then
     echo "[GoPublishModule] Publishing build $buildName/$buildNumber"
     jfrog rt bp $buildName $buildNumber
+    if [ ! -z "$outputBuildInfoResourceName" ]; then
+      echo "[GoPublishModule] Updating output resource: $outputBuildInfoResourceName"
+      write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber
+    fi
   fi
 
   jfrog rt bce $buildName $buildNumber
