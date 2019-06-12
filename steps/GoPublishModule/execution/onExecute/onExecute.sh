@@ -51,6 +51,15 @@ build() {
     echo "[GoPublishModule] Scanning build $buildName/$buildNumber"
     jfrog rt bs $buildName $buildNumber
   fi
+  local publish=$(jq -r .step.configuration.autoPublishBuildInfo $step_json_path)
+  if [ "$publish" == "true" ]; then
+    echo "[GoPublishModule] Publishing build $buildName/$buildNumber"
+    jfrog rt bp $buildName $buildNumber
+    if [ ! -z "$outputBuildInfoResourceName" ]; then
+      echo "[GoPublishModule] Updating output resource: $outputBuildInfoResourceName"
+      write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber
+    fi
+  fi
 
   jfrog rt bce $buildName $buildNumber
   save_run_state /tmp/jfrog/. jfrog
