@@ -46,6 +46,12 @@ build() {
     add_run_variable ${step_name}_isPromoted=false
   popd
 
+  local forceXrayScan=$(jq -r .step.configuration.forceXrayScan $step_json_path)
+  if [ "$forceXrayScan" == "true" ]; then
+    echo "[GoPublishModule] Scanning build $buildName/$buildNumber"
+    jfrog rt bs $buildName $buildNumber
+  fi
+
   jfrog rt bce $buildName $buildNumber
   save_run_state /tmp/jfrog/. jfrog
 }
