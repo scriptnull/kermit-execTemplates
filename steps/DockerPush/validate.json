@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://jfrog.com/pipelines/steps/PromoteBuild.schema.json",
+  "$id": "http://jfrog.com/pipelines/steps/DockerPush.schema.json",
   "type": "object",
   "properties": {
     "name": {
@@ -8,12 +8,12 @@
     },
     "type": {
       "type": "string",
-      "enum": ["PromoteBuild"]
+      "enum": ["DockerPush"]
     },
     "configuration": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["targetRepository", "inputResources", "outputResources"],
+      "required": ["targetRepository", "integrations", "inputSteps"],
       "properties": {
         "affinityGroup": {
           "type": "string"
@@ -36,7 +36,10 @@
         "targetRepository": {
           "type": "string"
         },
-        "includeDependencies": {
+        "forceXrayScan": {
+          "type": "boolean"
+        },
+        "autoPublishBuildInfo": {
           "type": "boolean"
         },
         "environmentVariables": {
