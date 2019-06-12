@@ -5,6 +5,12 @@ get_image() {
   local integrationAlias=$(eval echo "$"res_"$resourceName"_integrationAlias)
   local resourceId=$(eval echo "$"res_"$resourceName"_resourceId)
   local intMasterName=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_masterName)
+  local imageName=$(eval echo "$"res_"$resourceName"_imageName)
+  local imageTag=$(eval echo "$"res_"$resourceName"_imageTag)
+  local pullCommand="docker pull $imageName:$imageTag"
+
+  buildName="$pipeline_name"
+  buildNumber="$run_number"
 
   if [ "$intMasterName" == "dockerRegistryLogin" ]; then
     local userName=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_username)
@@ -37,20 +43,17 @@ get_image() {
     local url=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_url)
     local user=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_user)
     local apiKey=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_apikey)
-    jfrog rt config default-server --url "$url" --user "$user" \
-      --apikey "$apiKey" --interactive=false
-    jfrog rt use default-server
-    retry_command docker login -u "$user" -p "$apiKey" "$url"
+    local sourceRepository=$(eval echo "$"res_"$resourceName"_sourceRepository)
+
+    jfrog rt config --url "$url" --user "$user" --apikey "$apiKey" --interactive=false
+    pullCommand="jfrog rt docker-pull $imageName:$imageTag $sourceRepository --build-name=$buildName --build-number=$buildNumber"
   fi
 
   local autoPull=$(eval echo "$"res_"$resourceName"_autoPull)
 
   if [ -z "$autoPull" ] || "$autoPull" == "true" ; then
-
-    local imageName=$(eval echo "$"res_"$resourceName"_imageName)
-    local imageTag=$(eval echo "$"res_"$resourceName"_imageTag)
-
-    retry_command docker pull "$imageName:$imageTag"
+    echo $pullCommand
+    retry_command $pullCommand
     echo "Docker pull for image $imageName:$imageTag was successful"
   fi
 }
