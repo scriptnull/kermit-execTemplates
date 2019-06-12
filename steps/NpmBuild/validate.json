@@ -168,7 +168,7 @@
           }
         }
       },
-      "required": ["sourceLocation", "repositoryName", "inputResources"]
+      "required": ["sourceLocation", "repositoryName", "integrations", "inputResources"]
     },
     "execution": {
       "type": "object",
