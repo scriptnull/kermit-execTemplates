@@ -1,8 +1,22 @@
 build() {
-  echo "[GoBuild] Authenticating with integration: $artifactoryIntegrationName"
-  local rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
-  local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
-  local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
+  local rtUrl=""
+  local rtUser=""
+  local rtApiKey=""
+
+  if [ ! -z "$artifactoryIntegrationName" ]; then
+    echo "[GoBuild] Authenticating with integration: $artifactoryIntegrationName"
+    rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
+    rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
+    rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
+  elif [ ! -z "$inputFileResourceName" ]; then
+    echo "[GoBuild] Authenticating with integration from resource: $inputFileResourceName"
+    local integrationAlias
+    integrationAlias=$(eval echo "$"res_"$inputFileResourceName"_integrationAlias)
+    rtUrl=$(eval echo "$"res_"$inputFileResourceName"_"$integrationAlias"_url)
+    rtUser=$(eval echo "$"res_"$inputFileResourceName"_"$integrationAlias"_user)
+    rtApiKey=$(eval echo "$"res_"$inputFileResourceName"_"$integrationAlias"_apikey)
+  fi
+
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 
   buildName=$pipeline_name
