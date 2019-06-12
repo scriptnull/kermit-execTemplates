@@ -63,6 +63,7 @@
         "inputResources": {
           "type": "array",
           "minItems": 1,
+          "maxItems": 1,
           "items": {
             "type": "object",
             "properties": {
@@ -80,6 +81,7 @@
         "outputResources": {
           "type": "array",
           "minItems": 1,
+          "maxItems": 1,
           "items": {
             "type": "object",
             "properties": {
@@ -92,7 +94,7 @@
           }
         }
       },
-      "required": ["integrations", "inputResources"]
+      "required": ["inputResources", "outputResources"]
     },
     "execution": {
       "type": "object",

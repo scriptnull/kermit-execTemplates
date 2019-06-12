@@ -1,5 +1,5 @@
-MvnBuild() {
-  echo "[MvnBuild] Authenticating with integration: $artifactoryIntegrationName"
+GradleBuild() {
+  echo "[GradleBuild] Authenticating with integration: $artifactoryIntegrationName"
   local rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
   local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
   local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
@@ -14,24 +14,24 @@ MvnBuild() {
 
   buildDir=$(eval echo "$"res_"$inputGitRepoResourceName"_resourcePath)/$sourceLocation
 
-  echo "[MvnBuild] Changing directory: $buildDir"
+  echo "[GradleBuild] Changing directory: $buildDir"
   pushd "$buildDir"
     if [ ! -z "$inputFileResourceName" ]; then
       filePath=$(eval echo "$"res_"$inputFileResourceName"_resourcePath)/*
-      echo "[MvnBuild] Copying files from: $filePath to: $(pwd)"
+      echo "[GradleBuild] Copying files from: $filePath to: $(pwd)"
       # todo: remove -v
       cp -vr $filePath .
     fi
 
-    mvnCommand=$(jq -r ".step.configuration.mvnCommand" $step_json_path)
-    mvnCommand=$(eval echo "$mvnCommand")
+    gradleCommand=$(jq -r ".step.configuration.gradleCommand" $step_json_path)
+    gradleCommand=$(eval echo "$gradleCommand")
 
-    echo "[MvnBuild] Building module with mvnCommand: $mvnCommand"
-    jfrog rt mvn "$mvnCommand" "$configFileLocation"/"$configFileName" --build-name "$buildName" --build-number "$buildNumber"
+    echo "[GradleBuild] Building module with gradleCommand: $gradleCommand"
+    jfrog rt gradle "$gradleCommand" "$configFileLocation"/"$configFileName" --build-name "$buildName" --build-number "$buildNumber"
 
-    echo "[MvnBuild] Adding build information to run state"
+    echo "[GradleBuild] Adding build information to run state"
     add_run_variable buildStepName="$step_name"
-    add_run_variable "$step_name"_payloadType=mvn
+    add_run_variable "$step_name"_payloadType=gradle
     add_run_variable "$step_name"_buildNumber="$buildNumber"
     add_run_variable "$step_name"_buildName="$buildName"
     add_run_variable "$step_name"_isPromoted=false
@@ -41,4 +41,4 @@ MvnBuild() {
   save_run_state /tmp/jfrog/. jfrog
 }
 
-execute_command MvnBuild
+execute_command GradleBuild

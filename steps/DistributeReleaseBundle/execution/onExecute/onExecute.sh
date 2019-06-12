@@ -61,8 +61,8 @@ DistributeReleaseBundle() {
     local distributionRuleResourceObject="{\"service_name\": \"$serviceName\", \"site_name\": \"$siteName\", \"city_name\": \"$cityName\", \"country_codes\": []}"
     local countryCodesLen=$(eval echo "$"res_"$distributionRuleResourceName"_countryCodes_len)
     if [ ! -z "$countryCodesLen" ] && [ $countryCodesLen -gt 0 ]; then
-      for i in $(seq 0 $(( countryCodesLen - 1 ))); do
-        local countryCodeVar="res_"$distributionRuleResourceName"_countryCodes_"$i
+      for (( j=0; j<$countryCodesLen; j++ )); do
+        local countryCodeVar="res_"$distributionRuleResourceName"_countryCodes_"$j
         local code=$(echo "${!countryCodeVar}")
         distributionRuleResourceObject=$(echo $distributionRuleResourceObject | jq --arg code "$code" '.country_codes += [ $code ]')
       done

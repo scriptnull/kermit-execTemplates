@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://jfrog.com/cicd/steps/step.schema.json",
+  "$id": "http://jfrog.com/pipelines/steps/GradleBuild.schema.json",
   "type": "object",
   "properties": {
     "name": {
@@ -8,12 +8,11 @@
     },
     "type": {
       "type": "string",
-      "enum": ["PromoteBuild"]
+      "enum": ["GradleBuild"]
     },
     "configuration": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["targetRepository", "inputResources", "outputResources"],
       "properties": {
         "affinityGroup": {
           "type": "string"
@@ -31,12 +30,6 @@
           "type": "string"
         },
         "chronological": {
-          "type": "boolean"
-        },
-        "targetRepository": {
-          "type": "string"
-        },
-        "includeDependencies": {
           "type": "boolean"
         },
         "environmentVariables": {
@@ -170,8 +163,22 @@
             "required": ["name"],
             "additionalProperties": false
           }
+        },
+        "sourceLocation": {
+          "type": "string"
+        },
+        "gradleCommand": {
+          "type": "string"
+        },
+        "configFileLocation": {
+          "type": "string"
+        },
+        "configFileName": {
+          "type": "string"
         }
-      }
+      },
+      "required": ["inputResources", "integrations", "gradleCommand",
+        "configFileLocation", "configFileName", "sourceLocation"]
     },
     "execution": {
       "type": "object",

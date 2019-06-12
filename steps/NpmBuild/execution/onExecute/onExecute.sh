@@ -15,12 +15,20 @@ NpmBuild() {
   fi
   echo -e "\n[NpmBuild] Changing directory: $inputGitRepoResourcePath/$sourceLocation"
   pushd $inputGitRepoResourcePath/$sourceLocation
+    if [ ! -z "$inputFileResourceName" ]; then
+      filePath=$(eval echo "$"res_"$inputFileResourceName"_resourcePath)/*
+      echo "[NpmBuild] Copying files from: $filePath to: $(pwd)"
+      # todo: remove -v
+      cp -vr $filePath .
+    fi
+
     if [ "$npmArgs" == "" ]; then
       echo -e "\n[NpmBuild] Installing npm packages"
     else
       echo -e "\n[NpmBuild] Installing npm packages with npmArgs: $npmArgs"
     fi
-    jfrog rt npm-install $repositoryName --build-name=$buildName --build-number=$buildNumber --npm-args="$npmArgs"
+    echo -e "\n[NpmBuild] Download run state and check "$step_name"_logs to check the complete logs"
+    jfrog rt npm-install $repositoryName --build-name=$buildName --build-number=$buildNumber --npm-args="$npmArgs"  &> $run_dir/workspace/"$step_name"_logs
     echo -e "\n[NpmBuild] Adding build information to run state"
     add_run_variable buildStepName=${step_name}
     add_run_variable ${step_name}_payloadType=npm

@@ -711,7 +711,7 @@ replicate_resource() {
   fi
 
   # copy values
-  local resource_directory=$(cat "$step_json_path" | jq -r ."resources.$resFrom.resourcePath")
+  local resource_directory=$(cat "$step_json_path" | jq -r ."resources.$resTo.resourcePath")
   local mdFilePathTo="$resource_directory/replicate.json"
 
   if [ ! -f "$mdFilePathTo" ]; then
@@ -767,20 +767,20 @@ send_notification() {
         opt_color="#5183a0"
         ;;
       onSuccess )
-        opt_color="#65cea7"
+        opt_color="#40be46"
         ;;
       onFailure )
         opt_color="#fc8675"
         ;;
       onComplete )
         if [ "$is_success" == "true" ]; then
-          opt_color="#65cea7"
+          opt_color="#40be46"
         else
           opt_color="#fc8675"
         fi
         ;;
       * )
-        opt_color="#65cea7"
+        opt_color="#40be46"
         ;;
     esac
   fi
@@ -1642,7 +1642,7 @@ _set_jdk() {
     _set_javac_path "/usr/lib/jvm/java-7-openjdk-amd64/bin/javac" "$jdk_version";
   elif [ "$jdk_version" == "openjdk8" ]; then
     _export_java_path "/usr/lib/jvm/java-8-openjdk-amd64" "$jdk_version";
-    _set_java_path "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java" "$jdk_version";
+    _set_java_path "/usr/lib/jvm/java-8-openjdk-amd64/bin/java" "$jdk_version";
     _set_javac_path "/usr/lib/jvm/java-8-openjdk-amd64/bin/javac" "$jdk_version";
   elif [ "$jdk_version" == "openjdk9" ]; then
     _export_java_path "/usr/lib/jvm/java-9-openjdk-amd64" "$jdk_version";

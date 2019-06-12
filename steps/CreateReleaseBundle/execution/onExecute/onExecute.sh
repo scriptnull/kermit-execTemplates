@@ -1,8 +1,10 @@
 authenticate() {
-  integrationName=$1
-  local rtUrl=$(eval echo "$"int_"$integrationName"_url)
-  local rtUser=$(eval echo "$"int_"$integrationName"_user)
-  local rtApiKey=$(eval echo "$"int_"$integrationName"_apikey)
+  resourceName=$1
+  local integrationAlias=$(eval echo "$"res_"$resourceName"_integrationAlias)
+  local rtUrl=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_url)
+  local rtUser=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_user)
+  local rtApiKey=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_apikey)
+
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 }
 
@@ -14,20 +16,21 @@ getArtifactoryServiceId() {
 constructQueryForBuildInfoResources() {
   local aqlWrapperTemplate='items.find(QUERY).include("sha256","updated","modified_by","created","id","original_md5","depth","actual_sha1","property.value","modified","property.key","actual_md5","created_by","type","name","repo","original_sha1","size","path")'
   local aqlTemplate='{
-    "$and": [
-      {
-        "$or": [
-          REPO_FRAGMENTS
-        ]
-      },
-      {
-        "$or": [
-          BUILD_FRAGMENTS
-        ]
-      }
-    ]
+    "$and": AQL_QUERY
   }
   '
+
+  local repoFragmentsTemplate='{
+    "$or": [
+      REPO_FRAGMENTS
+    ]
+  }'
+
+  local buildFragmentsTemplate='{
+    "$or": [
+      BUILD_FRAGMENTS
+    ]
+  }'
 
   local repoFragmentTemplate='{
     "repo": { "$eq": "REPO_NAME" }
@@ -51,6 +54,8 @@ constructQueryForBuildInfoResources() {
 
   local buildFragments=""
   local repoFragments=""
+  local buildFragmentsForAql=""
+  local repoFragmentsForAql=""
   for ((i=0; i<$buildInfoCount; i++))
   do
     local resName=$(eval echo "$"buildInfo$i)
@@ -61,17 +66,38 @@ constructQueryForBuildInfoResources() {
     local buildFragment=$(echo "${buildFragmentTemplate/BUILD_NAME/$buildName}")
     local buildFragment=$(echo "${buildFragment/BUILD_NUMBER/$buildNumber}")
 
-    if [ $i -gt 0 ]; then
+    # TODO: add logic to add buildFragments only if buildName & buildNumber are
+    # present, when required.
+    if [ ! -z "$buildFragments" ]; then
       buildFragments+=', '
     fi
     buildFragments+="$buildFragment"
 
-    repoFragment=$(echo "${repoFragmentTemplate/REPO_NAME/$targetRepo}")
-    repoFragments+="$repoFragment"
+    if [ ! -z "$targetRepo" ]; then
+      if [ ! -z "$repoFragments" ]; then
+        repoFragments+=', '
+      fi
+      repoFragment=$(echo "${repoFragmentTemplate/REPO_NAME/$targetRepo}")
+      repoFragments+="$repoFragment"
+    fi
   done
 
-  aqlQuery=$(echo "${aqlTemplate/BUILD_FRAGMENTS/$buildFragments}")
-  aqlQuery=$(echo "${aqlQuery/REPO_FRAGMENTS/$repoFragments}")
+  if [ ! -z "$buildFragments" ]; then
+    buildFragmentsForAql=$(echo "${buildFragmentsTemplate/BUILD_FRAGMENTS/$buildFragments}")
+  fi
+  if [ ! -z "$repoFragments" ]; then
+    repoFragmentsForAql=$(echo "${repoFragmentsTemplate/REPO_FRAGMENTS/$repoFragments}")
+  fi
+
+  local aqlQuery='[]'
+  if [ ! -z "$buildFragmentsForAql" ]; then
+    aqlQuery=$(echo $aqlQuery | jq --argjson json "$buildFragmentsForAql" '. += [ $json ]')
+  fi
+  if [ ! -z "$repoFragmentsForAql" ]; then
+    aqlQuery=$(echo $aqlQuery | jq --argjson json "$repoFragmentsForAql" '. += [ $json ]')
+  fi
+
+  aqlQuery=$(echo "${aqlTemplate/AQL_QUERY/$aqlQuery}")
 
   aql=$(echo "${aqlWrapperTemplate/QUERY/$aqlQuery}")
   echo $aql
@@ -203,10 +229,11 @@ createPayload() {
 
 postRelease() {
   payloadPath=$1
-  integrationName=$2
-  local distUrl=$(eval echo "$"int_"$integrationName"_distributionUrl)
-  local rtUser=$(eval echo "$"int_"$integrationName"_user)
-  local rtApiKey=$(eval echo "$"int_"$integrationName"_apikey)
+  resourceName=$2
+  local integrationAlias=$(eval echo "$"res_"$resourceName"_integrationAlias)
+  local distUrl=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_distributionUrl)
+  local rtUser=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_user)
+  local rtApiKey=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_apikey)
 
   if [ ! -z "$SIGNING_KEY_PASSPHRASE" ]; then
     STATUS=$(curl -o >(cat > $step_tmp_dir/curl_res_body) -w '%{http_code}' -XPOST -u $rtUser:$rtApiKey \
@@ -234,20 +261,26 @@ postRelease() {
 CreateReleaseBundle() {
   local payloadFile="createReleaseBundlePayload.json"
 
-  echo "[CreateReleaseBundle] Authenticating with integration: $artifactoryIntegrationName"
-  authenticate $artifactoryIntegrationName
+  local integrationAlias=$(eval echo "$"res_"$outputReleaseBundleResourceName"_integrationAlias)
+  local integrationName=$(eval echo "$"res_"$outputReleaseBundleResourceName"_"$integrationAlias"_name)
+
+  echo "[CreateReleaseBundle] Authenticating with integration: $integrationName"
+  authenticate $outputReleaseBundleResourceName
 
   echo -e "\n[CreateReleaseBundle] Getting Artifactory service id"
   local artifactoryServiceId=$(getArtifactoryServiceId)
 
-  releaseBundleName=$(jq -r ".step.configuration.releaseBundleName" $step_json_path)
-  releaseBundleVersion=$(jq -r ".step.configuration.releaseBundleVersion" $step_json_path)
+  # TODO: fix this when setup section gets exported as envs
+  releaseBundleNameVar=$(jq -r ".step.configuration.releaseBundleName" $step_json_path)
+  releaseBundleVersionVar=$(jq -r ".step.configuration.releaseBundleVersion" $step_json_path)
+  releaseBundleName=$(eval echo "$releaseBundleNameVar")
+  releaseBundleVersion=$(eval echo "$releaseBundleVersionVar")
   echo -e "\n[CreateReleaseBundle] Creating payload for release bundle"
   payload=$(createPayload "$releaseBundleName" "$releaseBundleVersion" "$artifactoryServiceId")
   echo $payload | jq . > $step_tmp_dir/$payloadFile
 
   echo -e "\n[CreateReleaseBundle] Creating Release Bundle with name: "$releaseBundleName" and version: "$releaseBundleVersion""
-  postRelease $step_tmp_dir/$payloadFile $artifactoryIntegrationName
+  postRelease $step_tmp_dir/$payloadFile $outputReleaseBundleResourceName
 
   if [ ! -z "$outputReleaseBundleResourceName" ]; then
     echo -e "\n[CreateReleaseBundle] Updating output resource: $outputReleaseBundleResourceName"

@@ -1,8 +1,11 @@
 PublishBuildInfo() {
-  echo "[PublishBuildInfo] Authenticating with integration: $artifactoryIntegrationName"
-  local rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
-  local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
-  local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
+  local integrationAlias=$(eval echo "$"res_"$outputBuildInfoResourceName"_integrationAlias)
+  local integrationName=$(eval echo "$"res_"$outputBuildInfoResourceName"_integrationName)
+  local rtUrl=$(eval echo "$"res_"$outputBuildInfoResourceName"_"$integrationAlias"_url)
+  local rtUser=$(eval echo "$"res_"$outputBuildInfoResourceName"_"$integrationAlias"_user)
+  local rtApiKey=$(eval echo "$"res_"$outputBuildInfoResourceName"_"$integrationAlias"_apikey)
+  echo "[PublishBuildInfo] Authenticating with integration: $integrationName"
+
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 
   restore_run_state jfrog /tmp/jfrog
