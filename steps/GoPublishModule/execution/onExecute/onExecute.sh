@@ -47,10 +47,6 @@ build() {
   popd
 
   local forceXrayScan=$(jq -r .step.configuration.forceXrayScan $step_json_path)
-  if [ "$forceXrayScan" == "true" ]; then
-    echo "[GoPublishModule] Scanning build $buildName/$buildNumber"
-    jfrog rt bs $buildName $buildNumber
-  fi
   local publish=$(jq -r .step.configuration.autoPublishBuildInfo $step_json_path)
   if [ "$publish" == "true" ]; then
     echo "[GoPublishModule] Publishing build $buildName/$buildNumber"
@@ -59,6 +55,11 @@ build() {
       echo "[GoPublishModule] Updating output resource: $outputBuildInfoResourceName"
       write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber
     fi
+  fi
+
+  if [ "$forceXrayScan" == "true" ]; then
+    echo "[GoPublishModule] Scanning build $buildName/$buildNumber"
+    jfrog rt bs $buildName $buildNumber
   fi
 
   jfrog rt bce $buildName $buildNumber

@@ -25,10 +25,13 @@ DockerPush() {
     fi
   fi
 
-   if [ "$scan" == "true" ]; then
+  if [ "$scan" == "true" ]; then
     echo -e "\n[DockerPush] Scanning build $buildName/$buildNumber"
     jfrog rt bs $buildName $buildNumber
   fi
+
+  jfrog rt bce $buildName $buildNumber
+  save_run_state /tmp/jfrog/. jfrog  
 }
 
 execute_command DockerPush
