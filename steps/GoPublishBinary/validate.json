@@ -158,12 +158,6 @@
             "additionalProperties": false
           }
         },
-        "fileLocation": {
-          "type": "string"
-        },
-        "fileName": {
-          "type": "string"
-        },
         "targetRepository": {
           "type": "string"
         },
@@ -174,7 +168,7 @@
           "type": "boolean"
         }
       },
-      "required": ["inputSteps", "integrations"]
+      "required": ["inputSteps", "integrations", "targetRepository"]
     },
     "execution": {
       "type": "object",
