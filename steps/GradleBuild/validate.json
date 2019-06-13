@@ -32,6 +32,9 @@
         "chronological": {
           "type": "boolean"
         },
+        "forceXrayScan": {
+          "type": "boolean"
+        },
         "environmentVariables": {
           "type": "object",
           "additionalProperties": {
