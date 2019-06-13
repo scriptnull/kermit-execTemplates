@@ -1,6 +1,12 @@
 DockerBuild() {
   buildName=$pipeline_name
   buildNumber=$run_number
+  dockerFileLocation=$(jq -r ".step.configuration.dockerFileLocation" $step_json_path)
+  dockerFileName=$(jq -r ".step.configuration.dockerFileName" $step_json_path)
+  dockerImageName=$(jq -r ".step.configuration.dockerImageName" $step_json_path)
+  dockerImageTag=$(jq -r ".step.configuration.dockerImageTag" $step_json_path)
+  evalDockerImageName=$(eval echo $dockerImageName)
+  evalDockerImageTag=$(eval echo $dockerImageTag)
 
   buildDir=$(eval echo "$"res_"$inputGitRepoResourceName"_resourcePath)/$dockerFileLocation
   echo "[DockerBuild] Changing directory: $buildDir"
@@ -12,12 +18,6 @@ DockerBuild() {
       cp -vr $filePath .
     fi
 
-    dockerFileLocation=$(jq -r ".step.configuration.dockerFileLocation" $step_json_path)
-    dockerFileName=$(jq -r ".step.configuration.dockerFileName" $step_json_path)
-    dockerImageName=$(jq -r ".step.configuration.dockerImageName" $step_json_path)
-    dockerImageTag=$(jq -r ".step.configuration.dockerImageTag" $step_json_path)
-    evalDockerImageName=$(eval echo $dockerImageName)
-    evalDockerImageTag=$(eval echo $dockerImageTag)
     echo "[DockerBuild] Building docker image: $evalDockerImageName:$evalDockerImageTag using Dockerfile: ${dockerFileName}"
     docker build -t $evalDockerImageName:$evalDockerImageTag -f ${buildDir}/${dockerFileName} .
 
