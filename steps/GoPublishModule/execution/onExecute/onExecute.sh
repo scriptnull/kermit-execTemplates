@@ -1,8 +1,17 @@
 build() {
-  echo "[GoPublishModule] Authenticating with integration: $artifactoryIntegrationName"
-  local rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
-  local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
-  local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
+  if [ ! -z "$outputBuildInfoResourceName" ]; then
+    echo "[GoPublishModule] Authenticating with integration from resource: $outputBuildInfoResourceName"
+    local integrationAlias=$(eval echo "$"res_"$outputBuildInfoResourceName"_integrationAlias)
+    local rtUrl=$(eval echo "$"res_"$outputBuildInfoResourceName"_"$integrationAlias"_url)
+    local rtUser=$(eval echo "$"res_"$outputBuildInfoResourceName"_"$integrationAlias"_user)
+    local rtApiKey=$(eval echo "$"res_"$outputBuildInfoResourceName"_"$integrationAlias"_apikey)
+  else
+    echo "[GoPublishModule] Authenticating with integration: $artifactoryIntegrationName"
+    local rtUrl=$(eval echo "$"int_"$artifactoryIntegrationName"_url)
+    local rtUser=$(eval echo "$"int_"$artifactoryIntegrationName"_user)
+    local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
+  fi
+
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 
   buildName=$pipeline_name

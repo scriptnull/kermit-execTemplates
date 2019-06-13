@@ -174,7 +174,7 @@
           "type": "boolean"
         }
       },
-      "required": ["inputSteps", "integrations", "targetRepository"]
+      "required": ["inputSteps", "targetRepository"]
     },
     "execution": {
       "type": "object",
