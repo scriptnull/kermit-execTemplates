@@ -43,6 +43,16 @@ GradleBuild() {
     jfrog rt bs $buildName $buildNumber
   fi
 
+  local autoPublishBuildInfo=$(jq -r .step.configuration.autoPublishBuildInfo $step_json_path)
+  if [ "$autoPublishBuildInfo" == "true" ]; then
+    echo "[GradleBuild] Publishing build $buildName/$buildNumber"
+    jfrog rt bp $buildName $buildNumber
+    if [ ! -z "$outputBuildInfoResourceName" ]; then
+      echo "[GradleBuild] Updating output resource: $outputBuildInfoResourceName"
+      write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber
+    fi
+  fi
+
   jfrog rt bce "$buildName" "$buildNumber"
   save_run_state /tmp/jfrog/. jfrog
 }
