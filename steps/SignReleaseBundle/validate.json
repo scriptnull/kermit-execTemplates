@@ -32,6 +32,79 @@
         "chronological": {
           "type": "boolean"
         },
+        "environmentVariables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "number"]
+          }
+        },
+        "runtime": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["image", "host"]
+            }
+          },
+          "required": ["type"],
+          "if": {
+            "properties": {
+              "type": { "enum": ["image"] }
+            }
+          },
+          "then": {
+            "properties": {
+              "type": { "enum": ["image"] },
+              "image": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "auto": {
+                    "type": "object",
+                    "required": ["language"],
+                    "properties": {
+                      "language": {
+                        "type": "string"
+                      },
+                      "versions": {
+                        "type": "array",
+                        "items":  {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "custom": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["name", "tag"],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "options": {
+                        "type": "string"
+                      },
+                      "autoPull": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "else": {
+            "properties": {
+              "type": { "enum": ["host"] }
+            },
+            "additionalProperties": false
+          }
+        },
         "integrations": {
           "type": "array",
           "minItems": 1,
