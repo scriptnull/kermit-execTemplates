@@ -19,19 +19,19 @@ GoPublishBinary() {
   echo -e "\n[GoPublishBinary] Pushing go binary to repository: $targetRepository"
   jfrog rt u "$tempStateLocation/*" $targetRepository --build-name=$buildName --build-number=$buildNumber
 
-  local forceXrayScan=$(jq -r .step.configuration.forceXrayScan $step_json_path)
-  if [ "$forceXrayScan" == "true" ]; then
-    echo "[GoPublishModule] Scanning build $buildName/$buildNumber"
-    jfrog rt bs $buildName $buildNumber
-  fi
   local publish=$(jq -r .step.configuration.autoPublishBuildInfo $step_json_path)
   if [ "$publish" == "true" ]; then
-    echo "[GoPublishModule] Publishing build $buildName/$buildNumber"
+    echo "[GoPublishBinary] Publishing build $buildName/$buildNumber"
     jfrog rt bp $buildName $buildNumber
     if [ ! -z "$outputBuildInfoResourceName" ]; then
-      echo "[GoPublishModule] Updating output resource: $outputBuildInfoResourceName"
+      echo "[GoPublishBinary] Updating output resource: $outputBuildInfoResourceName"
       write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber
     fi
+  fi
+  local forceXrayScan=$(jq -r .step.configuration.forceXrayScan $step_json_path)
+  if [ "$forceXrayScan" == "true" ]; then
+    echo "[GoPublishBinary] Scanning build $buildName/$buildNumber"
+    jfrog rt bs $buildName $buildNumber
   fi
 
   save_run_state /tmp/jfrog/. jfrog
