@@ -62,7 +62,6 @@ build() {
     jfrog rt bs $buildName $buildNumber
   fi
 
-  jfrog rt bce $buildName $buildNumber
   save_run_state /tmp/jfrog/. jfrog
 }
 
