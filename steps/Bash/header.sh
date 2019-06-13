@@ -1894,11 +1894,7 @@ _set_clojure() {
 }
 
 _set_c() {
-  local c_version=$1
-  if [ ! -z "$c_version" ]; then
-    echo "The gcc and clang versions cannot be changed.  Select a different image." >&2
-    exit 1
-  fi
+  echo "Unable to change versions for language 'c'. The following versions are present:"
   gcc --version
   clang --version
 }
