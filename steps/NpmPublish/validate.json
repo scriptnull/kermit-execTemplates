@@ -41,6 +41,11 @@
         "autoPublishBuildInfo": {
           "type": "boolean"
         },
+        "environmentVariables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "number"]
+        },
         "runtime": {
           "type": "object",
           "properties": {
