@@ -70,6 +70,7 @@ build() {
     add_run_variable ${step_name}_buildName=${buildName}
     add_run_variable ${step_name}_isPromoted=false
     add_run_variable ${step_name}_outputStateName=output
+    add_run_variable ${step_name}_sourceLocation=${sourceLocation}
     save_run_state $outputLocation/. output
   popd
 
