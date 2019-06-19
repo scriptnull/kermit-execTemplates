@@ -1492,10 +1492,17 @@ write_output() {
   local resource_name=$1
   shift
 
-  local resource_directory=$(cat "$step_json_path" | jq -r ."resources.$resource_name.resourcePath")
+  local resource_directory=$(eval echo "$"res_"$resource_name"_resourcePath)
 
   if [ -z "$resource_directory" ]; then
     echo "Error: resource data not found for $resource_name" >&2
+    exit 99
+  fi
+
+  local resource_operation=$(eval echo "$"res_"$resource_name"_operation)
+
+  if [ "$resource_operation" != "OUT" ]; then
+    echo "Error: write_output can only be performed on outputResources"
     exit 99
   fi
 
