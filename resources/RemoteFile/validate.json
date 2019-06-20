@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://jfrog.com/cicd/resources/RemoteFile.schema.json",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["RemoteFile"]
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "fileLocation": {
+          "type": "string"
+        },
+        "fileName": {
+          "type": "string"
+        },
+        "fileDateTime": {
+          "type": "string"
+        }
+      },
+      "required": ["source"]
+    }
+  },
+  "required": ["name", "type", "configuration"]
+}
