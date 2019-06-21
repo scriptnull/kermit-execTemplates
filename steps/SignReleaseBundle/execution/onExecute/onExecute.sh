@@ -19,7 +19,7 @@ signReleaseBundle() {
   fi
 
   jq . $step_tmp_dir/curl_res_body > $step_tmp_dir/"$step_name"_response.json
-  save_run_state $step_tmp_dir/"$step_name"_response.json .
+  add_run_files $step_tmp_dir/"$step_name"_response.json .
   if [ $STATUS -ge 200 ] && [ $STATUS -lt 300 ]; then
     echo -e "\n[SignReleaseBundle] Successfully signed release bundle."
     echo -e "\n[SignReleaseBundle] Download run state and check the content of "$step_name"_response.json to check the complete response."

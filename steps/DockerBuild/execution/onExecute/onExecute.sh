@@ -22,18 +22,18 @@ DockerBuild() {
     docker build -t $evalDockerImageName:$evalDockerImageTag -f ${buildDir}/${dockerFileName} .
 
     echo "[DockerBuild] Adding build information to pipeline state"
-    add_run_variable buildStepName=${step_name}
-    add_run_variable ${step_name}_payloadType="docker"
-    add_run_variable ${step_name}_buildNumber=${buildNumber}
-    add_run_variable ${step_name}_buildName=${buildName}
-    add_run_variable ${step_name}_isPromoted=false
-    add_run_variable ${step_name}_dockerImageName=${evalDockerImageName}
-    add_run_variable ${step_name}_dockerImageTag=${evalDockerImageTag}
+    add_run_variables buildStepName=${step_name}
+    add_run_variables ${step_name}_payloadType="docker"
+    add_run_variables ${step_name}_buildNumber=${buildNumber}
+    add_run_variables ${step_name}_buildName=${buildName}
+    add_run_variables ${step_name}_isPromoted=false
+    add_run_variables ${step_name}_dockerImageName=${evalDockerImageName}
+    add_run_variables ${step_name}_dockerImageTag=${evalDockerImageTag}
 
   popd
 
   jfrog rt bce $buildName $buildNumber
-  save_run_state /tmp/jfrog/. jfrog
+  add_run_files /tmp/jfrog/. jfrog
 }
 
 execute_command DockerBuild

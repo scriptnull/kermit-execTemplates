@@ -30,7 +30,7 @@ DockerPush() {
     jfrog rt bs $buildName $buildNumber
   fi
 
-  save_run_state /tmp/jfrog/. jfrog
+  add_run_files /tmp/jfrog/. jfrog
 }
 
 execute_command DockerPush

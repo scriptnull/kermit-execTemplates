@@ -5,11 +5,11 @@ NpmPublish() {
   local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 
-  restore_run_state jfrog /tmp/jfrog
+  restore_run_files jfrog /tmp/jfrog
 
   local sourceStateName=$(eval echo "$""$inputNpmBuildStepName"_sourceStateName)
   local tempStateLocation="$step_tmp_dir/npmSourceState"
-  restore_run_state $sourceStateName $tempStateLocation
+  restore_run_files $sourceStateName $tempStateLocation
 
   local buildNumber=$(eval echo "$""$inputNpmBuildStepName"_buildNumber)
   local buildName=$(eval echo "$""$inputNpmBuildStepName"_buildName)
@@ -37,7 +37,7 @@ NpmPublish() {
     jfrog rt bs $buildName $buildNumber
   fi
 
-  save_run_state /tmp/jfrog/. jfrog
+  add_run_files /tmp/jfrog/. jfrog
   # remove gitRepo from run state
   rm -rf $run_dir/workspace/$sourceStateName
 }

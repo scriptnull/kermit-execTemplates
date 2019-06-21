@@ -5,7 +5,7 @@ PushArtifactoryPackage() {
   local rtApiKey=$(eval echo "$"int_"$artifactoryIntegrationName"_apikey)
 
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
-  restore_run_state jfrog /tmp/jfrog
+  restore_run_files jfrog /tmp/jfrog
 
   local step_payloadType=$(eval echo "$""$buildStepName"_payloadType)
   local buildName=$(eval echo "$""$buildStepName"_buildName)
@@ -19,7 +19,7 @@ PushArtifactoryPackage() {
   elif [ "$step_payloadType" == "go" ]; then
     local outputStateName=$(eval echo "$""$buildStepName"_outputStateName)
     local tempStateLocation="$step_tmp_dir/goOutput"
-    restore_run_state $outputStateName $tempStateLocation
+    restore_run_files $outputStateName $tempStateLocation
     jfrog rt u "$tempStateLocation/*" $targetRepo --build-name=$buildName --build-number=$buildNumber
   else
     echo "[PushArtifactoryPackage] Unsupported payload type: $step_payloadType"
@@ -47,7 +47,7 @@ PushArtifactoryPackage() {
     jfrog rt bs $buildName $buildNumber
   fi
 
-  save_run_state /tmp/jfrog/. jfrog
+  add_run_files /tmp/jfrog/. jfrog
 }
 
 execute_command PushArtifactoryPackage

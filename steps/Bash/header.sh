@@ -1946,9 +1946,9 @@ save_tests() {
   fi
 }
 
-cache_files() {
+add_cache_files() {
   if [ "$1" == "" ] || [ "$2" == "" ]; then
-    echo "Usage: cache_files [DIRECTORY] [FILE] NAME" >&2
+    echo "Usage: add_cache_files [DIRECTORY] [FILE] NAME" >&2
     exit 1
   fi
   # Wildcards will be expanded.  The last item is the name.
@@ -1976,9 +1976,9 @@ cache_files() {
   echo "Files copied"
 }
 
-restore_cache() {
+restore_cache_files() {
   if [ "$1" == "" ] || [ "$2" == "" ]; then
-    echo "Usage: restore_cache NAME PATH" >&2
+    echo "Usage: restore_cache_files NAME PATH" >&2
     exit 1
   fi
 
@@ -2008,9 +2008,9 @@ restore_cache() {
   echo "Files restored"
 }
 
-add_run_variable() {
+add_run_variables() {
   if [ "$1" == "" ]; then
-    echo "Usage: add_run_variable KEY=VALUE" >&2
+    echo "Usage: add_run_variables KEY=VALUE" >&2
     exit 1
   fi
 
@@ -2033,9 +2033,9 @@ add_run_variable() {
   done
 }
 
-add_pipeline_variable() {
+add_pipeline_variables() {
   if [ "$1" == "" ]; then
-    echo "Usage: add_pipeline_variable KEY=VALUE" >&2
+    echo "Usage: add_pipeline_variables KEY=VALUE" >&2
     exit 1
   fi
 
@@ -2070,9 +2070,9 @@ export_pipeline_variables() {
   fi
 }
 
-save_run_state() {
+add_run_files() {
   if [ "$1" == "" ] || [ "$2" == "" ]; then
-    echo "Usage: save_run_state [DIRECTORY] [FILE] NAME" >&2
+    echo "Usage: add_run_files [DIRECTORY] [FILE] NAME" >&2
     exit 1
   fi
   # Wildcards will be expanded.  The last item is the name.
@@ -2105,9 +2105,9 @@ save_run_state() {
   echo "Files copied"
 }
 
-restore_run_state() {
+restore_run_files() {
   if [ "$1" == "" ] || [ "$2" == "" ]; then
-    echo "Usage: restore_run_state NAME PATH" >&2
+    echo "Usage: restore_run_files NAME PATH" >&2
     exit 1
   fi
 
@@ -2137,9 +2137,9 @@ restore_run_state() {
   echo "Files restored"
 }
 
-save_pipeline_state() {
+add_pipeline_files() {
   if [ "$1" == "" ] || [ "$2" == "" ]; then
-    echo "Usage: save_pipeline_state [DIRECTORY] [FILE] NAME" >&2
+    echo "Usage: add_pipeline_files [DIRECTORY] [FILE] NAME" >&2
     exit 1
   fi
 
@@ -2173,9 +2173,9 @@ save_pipeline_state() {
   echo "Files copied"
 }
 
-restore_pipeline_state() {
+restore_pipeline_files() {
   if [ "$1" == "" ] || [ "$2" == "" ]; then
-    echo "Usage: restore_pipeline_state NAME PATH" >&2
+    echo "Usage: restore_pipeline_files NAME PATH" >&2
     exit 1
   fi
 

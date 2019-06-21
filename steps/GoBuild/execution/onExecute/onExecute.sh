@@ -63,19 +63,19 @@ build() {
     jfrog rt go "$goCommand" $repository $options --build-name $buildName --build-number $buildNumber
 
     echo "[GoBuild] Adding build information to run state"
-    add_run_variable buildStepName=${step_name}
-    add_run_variable ${step_name}_payloadType=go
-    add_run_variable ${step_name}_version=${version}
-    add_run_variable ${step_name}_buildNumber=${buildNumber}
-    add_run_variable ${step_name}_buildName=${buildName}
-    add_run_variable ${step_name}_isPromoted=false
-    add_run_variable ${step_name}_outputStateName=output
-    add_run_variable ${step_name}_sourceLocation=${sourceLocation}
-    save_run_state $outputLocation/. output
+    add_run_variables buildStepName=${step_name}
+    add_run_variables ${step_name}_payloadType=go
+    add_run_variables ${step_name}_version=${version}
+    add_run_variables ${step_name}_buildNumber=${buildNumber}
+    add_run_variables ${step_name}_buildName=${buildName}
+    add_run_variables ${step_name}_isPromoted=false
+    add_run_variables ${step_name}_outputStateName=output
+    add_run_variables ${step_name}_sourceLocation=${sourceLocation}
+    add_run_files $outputLocation/. output
   popd
 
   jfrog rt bce $buildName $buildNumber
-  save_run_state /tmp/jfrog/. jfrog
+  add_run_files /tmp/jfrog/. jfrog
 }
 
 execute_command build
