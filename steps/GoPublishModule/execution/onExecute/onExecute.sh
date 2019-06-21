@@ -47,12 +47,12 @@ build() {
     retry_command jfrog rt gp $targetRepository $version $options --build-name $buildName --build-number $buildNumber
 
     echo "[GoPublishModule] Adding build information to run state"
-    add_run_variable buildStepName=${step_name}
-    add_run_variable ${step_name}_payloadType=go
-    add_run_variable ${step_name}_version=${version}
-    add_run_variable ${step_name}_buildNumber=${buildNumber}
-    add_run_variable ${step_name}_buildName=${buildName}
-    add_run_variable ${step_name}_isPromoted=false
+    add_run_variables buildStepName=${step_name}
+    add_run_variables ${step_name}_payloadType=go
+    add_run_variables ${step_name}_version=${version}
+    add_run_variables ${step_name}_buildNumber=${buildNumber}
+    add_run_variables ${step_name}_buildName=${buildName}
+    add_run_variables ${step_name}_isPromoted=false
   popd
 
   local forceXrayScan=$(jq -r .step.configuration.forceXrayScan $step_json_path)
@@ -71,7 +71,7 @@ build() {
     jfrog rt bs $buildName $buildNumber
   fi
 
-  save_run_state /tmp/jfrog/. jfrog
+  add_run_files /tmp/jfrog/. jfrog
 }
 
 execute_command build

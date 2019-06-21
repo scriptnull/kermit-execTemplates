@@ -38,18 +38,18 @@ NpmBuild() {
     echo -e "\n[NpmBuild] Download run state and check "$step_name"_logs to check the complete logs"
     jfrog rt npm-install $repositoryName --build-name=$buildName --build-number=$buildNumber --npm-args="$npmArgs"  &> $run_dir/workspace/"$step_name"_logs
     echo -e "\n[NpmBuild] Adding build information to run state"
-    add_run_variable buildStepName=${step_name}
-    add_run_variable ${step_name}_payloadType=npm
-    add_run_variable ${step_name}_buildNumber=${buildNumber}
-    add_run_variable ${step_name}_buildName=${buildName}
-    add_run_variable ${step_name}_isPromoted=false
-    add_run_variable ${step_name}_sourceStateName="npmBuildInputGitRepo"
-    add_run_variable ${step_name}_sourceLocation=${sourceLocation}
+    add_run_variables buildStepName=${step_name}
+    add_run_variables ${step_name}_payloadType=npm
+    add_run_variables ${step_name}_buildNumber=${buildNumber}
+    add_run_variables ${step_name}_buildName=${buildName}
+    add_run_variables ${step_name}_isPromoted=false
+    add_run_variables ${step_name}_sourceStateName="npmBuildInputGitRepo"
+    add_run_variables ${step_name}_sourceLocation=${sourceLocation}
   popd
 
   jfrog rt bce $buildName $buildNumber
-  save_run_state /tmp/jfrog/. jfrog
-  save_run_state $inputGitRepoResourcePath/. npmBuildInputGitRepo
+  add_run_files /tmp/jfrog/. jfrog
+  add_run_files $inputGitRepoResourcePath/. npmBuildInputGitRepo
 }
 
 execute_command NpmBuild

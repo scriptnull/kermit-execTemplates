@@ -32,11 +32,11 @@ MvnBuild() {
     jfrog rt mvn "$mvnCommand" "$configFileLocation"/"$configFileName" --build-name "$buildName" --build-number "$buildNumber"
 
     echo "[MvnBuild] Adding build information to run state"
-    add_run_variable buildStepName="$step_name"
-    add_run_variable "$step_name"_payloadType=mvn
-    add_run_variable "$step_name"_buildNumber="$buildNumber"
-    add_run_variable "$step_name"_buildName="$buildName"
-    add_run_variable "$step_name"_isPromoted=false
+    add_run_variables buildStepName="$step_name"
+    add_run_variables "$step_name"_payloadType=mvn
+    add_run_variables "$step_name"_buildNumber="$buildNumber"
+    add_run_variables "$step_name"_buildName="$buildName"
+    add_run_variables "$step_name"_isPromoted=false
   popd
 
   if [ "$publish" == "true" ]; then
@@ -54,7 +54,7 @@ MvnBuild() {
   fi
 
   jfrog rt bce "$buildName" "$buildNumber"
-  save_run_state /tmp/jfrog/. jfrog
+  add_run_files /tmp/jfrog/. jfrog
 }
 
 execute_command MvnBuild

@@ -8,7 +8,7 @@ PublishBuildInfo() {
 
   retry_command jfrog rt config --url $rtUrl --user $rtUser --apikey $rtApiKey --interactive=false
 
-  restore_run_state jfrog /tmp/jfrog
+  restore_run_files jfrog /tmp/jfrog
 
   local buildName="$buildName"
   local buildNumber="$buildNumber"
@@ -53,7 +53,7 @@ PublishBuildInfo() {
     write_output $outputBuildInfoResourceName buildName=$buildName buildNumber=$buildNumber
   fi
 
-  save_run_state /tmp/jfrog/. jfrog
+  add_run_files /tmp/jfrog/. jfrog
 }
 
 execute_command PublishBuildInfo
