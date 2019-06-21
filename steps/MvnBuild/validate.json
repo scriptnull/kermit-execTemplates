@@ -99,7 +99,11 @@
                       }
                     }
                   }
-                }
+                },
+                "oneOf": [
+                  { "required": [ "auto" ] },
+                  { "required": [ "custom" ] }
+                ]
               }
             },
             "additionalProperties": false
