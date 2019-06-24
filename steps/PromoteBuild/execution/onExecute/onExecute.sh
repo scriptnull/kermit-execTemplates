@@ -40,12 +40,12 @@ PromoteBuild() {
     options+=" --comment $comment"
   fi
 
-  if [ ! -z "$copy" ] && [ "$copy" != 'null' ]; then
-    options+=" --copy $copy"
+  if [ ! -z "$copy" ] && [ "$copy" == 'true' ]; then
+    options+=" --copy"
   fi
 
-  if [ ! -z "$includeDependencies" ] && [ "$includeDependencies" != 'null' ]; then
-    options+=" --include-dependencies $includeDependencies"
+  if [ ! -z "$includeDependencies" ] && [ "$includeDependencies" == 'true' ]; then
+    options+=" --include-dependencies"
   fi
 
   echo "[PromoteBuild] Promoting build $buildName/$buildNumber to: $targetRepo"
