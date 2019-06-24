@@ -27,15 +27,31 @@ PromoteBuild() {
 
   targetRepo=$(jq -r ".step.configuration.targetRepository" $step_json_path)
   includeDependencies=$(jq -r ".step.configuration.includeDependencies" $step_json_path)
+  status=$(jq -r ".step.configuration.status" $step_json_path)
+  comment=$(jq -r ".step.configuration.comment" $step_json_path)
+  copy=$(jq -r ".step.configuration.copy" $step_json_path)
 
-  echo "[PromoteBuild] Promoting build $buildName/$buildNumber to: $targetRepo"
-  local PromoteBuildCmd="jfrog rt build-promote $buildName $buildNumber $targetRepo"
-  if [ ! -z "$includeDependencies" ] && [ "$includeDependencies" == "true" ]; then
-    PromoteBuildCmd="$PromoteBuildCmd --include-dependencies"
-    echo "[PromoteBuild] (including dependencies)"
+  options=""
+  if [ ! -z "$status" ] && [ "$status" != 'null' ]; then
+    options+=" --status $status"
   fi
 
-  retry_command $PromoteBuildCmd
+  if [ ! -z "$comment" ] && [ "$comment" != 'null' ]; then
+    options+=" --comment $comment"
+  fi
+
+  if [ ! -z "$copy" ] && [ "$copy" != 'null' ]; then
+    options+=" --copy $copy"
+  fi
+
+  if [ ! -z "$includeDependencies" ] && [ "$includeDependencies" != 'null' ]; then
+    options+=" --include-dependencies $includeDependencies"
+  fi
+
+  echo "[PromoteBuild] Promoting build $buildName/$buildNumber to: $targetRepo"
+  local promoteBuildCmd="jfrog rt build-promote $options $buildName $buildNumber $targetRepo"
+
+  retry_command $promoteBuildCmd
 
   if [ ! -z "$outputBuildInfoResourceName" ]; then
     echo "[PromoteBuild] Updating output resource: $outputBuildInfoResourceName"
