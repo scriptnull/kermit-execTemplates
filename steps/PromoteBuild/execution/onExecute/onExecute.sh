@@ -44,14 +44,14 @@ PromoteBuild() {
     options+=" --copy $copy"
   fi
 
-  echo "[PromoteBuild] Promoting build $buildName/$buildNumber to: $targetRepo"
-  local PromoteBuildCmd="jfrog rt build-promote $options $buildName $buildNumber $targetRepo"
-  if [ ! -z "$includeDependencies" ] && [ "$includeDependencies" == "true" ]; then
-    PromoteBuildCmd="$PromoteBuildCmd --include-dependencies"
-    echo "[PromoteBuild] (including dependencies)"
+  if [ ! -z "$includeDependencies" ] && [ "$includeDependencies" != 'null' ]; then
+    options+=" --include-dependencies $includeDependencies"
   fi
 
-  retry_command $PromoteBuildCmd
+  echo "[PromoteBuild] Promoting build $buildName/$buildNumber to: $targetRepo"
+  local promoteBuildCmd="jfrog rt build-promote $options $buildName $buildNumber $targetRepo"
+
+  retry_command $promoteBuildCmd
 
   if [ ! -z "$outputBuildInfoResourceName" ]; then
     echo "[PromoteBuild] Updating output resource: $outputBuildInfoResourceName"
