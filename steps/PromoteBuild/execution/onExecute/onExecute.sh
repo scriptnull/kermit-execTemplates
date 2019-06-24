@@ -40,11 +40,11 @@ PromoteBuild() {
     options+=" --comment $comment"
   fi
 
-  if [ ! -z "$copy" ] && [ "$copy" == 'true' ]; then
+  if [ "$copy" == 'true' ]; then
     options+=" --copy"
   fi
 
-  if [ ! -z "$includeDependencies" ] && [ "$includeDependencies" == 'true' ]; then
+  if [ "$includeDependencies" == 'true' ]; then
     options+=" --include-dependencies"
   fi
 
