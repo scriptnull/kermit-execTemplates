@@ -39,6 +39,15 @@
         "includeDependencies": {
           "type": "boolean"
         },
+        "status": {
+          "type": "string"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "copy": {
+          "type": "boolean"
+        },
         "environmentVariables": {
           "type": "object",
           "additionalProperties": {
