@@ -9,7 +9,7 @@ authenticate() {
 }
 
 getArtifactoryServiceId() {
-  local artifactoryServiceId=$(retry_command jfrog rt curl /api/system/service_id)
+  local artifactoryServiceId=$(retry_command jfrog rt curl -XGET /api/system/service_id)
   echo $artifactoryServiceId
 }
 
@@ -261,11 +261,13 @@ postRelease() {
 CreateReleaseBundle() {
   local payloadFile="createReleaseBundlePayload.json"
 
-  local integrationAlias=$(eval echo "$"res_"$outputReleaseBundleResourceName"_integrationAlias)
-  local integrationName=$(eval echo "$"res_"$outputReleaseBundleResourceName"_"$integrationAlias"_name)
+  local integrationAlias=$(eval echo "$"res_"$buildInfo0"_integrationAlias)
+  local integrationName=$(eval echo "$"res_"$buildInfo0"_"$integrationAlias"_name)
 
   echo "[CreateReleaseBundle] Authenticating with integration: $integrationName"
-  authenticate $outputReleaseBundleResourceName
+  # Use the first input BuildInfo resource for authenticating
+  # since all input BuildInfo resources are supposed to have the same artifactory integration
+  authenticate $buildInfo0
 
   echo -e "\n[CreateReleaseBundle] Getting Artifactory service id"
   local artifactoryServiceId=$(getArtifactoryServiceId)
