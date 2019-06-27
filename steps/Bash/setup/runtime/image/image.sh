@@ -24,13 +24,12 @@ boot_container() {
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v $run_dir:$run_dir \
     -v $pipeline_workspace_dir:$pipeline_workspace_dir \
-    -v $status_dir:$status_dir \
     -v $reqexec_dir:$reqexec_dir \
     -w $(pwd) -d --init --rm --privileged --name $DOCKER_CONTAINER_NAME"
   local docker_run_cmd="docker run $DOCKER_CONTAINER_OPTIONS $default_docker_options \
     -e running_in_container=$running_in_container \
     $DOCKER_IMAGE \
-    bash -c \"$reqexec_bin_path $steplet_script_path $status_dir/step.env\""
+    bash -c \"$reqexec_bin_path $steplet_script_path steplet.env\""
 
   execute_command "$docker_run_cmd"
 
