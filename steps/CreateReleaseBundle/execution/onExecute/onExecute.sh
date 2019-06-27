@@ -231,7 +231,7 @@ postRelease() {
   payloadPath=$1
   resourceName=$2
   local integrationAlias=$(eval echo "$"res_"$resourceName"_integrationAlias)
-  local distUrl=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_distributionUrl)
+  local distUrl=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_url)
   local rtUser=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_user)
   local rtApiKey=$(eval echo "$"res_"$resourceName"_"$integrationAlias"_apikey)
 
