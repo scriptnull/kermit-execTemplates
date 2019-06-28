@@ -1,6 +1,6 @@
 signReleaseBundle() {
   local integrationAlias=$(eval echo "$"res_"$inputReleaseBundleResourceName"_integrationAlias)
-  local distUrl=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_distributionUrl)
+  local distUrl=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_url)
   local rtUser=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_user)
   local rtApiKey=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_apikey)
   local releaseBundleName=$(eval echo "$"res_"$inputReleaseBundleResourceName"_name)

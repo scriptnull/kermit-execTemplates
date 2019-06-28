@@ -4,7 +4,7 @@ DistributeReleaseBundle() {
   local integrationAlias=$(eval echo "$"res_"$inputReleaseBundleResourceName"_integrationAlias)
   local rtUser=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_user)
   local rtApiKey=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_apikey)
-  local distributionUrl=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_distributionUrl)
+  local distributionUrl=$(eval echo "$"res_"$inputReleaseBundleResourceName"_"$integrationAlias"_url)
 
   if [ -z "$distributionUrl" ]; then
     echo "[DistributeReleaseBundle] ERROR: The integration specified doesn't have Distribution"
