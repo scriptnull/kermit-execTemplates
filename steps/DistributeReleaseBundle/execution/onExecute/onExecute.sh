@@ -116,6 +116,11 @@ DistributeReleaseBundle() {
     cat $curlResponseFile | jq .
     exit 1
   fi
+
+  if [ ! -z "$outputReleaseBundleResourceName" ]; then
+    echo -e "\n[DistributeReleaseBundle] Updating output resource: $outputReleaseBundleResourceName"
+    write_output $outputReleaseBundleResourceName name=$releaseBundleName version=$releaseBundleVersion
+  fi
 }
 
 execute_command DistributeReleaseBundle
