@@ -26,8 +26,10 @@
           "type": "boolean"
         }
       },
-      "required": ["name", "version", "sourceDistribution"]
+      "required": ["name", "version", "sourceDistribution"],
+      "additionalProperties": false
     }
   },
-  "required": ["name", "type", "configuration"]
+  "required": ["name", "type", "configuration"],
+  "additionalProperties": false
 }
