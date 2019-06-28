@@ -13,7 +13,7 @@
     "configuration": {
       "type": "object",
       "properties": {
-        "sourceArtifactory": {
+        "sourceDistribution": {
           "type": "string"
         },
         "name": {
@@ -26,8 +26,10 @@
           "type": "boolean"
         }
       },
-      "required": ["name", "version", "sourceArtifactory"]
+      "required": ["name", "version", "sourceDistribution"],
+      "additionalProperties": false
     }
   },
-  "required": ["name", "type", "configuration"]
+  "required": ["name", "type", "configuration"],
+  "additionalProperties": false
 }

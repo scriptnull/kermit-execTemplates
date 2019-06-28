@@ -13,7 +13,7 @@
     "configuration": {
       "type": "object",
       "properties": {
-        "sourceArtifactory": {
+        "sourceDistribution": {
           "type": "string"
         },
         "serviceName": {
@@ -34,7 +34,7 @@
         }
       },
       "required": ["serviceName", "cityName", "siteName", "countryCodes",
-        "sourceArtifactory"
+        "sourceDistribution"
       ],
       "additionalProperties": false
     }
