@@ -284,7 +284,7 @@ CreateReleaseBundle() {
   echo -e "\n[CreateReleaseBundle] Creating Release Bundle with name: "$releaseBundleName" and version: "$releaseBundleVersion""
   postRelease $step_tmp_dir/$payloadFile $outputReleaseBundleResourceName
 
-  if [ ! -z "$outputReleaseBundleResourceName" ]; then
+  if [ ! -z "$outputReleaseBundleResourceName" ] && [ "$dryRun" == 'false' ]; then
     echo -e "\n[CreateReleaseBundle] Updating output resource: $outputReleaseBundleResourceName"
     write_output $outputReleaseBundleResourceName name=$releaseBundleName version=$releaseBundleVersion isSigned=$sign
   fi
