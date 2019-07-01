@@ -275,6 +275,10 @@ CreateReleaseBundle() {
   # TODO: fix this when setup section gets exported as envs
   releaseBundleNameVar=$(jq -r ".step.configuration.releaseBundleName" $step_json_path)
   releaseBundleVersionVar=$(jq -r ".step.configuration.releaseBundleVersion" $step_json_path)
+  dryRun=$(jq -r ".step.configuration.dryRun" $step_json_path)
+  if [ -z "$dryRun" ] || [ "$dryRun" == "null" ]; then
+    $dryRun=true
+  fi
   releaseBundleName=$(eval echo "$releaseBundleNameVar")
   releaseBundleVersion=$(eval echo "$releaseBundleVersionVar")
   echo -e "\n[CreateReleaseBundle] Creating payload for release bundle"
