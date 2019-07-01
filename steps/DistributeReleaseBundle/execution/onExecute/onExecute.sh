@@ -54,6 +54,9 @@ DistributeReleaseBundle() {
     body=$(echo $body | jq --argjson json "$distributionRuleResourceObject" '.distribution_rules += [ $json ]')
   done
 
+  echo "mylog body = "
+  echo "$body"
+
   # distribute the release bundle
   echo "[DistributeReleaseBundle] Distributing bundle $releaseBundleName/$releaseBundleVersion"
   local status=$(curl --silent --write-out "%{http_code}\n" --output \
