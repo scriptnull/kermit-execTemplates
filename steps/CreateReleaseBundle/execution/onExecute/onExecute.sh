@@ -39,12 +39,12 @@ constructQueryForBuildInfoResources() {
   local buildFragmentTemplate='{
     "$and": [
       {
-        "artifact.module.build.name": {
+        "@build.name": {
           "$eq": "BUILD_NAME"
         }
       },
       {
-        "artifact.module.build.number": {
+        "@build.number": {
           "$eq": "BUILD_NUMBER"
         }
       }
