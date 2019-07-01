@@ -275,6 +275,10 @@ CreateReleaseBundle() {
   # TODO: fix this when setup section gets exported as envs
   releaseBundleNameVar=$(jq -r ".step.configuration.releaseBundleName" $step_json_path)
   releaseBundleVersionVar=$(jq -r ".step.configuration.releaseBundleVersion" $step_json_path)
+  dryRun=$(jq -r ".step.configuration.dryRun" $step_json_path)
+  if [ -z "$dryRun" ] || [ "$dryRun" == "null" ]; then
+    $dryRun=true
+  fi
   releaseBundleName=$(eval echo "$releaseBundleNameVar")
   releaseBundleVersion=$(eval echo "$releaseBundleVersionVar")
   echo -e "\n[CreateReleaseBundle] Creating payload for release bundle"
@@ -284,7 +288,7 @@ CreateReleaseBundle() {
   echo -e "\n[CreateReleaseBundle] Creating Release Bundle with name: "$releaseBundleName" and version: "$releaseBundleVersion""
   postRelease $step_tmp_dir/$payloadFile $outputReleaseBundleResourceName
 
-  if [ ! -z "$outputReleaseBundleResourceName" ]; then
+  if [ ! -z "$outputReleaseBundleResourceName" ] && [ "$dryRun" == 'false' ]; then
     echo -e "\n[CreateReleaseBundle] Updating output resource: $outputReleaseBundleResourceName"
     write_output $outputReleaseBundleResourceName name=$releaseBundleName version=$releaseBundleVersion isSigned=$sign
   fi
