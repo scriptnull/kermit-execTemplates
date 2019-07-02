@@ -2385,6 +2385,10 @@ before_exit() {
       if [ "$(type -t onComplete)" == "function" ] && ! $skip_before_exit_methods; then
         execute_command "onComplete" || true
       fi
+
+      if [ "$(type -t cleanupIntegrations)" == "function" ] && ! $skip_before_exit_methods; then
+        execute_command "cleanupIntegrations" || true
+      fi
     # subshell_exit_code will be set to 1 only when there is a exit 1 command in
     # the onSuccess & onFailure sections. exit 1 in these sections, is
     # considered as failure
@@ -2435,6 +2439,11 @@ before_exit() {
       if [ "$(type -t onComplete)" == "function" ] && ! $skip_before_exit_methods; then
         execute_command "onComplete" || true
       fi
+
+      if [ "$(type -t cleanupIntegrations)" == "function" ] && ! $skip_before_exit_methods; then
+        execute_command "cleanupIntegrations" || true
+      fi
+
     # adding || true so that the script doesn't exit when onFailure/onComplete
     # section has exit 1. if the script exits the group will not be
     # closed correctly.
