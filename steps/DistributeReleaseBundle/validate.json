@@ -93,7 +93,7 @@
                       },
                       "sourceRepository": {
                         "type": "string"
-                      },                        
+                      },
                       "options": {
                         "type": "string"
                       },
