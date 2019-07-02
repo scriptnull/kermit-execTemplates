@@ -57,14 +57,6 @@
               "type": { "enum": ["image"] },
               "image": {
                 "type": "object",
-                "properties": {
-                  "auto": {
-                    "type": "object"
-                  },
-                  "custom": {
-                    "type": "object"
-                  }
-                },
                 "if": {
                   "properties": {
                     "auto": {
