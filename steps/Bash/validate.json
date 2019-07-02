@@ -62,7 +62,8 @@
                     "auto": {
                       "type": "object"
                     }
-                  }
+                  },
+                  "required": ["auto"]
                 },
                 "then": {
                   "additionalProperties": false,
