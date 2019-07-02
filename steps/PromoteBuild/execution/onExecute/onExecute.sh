@@ -31,27 +31,29 @@ PromoteBuild() {
   comment=$(jq -r ".step.configuration.comment" $step_json_path)
   copy=$(jq -r ".step.configuration.copy" $step_json_path)
 
-  options=""
+  args=()
   if [ ! -z "$status" ] && [ "$status" != 'null' ]; then
-    options+=" --status $status"
+    args+=("--status")
+    args+=("$status")
   fi
-
   if [ ! -z "$comment" ] && [ "$comment" != 'null' ]; then
-    options+=" --comment $comment"
+   args+=("--comment")
+   args+=("$comment")
   fi
 
   if [ "$copy" == 'true' ]; then
-    options+=" --copy"
+    args+=("--copy")
   fi
 
   if [ "$includeDependencies" == 'true' ]; then
-    options+=" --include-dependencies"
+    args+=("--include-dependencies")
   fi
 
+  args+=("$buildName")
+  args+=("$buildNumber")
+  args+=("$targetRepo")
   echo "[PromoteBuild] Promoting build $buildName/$buildNumber to: $targetRepo"
-  local promoteBuildCmd="jfrog rt build-promote $options $buildName $buildNumber $targetRepo"
-
-  retry_command $promoteBuildCmd
+  retry_command jfrog rt build-promote "${args[@]}"
 
   if [ ! -z "$outputBuildInfoResourceName" ]; then
     echo "[PromoteBuild] Updating output resource: $outputBuildInfoResourceName"
