@@ -63,53 +63,64 @@
               "type": { "enum": ["image"] },
               "image": {
                 "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "auto": {
-                    "type": "object",
-                    "required": ["language"],
-                    "properties": {
-                      "language": {
-                        "type": "string"
-                      },
-                      "versions": {
-                        "type": "array",
-                        "items":  {
-                          "type": "string"
-                        }
-                      }
+                "if": {
+                  "properties": {
+                    "auto": {
+                      "type": "object"
                     }
                   },
-                  "custom": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": ["name", "tag"],
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      },
-                      "tag": {
-                        "type": "string"
-                      },
-                      "registry": {
-                        "type": "string"
-                      },
-                      "sourceRepository": {
-                        "type": "string"
-                      },                      
-                      "options": {
-                        "type": "string"
-                      },
-                      "autoPull": {
-                        "type": "boolean"
+                  "required": ["auto"]
+                },
+                "then": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "auto": {
+                      "type": "object",
+                      "required": ["language"],
+                      "properties": {
+                        "language": {
+                          "type": "string"
+                        },
+                        "versions": {
+                          "type": "array",
+                          "items":  {
+                            "type": "string"
+                          }
+                        }
                       }
                     }
                   }
                 },
-                "oneOf": [
-                  { "required": [ "auto" ] },
-                  { "required": [ "custom" ] }
-                ]
+                "else": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "custom": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["name", "tag"],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "tag": {
+                          "type": "string"
+                        },
+                        "registry": {
+                          "type": "string"
+                        },
+                        "sourceRepository": {
+                          "type": "string"
+                        },
+                        "options": {
+                          "type": "string"
+                        },
+                        "autoPull": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
               }
             },
             "additionalProperties": false
