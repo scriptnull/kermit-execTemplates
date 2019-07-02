@@ -72,6 +72,12 @@
                       "options": {
                         "type": "string"
                       },
+                      "registry": {
+                        "type": "string"
+                      },
+                      "sourceRepository": {
+                        "type": "string"
+                      },
                       "autoPull": {
                         "type": "boolean"
                       }
