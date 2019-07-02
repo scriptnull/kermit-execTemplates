@@ -88,6 +88,12 @@
                       "tag": {
                         "type": "string"
                       },
+                      "registry": {
+                        "type": "string"
+                      },
+                      "sourceRepository": {
+                        "type": "string"
+                      },                        
                       "options": {
                         "type": "string"
                       },
