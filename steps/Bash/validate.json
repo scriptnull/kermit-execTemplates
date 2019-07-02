@@ -60,50 +60,67 @@
                 "additionalProperties": false,
                 "properties": {
                   "auto": {
-                    "type": "object",
-                    "required": ["language"],
+                    "type": "object"
+                  },
+                  "custom": {
+                    "type": "object"
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "auto": {
+                      "type": "object"
+                    }
+                  },
+                  "then": {
                     "properties": {
-                      "language": {
-                        "type": "string"
-                      },
-                      "versions": {
-                        "type": "array",
-                        "items":  {
-                          "type": "string"
+                      "auto": {
+                        "type": "object",
+                        "required": ["language"],
+                        "properties": {
+                          "language": {
+                            "type": "string"
+                          },
+                          "versions": {
+                            "type": "array",
+                            "items":  {
+                              "type": "string"
+                            }
+                          }
                         }
                       }
                     }
                   },
-                  "custom": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": ["name", "tag"],
+                  "else": {
                     "properties": {
-                      "name": {
-                        "type": "string"
-                      },
-                      "tag": {
-                        "type": "string"
-                      },
-                      "registry": {
-                        "type": "string"
-                      },
-                      "sourceRepository": {
-                        "type": "string"
-                      },
-                      "options": {
-                        "type": "string"
-                      },
-                      "autoPull": {
-                        "type": "boolean"
+                      "custom": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["name", "tag"],
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "tag": {
+                            "type": "string"
+                          },
+                          "registry": {
+                            "type": "string"
+                          },
+                          "sourceRepository": {
+                            "type": "string"
+                          },
+                          "options": {
+                            "type": "string"
+                          },
+                          "autoPull": {
+                            "type": "boolean"
+                          }
+                        }
                       }
                     }
                   }
-                },
-                "oneOf": [
-                  { "required": [ "auto" ] },
-                  { "required": [ "custom" ] }
-                ]
+                }
               }
             },
             "additionalProperties": false
