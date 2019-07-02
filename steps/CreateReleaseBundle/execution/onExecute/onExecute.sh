@@ -219,12 +219,12 @@ createPayload() {
     releaseNotes=$(echo $releaseNotes | jq --arg content "$releaseNotesContent" '. + {content: $content}')
     releaseNotesSyntax=$(jq -r ".step.configuration.releaseNotes.syntax" $step_json_path)
     if [ ! -z "$releaseNotesSyntax" ] && [ "$releaseNotesSyntax" != "null" ]; then
-      releaseNotes=$(echo $releaseNotes | jq --arg syntax "$releaseNotesSyntax" '. + {syntax: $syntax}')
+      releaseNotes=$(echo "$releaseNotes" | jq --arg syntax "$releaseNotesSyntax" '. + {syntax: $syntax}')
     fi
     payload=$(echo $payload | jq --argjson json "$releaseNotes" '.release_notes = $json')
   fi
 
-  echo $payload
+  echo "$payload"
 }
 
 postRelease() {
@@ -283,7 +283,7 @@ CreateReleaseBundle() {
   releaseBundleVersion=$(eval echo "$releaseBundleVersionVar")
   echo -e "\n[CreateReleaseBundle] Creating payload for release bundle"
   payload=$(createPayload "$releaseBundleName" "$releaseBundleVersion" "$artifactoryServiceId")
-  echo $payload | jq . > $step_tmp_dir/$payloadFile
+  echo "$payload" | jq . > $step_tmp_dir/$payloadFile
 
   echo -e "\n[CreateReleaseBundle] Creating Release Bundle with name: "$releaseBundleName" and version: "$releaseBundleVersion""
   postRelease $step_tmp_dir/$payloadFile $outputReleaseBundleResourceName
