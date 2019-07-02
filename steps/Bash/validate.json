@@ -58,46 +58,64 @@
               "image": {
                 "type": "object",
                 "additionalProperties": false,
-                "properties": {
-                  "auto": {
-                    "type": "object",
-                    "required": ["language"],
-                    "properties": {
-                      "language": {
-                        "type": "string"
-                      },
-                      "versions": {
-                        "type": "array",
-                        "items":  {
-                          "type": "string"
-                        }
-                      }
+                "if": {
+                  "properties": {
+                    "auto": {
+                      "type": "object"
                     }
-                  },
-                  "custom": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": ["name", "tag"],
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      },
-                      "tag": {
-                        "type": "string"
-                      },
-                      "options": {
-                        "type": "string"
-                      },
-                      "autoPull": {
-                        "type": "boolean"
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "auto": {
+                      "type": "object",
+                      "required": ["language"],
+                      "properties": {
+                        "language": {
+                          "type": "string"
+                        },
+                        "versions": {
+                          "type": "array",
+                          "items":  {
+                            "type": "string"
+                          }
+                        }
                       }
                     }
                   }
                 },
-                "oneOf": [
-                  { "required": [ "auto" ] },
-                  { "required": [ "custom" ] }
-                ]
+                "else": {
+                  "if": {
+                    "properties": {
+                      "custom": {
+                        "type": "object"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "custom": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["name", "tag"],
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "tag": {
+                            "type": "string"
+                          },
+                          "options": {
+                            "type": "string"
+                          },
+                          "autoPull": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
               }
             },
             "additionalProperties": false
