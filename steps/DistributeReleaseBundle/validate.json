@@ -73,6 +73,7 @@
                   "properties": {
                     "auto": {
                       "type": "object",
+                      "additionalProperties": false,
                       "required": ["language"],
                       "properties": {
                         "language": {
